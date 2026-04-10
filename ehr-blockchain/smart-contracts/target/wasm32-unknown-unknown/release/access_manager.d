@@ -1,0 +1,1 @@
+C:\Users\user\Documents\capstone\ehr-blockchain\smart-contracts\target\wasm32-unknown-unknown\release\access_manager.wasm: C:\Users\user\Documents\capstone\ehr-blockchain\smart-contracts\access_manager\src\lib.rs

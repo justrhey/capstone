@@ -1,0 +1,1 @@
+C:\Users\user\Documents\capstone\ehr-blockchain\smart-contracts\target\wasm32-unknown-unknown\release\audit_trail.wasm: C:\Users\user\Documents\capstone\ehr-blockchain\smart-contracts\audit_trail\src\lib.rs

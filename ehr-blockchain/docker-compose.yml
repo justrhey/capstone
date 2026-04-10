@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: ehr_postgres
+    environment:
+      POSTGRES_DB: ehr_db
+      POSTGRES_USER: ehr_admin
+      POSTGRES_PASSWORD: ehr_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
