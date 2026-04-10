@@ -1,5 +1,5 @@
 use actix_web::dev::{ServiceRequest, ServiceResponse, Transform, Service};
-use actix_web::Error;
+use actix_web::{Error, HttpMessage};
 use futures::future::{ok, Ready};
 use std::future::Future;
 use std::pin::Pin;
@@ -57,17 +57,21 @@ where
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let allowed = self.allowed_roles.clone();
+        let has_permission;
 
-        let claims = req.extensions().get::<Claims>();
-        if let Some(claims) = claims {
-            if allowed.contains(&claims.role) {
-                let fut = self.service.call(req);
-                return Box::pin(async move { fut.await });
-            }
+        {
+            let extensions = req.extensions();
+            let claims = extensions.get::<Claims>();
+            has_permission = claims.map(|c| allowed.contains(&c.role)).unwrap_or(false);
         }
 
-        Box::pin(async {
-            Err(actix_web::error::ErrorForbidden("Insufficient permissions"))
-        })
+        if has_permission {
+            let fut = self.service.call(req);
+            Box::pin(async move { fut.await })
+        } else {
+            Box::pin(async {
+                Err(actix_web::error::ErrorForbidden("Insufficient permissions"))
+            })
+        }
     }
 }

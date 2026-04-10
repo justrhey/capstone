@@ -26,7 +26,8 @@ pub async fn store_record_hash(
             "store_hash",
             "--patient_id", patient_id,
             "--record_hash", record_hash,
-            "--network", "local",
+            "--rpc-url", &config.stellar_rpc_url,
+            "--network-passphrase", &config.stellar_network_passphrase,
             "--source", "admin",
         ])
         .output()
@@ -54,7 +55,7 @@ pub async fn store_record_hash(
 }
 
 pub async fn verify_record_hash(
-    pool: &PgPool,
+    _pool: &PgPool,
     record_hash: &str,
     config: &Config,
 ) -> Result<bool, AppError> {
@@ -65,7 +66,8 @@ pub async fn verify_record_hash(
             "--",
             "verify_hash",
             "--record_hash", record_hash,
-            "--network", "local",
+            "--rpc-url", &config.stellar_rpc_url,
+            "--network-passphrase", &config.stellar_network_passphrase,
             "--source", "admin",
         ])
         .output()
@@ -93,7 +95,8 @@ pub async fn grant_access_onchain(
             "--granted_to", granted_to,
             "--record_id", record_id,
             "--duration_seconds", &duration_seconds.to_string(),
-            "--network", "local",
+            "--rpc-url", &config.stellar_rpc_url,
+            "--network-passphrase", &config.stellar_network_passphrase,
             "--source", "admin",
         ])
         .output()
@@ -135,7 +138,8 @@ pub async fn log_access_onchain(
             "--user_id", user_id,
             "--record_id", record_id,
             "--action", action,
-            "--network", "local",
+            "--rpc-url", &config.stellar_rpc_url,
+            "--network-passphrase", &config.stellar_network_passphrase,
             "--source", "admin",
         ])
         .output()

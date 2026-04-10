@@ -1,5 +1,5 @@
 use actix_web::dev::{ServiceRequest, ServiceResponse, Transform, Service};
-use actix_web::Error;
+use actix_web::{Error, HttpMessage};
 use futures::future::{ok, Ready};
 use std::future::Future;
 use std::pin::Pin;

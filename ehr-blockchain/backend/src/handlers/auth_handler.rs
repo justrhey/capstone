@@ -1,5 +1,6 @@
 use actix_web::{post, web, HttpResponse, Responder};
-use crate::services::auth_service::{register_user, login_user, RegisterRequest, LoginRequest, AppError};
+use crate::services::auth_service::{register_user, login_user, AppError};
+use crate::models::{RegisterRequest, LoginRequest};
 use crate::config::Config;
 use sqlx::PgPool;
 
