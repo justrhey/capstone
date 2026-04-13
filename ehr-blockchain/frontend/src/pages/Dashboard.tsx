@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getPatients, getAllRecords, getAllUsers } from '../services/api'
+import { getPatients, getAllRecords, getAllUsers, getRecordsByPatient } from '../services/api'
 import Layout from '../components/Layout'
 
 export default function Dashboard() {
@@ -30,10 +30,19 @@ export default function Dashboard() {
           totalUsers: usersRes.data?.length || 0,
         })
       } else if (user?.role === 'patient') {
-        const recordsRes = await getAllRecords()
+        const patientsRes = await getPatients()
+        const userId = user.id?.toLowerCase()
+        const myPatients = patientsRes.data?.filter((p: any) => p.user_id?.toLowerCase() === userId) || []
+        
+        let myRecordsCount = 0
+        for (const patient of myPatients) {
+          const recordRes = await getRecordsByPatient(patient.id)
+          myRecordsCount += recordRes.data?.length || 0
+        }
+        
         setStats({
-          totalPatients: 0,
-          totalRecords: recordsRes.data?.length || 0,
+          totalPatients: myPatients.length,
+          totalRecords: myRecordsCount,
           totalUsers: 0,
         })
       }

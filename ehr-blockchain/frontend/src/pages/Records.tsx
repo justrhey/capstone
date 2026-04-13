@@ -24,11 +24,16 @@ interface Patient {
   id: string
   first_name: string | null
   last_name: string | null
+  user_id: string | null
+}
+
+interface RecordWithPatient extends RecordData {
+  patientName?: string
 }
 
 export default function Records() {
   const [searchParams] = useSearchParams()
-  const [records, setRecords] = useState<RecordData[]>([])
+  const [records, setRecords] = useState<RecordWithPatient[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([])
   const [patientSearch, setPatientSearch] = useState('')
@@ -74,7 +79,13 @@ export default function Records() {
       
       if (selectedPatient) {
         const recordRes = await getRecordsByPatient(selectedPatient)
-        setRecords(recordRes.data)
+        const patient = patientRes.data.find((p: Patient) => p.id === selectedPatient)
+        const patientName = patient ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim() : 'Unknown'
+        const recordsWithPatient = recordRes.data.map((r: RecordData) => ({
+          ...r,
+          patientName
+        }))
+        setRecords(recordsWithPatient)
       }
     } catch (err) {
       console.error('Failed to load data:', err)
@@ -240,6 +251,9 @@ export default function Records() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded text-cyan-300 text-xs">
+                      {item.patientName}
+                    </span>
                     <h3 className="text-white font-medium">{item.record.diagnosis || 'No diagnosis'}</h3>
                     {item.blockchain_verified ? (
                       <span className="flex items-center gap-1 px-2 py-0.5 bg-mint-500/10 border border-mint-500/20 rounded-full text-mint-400 text-xs">

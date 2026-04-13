@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getPatients, createPatientWithAccount } from '../services/api'
+import { getPatients, createPatientWithAccount, getAllUsers } from '../services/api'
 import Layout from '../components/Layout'
 
 interface Patient {
@@ -10,11 +10,18 @@ interface Patient {
   date_of_birth: string
   sex: string
   created_at: string
+  user_id: string | null
+}
+
+interface User {
+  id: string
+  email: string
 }
 
 export default function Patients() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -42,13 +49,23 @@ export default function Patients() {
 
   const loadPatients = async () => {
     try {
-      const res = await getPatients()
-      setPatients(res.data)
+      const [patientRes, userRes] = await Promise.all([
+        getPatients(),
+        getAllUsers()
+      ])
+      setPatients(patientRes.data)
+      setUsers(userRes.data)
     } catch (err) {
       console.error('Failed to load patients:', err)
     } finally {
       setLoading(false)
     }
+  }
+
+  const getUserEmail = (userId: string | null) => {
+    if (!userId) return null
+    const user = users.find(u => u.id.toLowerCase() === userId.toLowerCase())
+    return user?.email || null
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,17 +145,27 @@ export default function Patients() {
             <thead className="bg-white/5 border-b border-white/10">
               <tr>
                 <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Name</th>
+                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Account</th>
                 <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Date of Birth</th>
                 <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Sex</th>
                 <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Created</th>
                 <th className="text-right text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredPatients.map((patient) => (
+              <tbody className="divide-y divide-white/5">
+              {filteredPatients.map((patient) => {
+                const accountEmail = getUserEmail(patient.user_id)
+                return (
                 <tr key={patient.id} className="hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
                     <span className="text-white font-medium">{patient.first_name} {patient.last_name}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {accountEmail ? (
+                      <span className="px-2 py-1 bg-mint-500/10 border border-mint-500/20 rounded text-mint-400 text-sm">{accountEmail}</span>
+                    ) : (
+                      <span className="text-medical-500 text-sm">No account</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-white">{patient.date_of_birth}</td>
                   <td className="px-6 py-4">
@@ -151,7 +178,7 @@ export default function Patients() {
                     <button onClick={() => navigate(`/records?patient=${patient.id}`)} className="text-cyan-400 hover:text-cyan-300 mr-4">View Records</button>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

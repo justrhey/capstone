@@ -26,12 +26,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = localStorage.getItem('token')
         const storedUser = localStorage.getItem('user')
         if (storedToken && storedUser) {
+            console.log('Loading from localStorage - user:', JSON.parse(storedUser))
             setToken(storedToken)
             setUser(JSON.parse(storedUser))
         }
     }, [])
 
     const login = (newToken: string, newUser: User) => {
+        console.log('Logging in user:', newUser)
         setToken(newToken)
         setUser(newUser)
         localStorage.setItem('token', newToken)

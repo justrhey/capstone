@@ -33,13 +33,15 @@ export default function MyRecords() {
   }, [user?.id])
 
   const loadRecords = async () => {
+    if (!user?.id) return
+    
     try {
       setError('')
       const res = await getPatients()
       const patients = res.data
       
-      // Find patients linked to current user
-      const myPatients = patients.filter((p: any) => p.user_id === user?.id)
+      const userId = user.id.toLowerCase()
+      const myPatients = patients.filter((p: any) => p.user_id?.toLowerCase() === userId)
       
       if (myPatients.length === 0) {
         setError('No patient profile linked to your account. Please contact admin.')
