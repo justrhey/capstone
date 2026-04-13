@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 
@@ -18,10 +18,16 @@ export default function Login() {
 
         try {
             const res = await api.post('/api/auth/login', { email, password })
-            login(res.data.token, res.data.user)
-            navigate('/dashboard')
+            const data = res.data
+            if (data.token && data.user) {
+                login(data.token, data.user)
+                navigate('/dashboard')
+            } else {
+                setError('Invalid response from server')
+            }
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Login failed')
+            const errMsg = err.response?.data?.message || err.response?.data || err.message || 'Login failed'
+            setError(typeof errMsg === 'object' ? JSON.stringify(errMsg) : errMsg)
         } finally {
             setLoading(false)
         }
@@ -83,13 +89,6 @@ export default function Login() {
                             {loading ? 'Signing in...' : 'Sign In'}
                         </button>
                     </form>
-
-                    <p className="mt-6 text-center text-sm text-medical-400">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-                            Create Account
-                        </Link>
-                    </p>
                 </div>
 
                 <div className="mt-6 flex items-center justify-center gap-2 text-medical-500 text-xs">

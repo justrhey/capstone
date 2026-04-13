@@ -5,6 +5,8 @@ use crate::models::medical_record::{
 };
 use crate::services::auth_service::AppError;
 use crate::services::hash_service::hash_record_content;
+use crate::services::blockchain_service::store_record_hash;
+use crate::config::Config;
 
 pub async fn create_record(
     pool: &PgPool,
@@ -62,7 +64,40 @@ pub async fn create_record(
         }
     }
 
-    Ok(RecordResponse { record, medications, allergies })
+    let tx_hash = match Config::from_env() {
+        Ok(config) => {
+            match store_record_hash(pool, &record.id.to_string(), &record_hash, &config).await {
+                Ok(tx) => {
+                    sqlx::query(
+                        "UPDATE medical_records SET blockchain_tx_id = $1 WHERE id = $2"
+                    )
+                        .bind(&tx.tx_hash)
+                        .bind(record.id)
+                        .execute(pool)
+                        .await.ok();
+                    Some(tx.tx_hash)
+                }
+                Err(e) => {
+                    eprintln!("Blockchain store error: {}", e);
+                    None
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("Config error: {}", e);
+            None
+        }
+    };
+
+    let blockchain_verified = tx_hash.is_some();
+
+    Ok(RecordResponse {
+        record,
+        medications,
+        allergies,
+        blockchain_verified,
+        blockchain_tx_hash: tx_hash,
+    })
 }
 
 pub async fn get_records_by_patient(pool: &PgPool, patient_id: Uuid) -> Result<Vec<RecordResponse>, AppError> {
@@ -89,7 +124,16 @@ pub async fn get_records_by_patient(pool: &PgPool, patient_id: Uuid) -> Result<V
             .fetch_all(pool)
             .await?;
 
-        responses.push(RecordResponse { record, medications, allergies });
+        let blockchain_verified = record.blockchain_tx_id.is_some();
+        let blockchain_tx_hash = record.blockchain_tx_id.clone();
+
+        responses.push(RecordResponse {
+            record,
+            medications,
+            allergies,
+            blockchain_verified,
+            blockchain_tx_hash,
+        });
     }
 
     Ok(responses)

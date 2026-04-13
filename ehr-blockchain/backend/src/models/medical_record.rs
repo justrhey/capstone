@@ -64,4 +64,6 @@ pub struct RecordResponse {
     pub record: MedicalRecord,
     pub medications: Vec<Medication>,
     pub allergies: Vec<Allergy>,
+    pub blockchain_verified: bool,
+    pub blockchain_tx_hash: Option<String>,
 }

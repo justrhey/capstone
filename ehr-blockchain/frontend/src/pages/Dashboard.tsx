@@ -1,35 +1,65 @@
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { getPatients } from '../services/api'
 import Layout from '../components/Layout'
-
-const roleStats: Record<string, { label: string; value: string; icon: string }[]> = {
-  patient: [
-    { label: 'My Records', value: '--', icon: '📋' },
-    { label: 'Active Permissions', value: '--', icon: '🔑' },
-    { label: 'Recent Access', value: '--', icon: '👁️' },
-  ],
-  doctor: [
-    { label: 'Total Patients', value: '--', icon: '👥' },
-    { label: 'Records Created', value: '--', icon: '📝' },
-    { label: "Today's Access", value: '--', icon: '📅' },
-  ],
-  nurse: [
-    { label: 'Assigned Patients', value: '--', icon: '🏥' },
-    { label: 'Pending Records', value: '--', icon: '⏳' },
-  ],
-  admin: [
-    { label: 'Total Users', value: '--', icon: '👤' },
-    { label: 'Total Records', value: '--', icon: '📊' },
-    { label: 'System Status', value: 'Online', icon: '✅' },
-  ],
-  auditor: [
-    { label: 'Audit Entries', value: '--', icon: '📜' },
-    { label: 'Flagged Events', value: '--', icon: '⚠️' },
-  ],
-}
 
 export default function Dashboard() {
   const { user } = useAuth()
-  const stats = roleStats[user?.role || 'patient'] || []
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    totalRecords: 0,
+    totalUsers: 0,
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadStats()
+  }, [])
+
+  const loadStats = async () => {
+    try {
+      if (user?.role === 'admin' || user?.role === 'doctor' || user?.role === 'nurse') {
+        const patientsRes = await getPatients()
+        setStats({
+          totalPatients: patientsRes.data.length || 0,
+          totalRecords: 0,
+          totalUsers: 0,
+        })
+      }
+    } catch (err) {
+      console.error('Failed to load stats:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const roleStatsData: Record<string, { label: string; value: string | number; icon: JSX.Element }[]> = {
+    patient: [
+      { label: 'My Records', value: stats.totalRecords, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> },
+      { label: 'Active Permissions', value: 0, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg> },
+      { label: 'Recent Access', value: 0, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
+    ],
+    doctor: [
+      { label: 'Total Patients', value: stats.totalPatients, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> },
+      { label: 'Records Created', value: stats.totalRecords, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> },
+      { label: "Today's Access", value: 0, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
+    ],
+    nurse: [
+      { label: 'Assigned Patients', value: stats.totalPatients, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
+      { label: 'Pending Records', value: 0, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    ],
+    admin: [
+      { label: 'Total Users', value: stats.totalUsers, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> },
+      { label: 'Total Records', value: stats.totalRecords, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
+      { label: 'System Status', value: 'Online', icon: <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    ],
+    auditor: [
+      { label: 'Audit Entries', value: 0, icon: <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> },
+      { label: 'Flagged Events', value: 0, icon: <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> },
+    ],
+  }
+
+  const currentStats = roleStatsData[user?.role || 'patient'] || []
 
   return (
     <Layout>
@@ -42,23 +72,29 @@ export default function Dashboard() {
           {user?.role === 'patient'
             ? 'Manage your health records and access permissions'
             : user?.role === 'doctor'
-            ? 'View patients and manage medical records'
-            : user?.role === 'admin'
-            ? 'System administration and user management'
-            : 'Dashboard overview'}
+              ? 'View patients and manage medical records'
+              : user?.role === 'admin'
+                ? 'System administration and user management'
+                : 'Dashboard overview'}
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {stats.map((stat) => (
+        {loading ? (
+          <div className="col-span-3 flex items-center justify-center h-32">
+            <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : currentStats.map((stat) => (
           <div key={stat.label} className="glass-card p-6 hover:border-cyan-400/20 transition-all">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-medical-400 text-sm">{stat.label}</p>
                 <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
               </div>
-              <span className="text-3xl">{stat.icon}</span>
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                {stat.icon}
+              </div>
             </div>
           </div>
         ))}

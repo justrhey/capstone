@@ -3,8 +3,6 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 
-const ROLES = ['patient', 'doctor', 'nurse', 'admin', 'auditor']
-
 export default function Register() {
     const [form, setForm] = useState({
         email: '',
@@ -117,13 +115,9 @@ export default function Register() {
                                 name="role"
                                 value={form.role}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all appearance-none"
+                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all appearance-none [&>option]:bg-slate-800"
                             >
-                                {ROLES.map((role) => (
-                                    <option key={role} value={role} className="bg-medical-800">
-                                        {role.charAt(0).toUpperCase() + role.slice(1)}
-                                    </option>
-                                ))}
+                                <option value="patient">Patient</option>
                             </select>
                         </div>
 

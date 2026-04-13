@@ -3,10 +3,10 @@ import { useAuth } from '../context/AuthContext'
 
 export default function ProtectedRoute({
     children,
-    allowedRoles,
+    roles,
 }: {
     children: React.ReactNode
-    allowedRoles?: string[]
+    roles?: string[]
 }) {
     const { isAuthenticated, user } = useAuth()
 
@@ -14,7 +14,7 @@ export default function ProtectedRoute({
         return <Navigate to="/login" replace />
     }
 
-    if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    if (roles && user && !roles.includes(user.role)) {
         return <Navigate to="/dashboard" replace />
     }
 
