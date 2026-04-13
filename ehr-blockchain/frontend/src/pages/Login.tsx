@@ -17,7 +17,9 @@ export default function Login() {
         setLoading(true)
 
         try {
+            console.log('Attempting login with:', email)
             const res = await api.post('/api/auth/login', { email, password })
+            console.log('Login response:', res.data)
             const data = res.data
             if (data.token && data.user) {
                 login(data.token, data.user)
@@ -26,9 +28,9 @@ export default function Login() {
                 setError('Invalid response from server')
             }
         } catch (err: any) {
+            console.error('Login error:', err)
             const errMsg = err.response?.data?.message || err.response?.data || err.message || 'Login failed'
             setError(typeof errMsg === 'object' ? JSON.stringify(errMsg) : errMsg)
-        } finally {
             setLoading(false)
         }
     }
