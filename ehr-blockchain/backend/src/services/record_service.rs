@@ -100,6 +100,38 @@ pub async fn create_record(
     })
 }
 
+pub async fn list_all_records(pool: &PgPool) -> Result<Vec<RecordResponse>, AppError> {
+    let records = sqlx::query_as::<_, MedicalRecord>("SELECT * FROM medical_records ORDER BY created_at DESC")
+        .fetch_all(pool)
+        .await?;
+
+    let mut responses = Vec::new();
+    for record in records {
+        let medications = sqlx::query_as::<_, Medication>("SELECT * FROM medications WHERE record_id = $1")
+            .bind(record.id)
+            .fetch_all(pool)
+            .await?;
+
+        let allergies = sqlx::query_as::<_, Allergy>("SELECT * FROM allergies WHERE record_id = $1")
+            .bind(record.id)
+            .fetch_all(pool)
+            .await?;
+
+        let blockchain_verified = record.blockchain_tx_id.is_some();
+        let blockchain_tx_hash = record.blockchain_tx_id.clone();
+
+        responses.push(RecordResponse {
+            record,
+            medications,
+            allergies,
+            blockchain_verified,
+            blockchain_tx_hash,
+        });
+    }
+
+    Ok(responses)
+}
+
 pub async fn get_records_by_patient(pool: &PgPool, patient_id: Uuid) -> Result<Vec<RecordResponse>, AppError> {
     let records = sqlx::query_as::<_, MedicalRecord>(
         "SELECT * FROM medical_records WHERE patient_id = $1 ORDER BY created_at DESC"

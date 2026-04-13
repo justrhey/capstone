@@ -72,6 +72,7 @@ async fn main() -> io::Result<()> {
                     .configure(handlers::patient_handler::patient_routes)
                     .configure(handlers::record_handler::record_routes)
                     .configure(handlers::verify_handler::verify_routes)
+                    .configure(handlers::user_handler::user_routes)
             })
             .bind((server_host, server_port))?
             .run()

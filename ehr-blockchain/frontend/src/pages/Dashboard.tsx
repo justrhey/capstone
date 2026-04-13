@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getPatients } from '../services/api'
+import { getPatients, getAllRecords, getAllUsers } from '../services/api'
 import Layout from '../components/Layout'
 
 export default function Dashboard() {
@@ -14,15 +14,26 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadStats()
-  }, [])
+  }, [user?.role])
 
   const loadStats = async () => {
     try {
       if (user?.role === 'admin' || user?.role === 'doctor' || user?.role === 'nurse') {
-        const patientsRes = await getPatients()
+        const [patientsRes, recordsRes, usersRes] = await Promise.all([
+          getPatients(),
+          getAllRecords(),
+          getAllUsers()
+        ])
         setStats({
-          totalPatients: patientsRes.data.length || 0,
-          totalRecords: 0,
+          totalPatients: patientsRes.data?.length || 0,
+          totalRecords: recordsRes.data?.length || 0,
+          totalUsers: usersRes.data?.length || 0,
+        })
+      } else if (user?.role === 'patient') {
+        const recordsRes = await getAllRecords()
+        setStats({
+          totalPatients: 0,
+          totalRecords: recordsRes.data?.length || 0,
           totalUsers: 0,
         })
       }

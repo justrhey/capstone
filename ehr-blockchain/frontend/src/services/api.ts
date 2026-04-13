@@ -47,4 +47,8 @@ export const getAuditLogs = () => api.get('/api/audit/logs')
 // Verify
 export const verifyRecord = (recordHash: string) => api.post('/api/verify', { record_hash: recordHash })
 
+// Stats
+export const getAllRecords = () => api.get('/api/records')
+export const getAllUsers = () => api.get('/api/users')
+
 export default api

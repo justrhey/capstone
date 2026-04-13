@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse, Responder, get, post, HttpMessage, HttpRequest};
 use uuid::Uuid;
-use crate::services::record_service::{create_record, get_records_by_patient};
+use crate::services::record_service::{create_record, get_records_by_patient, list_all_records};
 use crate::models::medical_record::CreateRecordRequest;
 use crate::models::User;
 use crate::services::auth_service::AppError;
@@ -20,6 +20,12 @@ async fn create(
     Ok(HttpResponse::Created().json(result))
 }
 
+#[get("/api/records")]
+async fn list_all(pool: web::Data<PgPool>) -> Result<impl Responder, AppError> {
+    let records = list_all_records(&pool).await?;
+    Ok(HttpResponse::Ok().json(records))
+}
+
 #[get("/api/patients/{id}/records")]
 async fn list_by_patient(
     path: web::Path<Uuid>,
@@ -31,5 +37,5 @@ async fn list_by_patient(
 }
 
 pub fn record_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(create).service(list_by_patient);
+    cfg.service(create).service(list_all).service(list_by_patient);
 }

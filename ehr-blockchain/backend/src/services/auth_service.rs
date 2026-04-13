@@ -113,6 +113,14 @@ pub async fn login_user(
     })
 }
 
+pub async fn list_users(pool: &PgPool) -> Result<Vec<User>, AppError> {
+    let users = sqlx::query_as::<_, User>("SELECT * FROM users ORDER BY created_at DESC")
+        .fetch_all(pool)
+        .await?;
+
+    Ok(users)
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
     #[error("Database error: {0}")]
