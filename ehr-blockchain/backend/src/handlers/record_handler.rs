@@ -1,7 +1,7 @@
-use actix_web::{web, HttpResponse, Responder, get, post, HttpMessage, HttpRequest};
+use actix_web::{web, HttpResponse, Responder, get, post, put, delete, HttpMessage, HttpRequest};
 use uuid::Uuid;
-use crate::services::record_service::{create_record, get_records_by_patient, list_all_records};
-use crate::models::medical_record::CreateRecordRequest;
+use crate::services::record_service::{create_record, get_records_by_patient, list_all_records, get_record_by_id, update_record, delete_record};
+use crate::models::medical_record::{CreateRecordRequest, UpdateRecordRequest};
 use crate::models::User;
 use crate::services::auth_service::AppError;
 use sqlx::PgPool;
@@ -36,6 +36,62 @@ async fn list_by_patient(
     Ok(HttpResponse::Ok().json(records))
 }
 
+#[get("/api/records/{id}")]
+async fn get(
+    path: web::Path<Uuid>,
+    pool: web::Data<PgPool>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    // Get the record and its medications/allergies
+    let record = get_record_by_id(&pool, id).await?;
+    
+    let medications = sqlx::query_as::<_, crate::models::medical_record::Medication>(
+        "SELECT * FROM medications WHERE record_id = $1"
+    )
+        .bind(id)
+        .fetch_all(pool.get_ref())
+        .await?;
+
+    let allergies = sqlx::query_as::<_, crate::models::medical_record::Allergy>(
+        "SELECT * FROM allergies WHERE record_id = $1"
+    )
+        .bind(id)
+        .fetch_all(pool.get_ref())
+        .await?;
+
+    let blockchain_verified = record.blockchain_tx_id.is_some();
+    let blockchain_tx_hash = record.blockchain_tx_id.clone();
+
+    Ok(HttpResponse::Ok().json(crate::models::medical_record::RecordResponse {
+        record,
+        medications,
+        allergies,
+        blockchain_verified,
+        blockchain_tx_hash,
+    }))
+}
+
+#[put("/api/records/{id}")]
+async fn update(
+    path: web::Path<Uuid>,
+    pool: web::Data<PgPool>,
+    body: web::Json<UpdateRecordRequest>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    let result = update_record(&pool, id, body.into_inner()).await?;
+    Ok(HttpResponse::Ok().json(result))
+}
+
+#[delete("/api/records/{id}")]
+async fn delete(
+    path: web::Path<Uuid>,
+    pool: web::Data<PgPool>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    delete_record(&pool, id).await?;
+    Ok(HttpResponse::Ok().json(serde_json::json!({ "message": "Medical record deleted" })))
+}
+
 pub fn record_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(create).service(list_all).service(list_by_patient);
+    cfg.service(create).service(list_all).service(list_by_patient).service(get).service(update).service(delete);
 }

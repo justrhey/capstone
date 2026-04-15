@@ -67,3 +67,12 @@ pub struct RecordResponse {
     pub blockchain_verified: bool,
     pub blockchain_tx_hash: Option<String>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateRecordRequest {
+    pub diagnosis: Option<String>,
+    pub treatment: Option<String>,
+    pub notes: Option<String>,
+    pub medications: Option<Vec<MedicationEntry>>,
+    pub allergies: Option<Vec<AllergyEntry>>,
+}

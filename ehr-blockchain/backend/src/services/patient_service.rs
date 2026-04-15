@@ -1,5 +1,5 @@
 use sqlx::PgPool;
-use crate::models::patient::{Patient, CreatePatientRequest, CreatePatientWithAccountRequest};
+use crate::models::patient::{Patient, CreatePatientRequest, CreatePatientWithAccountRequest, UpdatePatientRequest};
 use crate::models::RegisterRequest;
 use crate::services::auth_service::{register_user, AppError};
 use crate::services::encryption::encrypt_data;
@@ -102,4 +102,119 @@ pub async fn get_patient_by_id(pool: &PgPool, id: uuid::Uuid) -> Result<Patient,
         .await?;
 
     patient.ok_or_else(|| AppError::NotFound("Patient not found".into()))
+}
+
+pub async fn update_patient(
+    pool: &PgPool,
+    id: uuid::Uuid,
+    req: UpdatePatientRequest,
+    config: &Config,
+) -> Result<Patient, AppError> {
+    // Get current patient to check if exists
+    let current = get_patient_by_id(pool, id).await?;
+    
+    // Build dynamic update query
+    let mut updates = Vec::new();
+    let mut param_count = 0;
+    
+    if let Some(ref first_name) = req.first_name {
+        param_count += 1;
+        updates.push(format!("first_name = ${}", param_count));
+        // Re-encrypt PII if name changes
+        let pii = format!("{}|{}", first_name, current.last_name.as_deref().unwrap_or(""));
+        let encrypted = encrypt_data(pii.as_bytes(), &config.encryption_key)
+            .map_err(|e| AppError::InternalError(format!("Encryption failed: {}", e)))?;
+        param_count += 1;
+        updates.push(format!("encrypted_pii = ${}", param_count));
+    }
+    
+    if let Some(ref last_name) = req.last_name {
+        param_count += 1;
+        updates.push(format!("last_name = ${}", param_count));
+        // Re-encrypt PII if last name changes
+        let pii = format!("{}|{}", current.first_name.as_deref().unwrap_or(""), last_name);
+        let encrypted = encrypt_data(pii.as_bytes(), &config.encryption_key)
+            .map_err(|e| AppError::InternalError(format!("Encryption failed: {}", e)))?;
+        param_count += 1;
+        updates.push(format!("encrypted_pii = ${}", param_count));
+    }
+    
+    if let Some(ref sex) = req.sex {
+        param_count += 1;
+        updates.push(format!("sex = ${}", param_count));
+    }
+    
+    if let Some(ref dob) = req.date_of_birth {
+        let parsed = dob.parse::<chrono::NaiveDate>()
+            .map_err(|e| AppError::BadRequest(format!("Invalid date format: {}", e)))?;
+        param_count += 1;
+        updates.push(format!("date_of_birth = ${}", param_count));
+    }
+    
+    if updates.is_empty() {
+        return Err(AppError::BadRequest("No fields to update".into()));
+    }
+    
+    // Build and execute the query
+    let query = format!(
+        "UPDATE patients SET {} WHERE id = ${} RETURNING *",
+        updates.join(", "),
+        param_count + 1
+    );
+    
+    let mut query_builder = sqlx::query_as::<_, Patient>(&query);
+    
+    // Bind parameters in order
+    let mut idx = 1;
+    if let Some(ref first_name) = req.first_name {
+        query_builder = query_builder.bind(first_name);
+        let pii = format!("{}|{}", first_name, current.last_name.as_deref().unwrap_or(""));
+        let encrypted = encrypt_data(pii.as_bytes(), &config.encryption_key).unwrap();
+        query_builder = query_builder.bind(encrypted);
+    }
+    
+    if let Some(ref last_name) = req.last_name {
+        query_builder = query_builder.bind(last_name);
+        let pii = format!("{}|{}", current.first_name.as_deref().unwrap_or(""), last_name);
+        let encrypted = encrypt_data(pii.as_bytes(), &config.encryption_key).unwrap();
+        query_builder = query_builder.bind(encrypted);
+    }
+    
+    if let Some(ref sex) = req.sex {
+        query_builder = query_builder.bind(sex);
+    }
+    
+    if let Some(ref dob) = req.date_of_birth {
+        let parsed = dob.parse::<chrono::NaiveDate>().unwrap();
+        query_builder = query_builder.bind(parsed);
+    }
+    
+    query_builder = query_builder.bind(id);
+    
+    let patient = query_builder.fetch_one(pool).await
+        .map_err(|e| AppError::InternalError(format!("Failed to update patient: {}", e)))?;
+    
+    Ok(patient)
+}
+
+pub async fn delete_patient(pool: &PgPool, id: uuid::Uuid) -> Result<(), AppError> {
+    // Check if patient has records
+    let record_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM medical_records WHERE patient_id = $1")
+        .bind(id)
+        .fetch_one(pool)
+        .await?;
+    
+    if record_count.0 > 0 {
+        return Err(AppError::BadRequest(
+            "Cannot delete patient with existing medical records. Delete records first.".into()
+        ));
+    }
+    
+    sqlx::query("DELETE FROM patients WHERE id = $1")
+        .bind(id)
+        .execute(pool)
+        .await
+        .map_err(|e| AppError::InternalError(format!("Failed to delete patient: {}", e)))?;
+    
+    Ok(())
 }

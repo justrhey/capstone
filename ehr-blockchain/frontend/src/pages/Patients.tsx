@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getPatients, createPatientWithAccount, getAllUsers } from '../services/api'
+import { getPatients, createPatientWithAccount, getAllUsers, updatePatient, deletePatient } from '../services/api'
 import Layout from '../components/Layout'
 
 interface Patient {
@@ -18,12 +18,70 @@ interface User {
   email: string
 }
 
+function EditPatientForm({ patient, onSave, onCancel }: { patient: Patient; onSave: (data: any) => Promise<void>; onCancel: () => void }) {
+  const [formData, setFormData] = useState({
+    first_name: patient.first_name || '',
+    last_name: patient.last_name || '',
+    date_of_birth: patient.date_of_birth,
+    sex: patient.sex
+  })
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await onSave(formData)
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to update patient')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-medical-300 text-sm mb-2">First Name</label>
+          <input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+        </div>
+        <div>
+          <label className="block text-medical-300 text-sm mb-2">Last Name</label>
+          <input type="text" required value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+        </div>
+      </div>
+      <div>
+        <label className="block text-medical-300 text-sm mb-2">Date of Birth</label>
+        <input type="date" required value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50" />
+      </div>
+      <div>
+        <label className="block text-medical-300 text-sm mb-2">Sex</label>
+        <select value={formData.sex} onChange={(e) => setFormData({ ...formData, sex: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div className="flex gap-4">
+        <button type="button" onClick={onCancel} className="flex-1 px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
+          Cancel
+        </button>
+        <button type="submit" disabled={saving} className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50">
+          {saving ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 export default function Patients() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
+  const [deletingPatient, setDeletingPatient] = useState<Patient | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [formData, setFormData] = useState({ first_name: '', last_name: '', date_of_birth: '', sex: 'male', email: '', password: '' })
   const [creating, setCreating] = useState(false)
@@ -90,7 +148,17 @@ export default function Patients() {
       }, 2000)
     } catch (err: any) {
       console.error('Failed to create patient:', err)
-      alert(err.response?.data?.message || 'Failed to create patient account')
+      const status = err.response?.status
+      let errMsg = ''
+      
+      if (status === 409) {
+        errMsg = err.response?.data || 'Email already registered. Please use a different email.'
+      } else if (status === 500) {
+        errMsg = 'Server error. Please try again later.'
+      } else {
+        errMsg = err.response?.data?.message || err.response?.data || 'Failed to create patient account'
+      }
+      alert(typeof errMsg === 'object' ? JSON.stringify(errMsg) : errMsg)
 } finally {
       setCreating(false)
     }
@@ -176,6 +244,8 @@ export default function Patients() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => navigate(`/records?patient=${patient.id}`)} className="text-cyan-400 hover:text-cyan-300 mr-4">View Records</button>
+                    <button onClick={() => setEditingPatient(patient)} className="text-yellow-400 hover:text-yellow-300 mr-4">Edit</button>
+                    <button onClick={() => setDeletingPatient(patient)} className="text-red-400 hover:text-red-300">Delete</button>
                   </td>
                 </tr>
               )})}
@@ -245,6 +315,59 @@ export default function Patients() {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Patient Modal */}
+      {editingPatient && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="glass-card w-full max-w-md p-6 mx-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-white">Edit Patient</h2>
+              <button onClick={() => setEditingPatient(null)} className="text-medical-400 hover:text-white">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <EditPatientForm patient={editingPatient} onSave={async (data) => {
+              await updatePatient(editingPatient.id, data)
+              setEditingPatient(null)
+              loadPatients()
+            }} onCancel={() => setEditingPatient(null)} />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingPatient && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="glass-card w-full max-w-md p-6 mx-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-white">Delete Patient</h2>
+              <button onClick={() => setDeletingPatient(null)} className="text-medical-400 hover:text-white">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-medical-300 mb-6">
+              Are you sure you want to delete <span className="text-white font-medium">{deletingPatient.first_name} {deletingPatient.last_name}</span>? 
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button onClick={() => setDeletingPatient(null)} className="flex-1 px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
+                Cancel
+              </button>
+              <button onClick={async () => {
+                await deletePatient(deletingPatient.id)
+                setDeletingPatient(null)
+                loadPatients()
+              }} className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all">
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

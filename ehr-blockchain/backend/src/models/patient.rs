@@ -44,3 +44,11 @@ pub struct PatientResponse {
     pub last_name: String,
     pub created_at: DateTime<Utc>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct UpdatePatientRequest {
+    pub date_of_birth: Option<String>,
+    pub sex: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+}

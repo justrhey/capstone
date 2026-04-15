@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getPatients, getRecordsByPatient, createRecord } from '../services/api'
+import { getPatients, getRecordsByPatient, createRecord, updateRecord, deleteRecord } from '../services/api'
 import Layout from '../components/Layout'
 
 interface RecordData {
@@ -39,6 +39,8 @@ export default function Records() {
   const [patientSearch, setPatientSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [editingRecord, setEditingRecord] = useState<RecordWithPatient | null>(null)
+  const [deletingRecord, setDeletingRecord] = useState<RecordWithPatient | null>(null)
   
   const [selectedPatient, setSelectedPatient] = useState(searchParams.get('patient') || '')
   const [submitting, setSubmitting] = useState(false)
@@ -249,7 +251,7 @@ export default function Records() {
           {records.map((item) => (
             <div key={item.record.id} className="glass-card p-6">
               <div className="flex justify-between items-start mb-4">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded text-cyan-300 text-xs">
                       {item.patientName}
@@ -270,12 +272,16 @@ export default function Records() {
                     {new Date(item.record.created_at).toLocaleString()}
                   </p>
                 </div>
-                {item.blockchain_tx_hash && (
-                  <div className="text-right">
-                    <p className="text-medical-500 text-xs">TX Hash</p>
-                    <p className="text-cyan-300 text-xs font-mono">{item.blockchain_tx_hash.slice(0, 12)}...</p>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  {item.blockchain_tx_hash && (
+                    <div className="text-right mr-4">
+                      <p className="text-medical-500 text-xs">TX Hash</p>
+                      <p className="text-cyan-300 text-xs font-mono">{item.blockchain_tx_hash.slice(0, 12)}...</p>
+                    </div>
+                  )}
+                  <button onClick={() => setEditingRecord(item)} className="text-yellow-400 hover:text-yellow-300 text-sm">Edit</button>
+                  <button onClick={() => setDeletingRecord(item)} className="text-red-400 hover:text-red-300 text-sm">Delete</button>
+                </div>
               </div>
 
               {item.record.treatment && (
@@ -457,6 +463,203 @@ export default function Records() {
           </div>
         </div>
       )}
+
+      {/* Edit Record Modal */}
+      {editingRecord && (
+        <EditRecordModal 
+          record={editingRecord} 
+          onSave={async (data) => {
+            await updateRecord(editingRecord.record.id, data)
+            setEditingRecord(null)
+            loadData()
+          }} 
+          onCancel={() => setEditingRecord(null)} 
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingRecord && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="glass-card w-full max-w-md p-6 mx-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-white">Delete Medical Record</h2>
+              <button onClick={() => setDeletingRecord(null)} className="text-medical-400 hover:text-white">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-medical-300 mb-6">
+              Are you sure you want to delete this medical record for <span className="text-white font-medium">{deletingRecord.patientName}</span>? 
+              This action cannot be undone. The blockchain verification will also be removed.
+            </p>
+            <div className="flex gap-4">
+              <button onClick={() => setDeletingRecord(null)} className="flex-1 px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
+                Cancel
+              </button>
+              <button onClick={async () => {
+                await deleteRecord(deletingRecord.record.id)
+                setDeletingRecord(null)
+                loadData()
+              }} className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
+  )
+}
+
+function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatient; onSave: (data: any) => Promise<void>; onCancel: () => void }) {
+  const [formData, setFormData] = useState({
+    diagnosis: record.record.diagnosis || '',
+    treatment: record.record.treatment || '',
+    notes: record.record.notes || '',
+    medications: record.medications.length > 0 ? record.medications : [{ name: '', dosage: '', frequency: '' }],
+    allergies: record.allergies.length > 0 ? record.allergies : [{ allergen: '', severity: 'mild' }]
+  })
+  const [saving, setSaving] = useState(false)
+
+  const addMedication = () => {
+    setFormData({ ...formData, medications: [...formData.medications, { name: '', dosage: '', frequency: '' }] })
+  }
+
+  const removeMedication = (index: number) => {
+    const meds = formData.medications.filter((_, i) => i !== index)
+    setFormData({ ...formData, medications: meds.length ? meds : [{ name: '', dosage: '', frequency: '' }] })
+  }
+
+  const addAllergy = () => {
+    setFormData({ ...formData, allergies: [...formData.allergies, { allergen: '', severity: 'mild' }] })
+  }
+
+  const removeAllergy = (index: number) => {
+    const alls = formData.allergies.filter((_, i) => i !== index)
+    setFormData({ ...formData, allergies: alls.length ? alls : [{ allergen: '', severity: 'mild' }] })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const meds = formData.medications.filter(m => m.name.trim())
+      const alls = formData.allergies.filter(a => a.allergen.trim())
+      await onSave({
+        diagnosis: formData.diagnosis,
+        treatment: formData.treatment,
+        notes: formData.notes,
+        medications: meds.length > 0 ? meds : undefined,
+        allergies: alls.length > 0 ? alls : undefined
+      })
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to update record')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 overflow-auto py-8">
+      <div className="glass-card w-full max-w-2xl p-6 mx-4 my-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-white">Edit Medical Record</h2>
+          <button onClick={onCancel} className="text-medical-400 hover:text-white">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-auto">
+          <div>
+            <label className="block text-medical-300 text-sm mb-2">Diagnosis</label>
+            <input type="text" value={formData.diagnosis} onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+          </div>
+          <div>
+            <label className="block text-medical-300 text-sm mb-2">Treatment</label>
+            <input type="text" value={formData.treatment} onChange={(e) => setFormData({ ...formData, treatment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+          </div>
+          <div>
+            <label className="block text-medical-300 text-sm mb-2">Notes</label>
+            <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-medical-300 text-sm">Medications</label>
+              <button type="button" onClick={addMedication} className="text-cyan-400 text-sm">+ Add</button>
+            </div>
+            {formData.medications.map((med, i) => (
+              <div key={i} className="flex gap-2 mb-2">
+                <input type="text" placeholder="Name" value={med.name} onChange={(e) => {
+                  const meds = [...formData.medications]
+                  meds[i].name = e.target.value
+                  setFormData({ ...formData, medications: meds })
+                }} className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                <input type="text" placeholder="Dosage" value={med.dosage} onChange={(e) => {
+                  const meds = [...formData.medications]
+                  meds[i].dosage = e.target.value
+                  setFormData({ ...formData, medications: meds })
+                }} className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                <input type="text" placeholder="Freq" value={med.frequency} onChange={(e) => {
+                  const meds = [...formData.medications]
+                  meds[i].frequency = e.target.value
+                  setFormData({ ...formData, medications: meds })
+                }} className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                {formData.medications.length > 1 && (
+                  <button type="button" onClick={() => removeMedication(i)} className="text-red-400">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-medical-300 text-sm">Allergies</label>
+              <button type="button" onClick={addAllergy} className="text-cyan-400 text-sm">+ Add</button>
+            </div>
+            {formData.allergies.map((allergy, i) => (
+              <div key={i} className="flex gap-2 mb-2">
+                <input type="text" placeholder="Allergen" value={allergy.allergen} onChange={(e) => {
+                  const alls = [...formData.allergies]
+                  alls[i].allergen = e.target.value
+                  setFormData({ ...formData, allergies: alls })
+                }} className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                <select value={allergy.severity} onChange={(e) => {
+                  const alls = [...formData.allergies]
+                  alls[i].severity = e.target.value
+                  setFormData({ ...formData, allergies: alls })
+                }} className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm">
+                  <option value="mild">Mild</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="severe">Severe</option>
+                </select>
+                {formData.allergies.length > 1 && (
+                  <button type="button" onClick={() => removeAllergy(i)} className="text-red-400">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-4">
+            <button type="button" onClick={onCancel} className="flex-1 px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
+              Cancel
+            </button>
+            <button type="submit" disabled={saving} className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50">
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   )
 }

@@ -1,6 +1,6 @@
-use actix_web::{web, HttpResponse, Responder, get, post};
-use crate::services::patient_service::{create_patient, create_patient_with_user, list_patients, get_patient_by_id};
-use crate::models::patient::{CreatePatientRequest, CreatePatientWithAccountRequest};
+use actix_web::{web, HttpResponse, Responder, get, post, put, delete};
+use crate::services::patient_service::{create_patient, create_patient_with_user, list_patients, get_patient_by_id, update_patient, delete_patient};
+use crate::models::patient::{CreatePatientRequest, CreatePatientWithAccountRequest, UpdatePatientRequest};
 use crate::services::auth_service::AppError;
 use crate::config::Config;
 use sqlx::PgPool;
@@ -39,6 +39,28 @@ async fn get(path: web::Path<Uuid>, pool: web::Data<PgPool>) -> Result<impl Resp
     Ok(HttpResponse::Ok().json(patient))
 }
 
+#[put("/api/patients/{id}")]
+async fn update(
+    path: web::Path<Uuid>,
+    pool: web::Data<PgPool>,
+    body: web::Json<UpdatePatientRequest>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    let config = Config::from_env().map_err(|e| AppError::InternalError(e.to_string()))?;
+    let patient = update_patient(&pool, id, body.into_inner(), &config).await?;
+    Ok(HttpResponse::Ok().json(patient))
+}
+
+#[delete("/api/patients/{id}")]
+async fn delete(
+    path: web::Path<Uuid>,
+    pool: web::Data<PgPool>,
+) -> Result<impl Responder, AppError> {
+    let id = path.into_inner();
+    delete_patient(&pool, id).await?;
+    Ok(HttpResponse::Ok().json(serde_json::json!({ "message": "Patient deleted" })))
+}
+
 pub fn patient_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(create).service(create_with_account).service(list).service(get);
+    cfg.service(create).service(create_with_account).service(list).service(get).service(update).service(delete);
 }
