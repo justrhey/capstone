@@ -1,21 +1,32 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getPatients, getRecordsByPatient, createRecord, updateRecord, deleteRecord } from '../services/api'
+import { getPatients, getRecordsByPatient, createRecord, updateRecord, deleteRecord, verifyRecord, getRecordReceipt, createOrder, resolveOrder } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import Layout from '../components/Layout'
+import PageHeader from '../components/PageHeader'
 
 interface RecordData {
   record: {
     id: string
     patient_id: string
-    diagnosis: string
-    treatment: string
-    notes: string
+    subjective: string | null
+    objective: string | null
+    assessment: string | null
+    plan: string | null
     record_hash: string
     blockchain_tx_id: string | null
     created_at: string
   }
   medications: Array<{ name: string; dosage: string; frequency: string }>
   allergies: Array<{ allergen: string; severity: string }>
+  vitals: Array<{ kind: string; value: number; unit: string; taken_at: string }>
+  orders: Array<{
+    id: string
+    kind: 'lab' | 'imaging' | 'prescription'
+    summary: string
+    status: 'ordered' | 'fulfilled' | 'cancelled'
+    ordered_at: string
+  }>
   blockchain_verified: boolean
   blockchain_tx_hash: string | null
 }
@@ -42,18 +53,89 @@ export default function Records() {
   const [editingRecord, setEditingRecord] = useState<RecordWithPatient | null>(null)
   const [deletingRecord, setDeletingRecord] = useState<RecordWithPatient | null>(null)
   
+  const { user } = useAuth()
+  const canOrder = user?.role === 'doctor' || user?.role === 'nurse'
+  const canResolveOrder = user?.role === 'doctor' || user?.role === 'nurse' || user?.role === 'admin'
   const [selectedPatient, setSelectedPatient] = useState(searchParams.get('patient') || '')
+  const [verifyResults, setVerifyResults] = useState<Record<string, { status: string; loading: boolean }>>({})
+
+  const handleAddOrder = async (recordId: string) => {
+    const kindInput = prompt('Order kind — lab, imaging, or prescription:')
+    if (!kindInput) return
+    const kind = kindInput.trim().toLowerCase() as 'lab' | 'imaging' | 'prescription'
+    if (!['lab', 'imaging', 'prescription'].includes(kind)) {
+      alert('Kind must be one of: lab, imaging, prescription')
+      return
+    }
+    const summary = prompt(`${kind} order summary (e.g. "CBC with differential" or "Ibuprofen 400mg"):`)
+    if (!summary || !summary.trim()) return
+    try {
+      await createOrder(recordId, { kind, summary: summary.trim() })
+      void loadData()
+    } catch (e: any) {
+      alert(e.response?.data || 'Failed to create order')
+    }
+  }
+
+  const handleResolveOrder = async (orderId: string, status: 'fulfilled' | 'cancelled') => {
+    const note = prompt(`Note for ${status} (optional):`) ?? undefined
+    try {
+      await resolveOrder(orderId, status, note || undefined)
+      void loadData()
+    } catch (e: any) {
+      alert(e.response?.data || 'Failed')
+    }
+  }
+
+  const handleDownloadReceipt = async (recordId: string) => {
+    try {
+      const res = await getRecordReceipt(recordId)
+      const json = JSON.stringify(res.data, null, 2)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `record-${recordId}-receipt.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      const body = err.response?.data
+      const msg = typeof body === 'string' ? body : body?.message || 'Failed to fetch receipt'
+      alert(msg)
+    }
+  }
+
+  const handleVerify = async (recordId: string) => {
+    setVerifyResults(prev => ({ ...prev, [recordId]: { status: '', loading: true } }))
+    try {
+      const res = await verifyRecord(recordId)
+      setVerifyResults(prev => ({ ...prev, [recordId]: { status: res.data?.status || 'unknown', loading: false } }))
+    } catch (err: any) {
+      setVerifyResults(prev => ({ ...prev, [recordId]: { status: 'error', loading: false } }))
+    }
+  }
   const [submitting, setSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [error, setError] = useState('')
   const [submissionBlocked, setSubmissionBlocked] = useState(false)
   const [formData, setFormData] = useState({
     patient_id: '',
-    diagnosis: '',
-    treatment: '',
-    notes: '',
+    subjective: '',
+    objective: '',
+    assessment: '',
+    plan: '',
     medications: [{ name: '', dosage: '', frequency: '' }],
-    allergies: [{ allergen: '', severity: 'mild' }]
+    allergies: [{ allergen: '', severity: 'mild' }],
+    vitals: {
+      temp_c: '',
+      bp_systolic: '',
+      bp_diastolic: '',
+      hr: '',
+      spo2: '',
+      weight_kg: '',
+    } as Record<string, string>,
   })
 
   useEffect(() => {
@@ -115,22 +197,43 @@ export default function Records() {
     try {
       const meds = formData.medications.filter(m => m.name.trim())
       const alls = formData.allergies.filter(a => a.allergen.trim())
+
+      const vitalSpecs: Array<{ key: string; kind: string; unit: string }> = [
+        { key: 'temp_c', kind: 'temperature', unit: '°C' },
+        { key: 'bp_systolic', kind: 'bp_systolic', unit: 'mmHg' },
+        { key: 'bp_diastolic', kind: 'bp_diastolic', unit: 'mmHg' },
+        { key: 'hr', kind: 'heart_rate', unit: 'bpm' },
+        { key: 'spo2', kind: 'spo2', unit: '%' },
+        { key: 'weight_kg', kind: 'weight', unit: 'kg' },
+      ]
+      const vitals = vitalSpecs
+        .map(s => ({ s, raw: formData.vitals[s.key] }))
+        .filter(v => v.raw && v.raw.trim() !== '')
+        .map(v => ({ kind: v.s.kind, value: Number(v.raw), unit: v.s.unit }))
+        .filter(v => Number.isFinite(v.value))
+
       await createRecord({
-        ...formData,
         patient_id: formData.patient_id,
+        subjective: formData.subjective,
+        objective: formData.objective,
+        assessment: formData.assessment,
+        plan: formData.plan,
         medications: meds.length > 0 ? meds : undefined,
-        allergies: alls.length > 0 ? alls : undefined
+        allergies: alls.length > 0 ? alls : undefined,
+        vitals: vitals.length > 0 ? vitals : undefined,
       })
       setSubmitSuccess(true)
       setTimeout(() => {
         setShowModal(false)
         setFormData({
           patient_id: '',
-          diagnosis: '',
-          treatment: '',
-          notes: '',
+          subjective: '',
+          objective: '',
+          assessment: '',
+          plan: '',
           medications: [{ name: '', dosage: '', frequency: '' }],
-          allergies: [{ allergen: '', severity: 'mild' }]
+          allergies: [{ allergen: '', severity: 'mild' }],
+          vitals: { temp_c: '', bp_systolic: '', bp_diastolic: '', hr: '', spo2: '', weight_kg: '' },
         })
         setSubmitSuccess(false)
         setSubmissionBlocked(false)
@@ -171,20 +274,24 @@ export default function Records() {
 
   return (
     <Layout>
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Medical Records</h1>
-          <p className="text-medical-400 mt-1">Create and manage medical records</p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Record
-        </button>
-      </div>
+      <PageHeader
+        section="Clinical"
+        title="Medical Records"
+        subtitle="Create, verify, and manage encrypted medical records"
+        actions={
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Record
+          </button>
+        }
+      />
 
-      <div className="mb-6">
+      <div className="mb-6 fade-up" style={{ animationDelay: '80ms' }}>
         {/* Search Bar */}
         <div className="relative mb-4">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-medical-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,15 +355,35 @@ export default function Records() {
         </div>
       ) : (
         <div className="space-y-4">
-          {records.map((item) => (
-            <div key={item.record.id} className="glass-card p-6">
+          {records.map((item) => {
+            const v = verifyResults[item.record.id]
+            const isTampered = v?.status === 'tampered'
+            return (
+            <div
+              key={item.record.id}
+              className={`glass-card p-6 ${isTampered ? 'border-red-500/60 ring-1 ring-red-500/40 glow-cyan' : ''}`}
+            >
+              {isTampered && (
+                <div className="mb-4 -mx-6 -mt-6 px-6 py-3 bg-red-500/15 border-b border-red-500/40 flex items-center gap-3">
+                  <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+                  </svg>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-red-300 font-semibold text-sm">Tampered — do not trust</p>
+                    <p className="text-red-200/80 text-xs">
+                      This record's current hash does not match the latest on-chain version.
+                      The DB may have been altered without a corresponding contract update.
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded text-cyan-300 text-xs">
                       {item.patientName}
                     </span>
-                    <h3 className="text-white font-medium">{item.record.diagnosis || 'No diagnosis'}</h3>
+                    <h3 className="text-white font-medium">{item.record.assessment || 'No assessment'}</h3>
                     {item.blockchain_verified ? (
                       <span className="flex items-center gap-1 px-2 py-0.5 bg-mint-500/10 border border-mint-500/20 rounded-full text-mint-400 text-xs">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -267,6 +394,15 @@ export default function Records() {
                     ) : (
                       <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-400 text-xs">Pending</span>
                     )}
+                    <span
+                      title="SOAP fields are encrypted at rest with AES-256-GCM."
+                      className="flex items-center gap-1 px-2 py-0.5 bg-cyan-500/5 border border-cyan-500/20 rounded-full text-cyan-300/90 text-[10px] uppercase tracking-wider"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c-1.105 0-2 .895-2 2v2a2 2 0 104 0v-2c0-1.105-.895-2-2-2zM6 8V6a6 6 0 1112 0v2h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2v-9a2 2 0 012-2h1zm2 0h8V6a4 4 0 10-8 0v2z" />
+                      </svg>
+                      Encrypted
+                    </span>
                   </div>
                   <p className="text-medical-400 text-sm mt-1">
                     {new Date(item.record.created_at).toLocaleString()}
@@ -274,29 +410,143 @@ export default function Records() {
                 </div>
                 <div className="flex items-center gap-2">
                   {item.blockchain_tx_hash && (
-                    <div className="text-right mr-4">
-                      <p className="text-medical-500 text-xs">TX Hash</p>
-                      <p className="text-cyan-300 text-xs font-mono">{item.blockchain_tx_hash.slice(0, 12)}...</p>
-                    </div>
+                    <a
+                      href={`https://stellar.expert/explorer/testnet/tx/${item.blockchain_tx_hash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-right mr-4 group"
+                      title="View transaction on Stellar Expert"
+                    >
+                      <p className="text-medical-500 text-xs">TX Hash ↗</p>
+                      <p className="text-cyan-300 group-hover:text-cyan-200 text-xs font-mono underline decoration-dotted underline-offset-2">
+                        {item.blockchain_tx_hash.slice(0, 12)}...
+                      </p>
+                    </a>
                   )}
+                  {(() => {
+                    const v = verifyResults[item.record.id]
+                    if (v?.loading) return <span className="text-medical-400 text-xs">Verifying…</span>
+                    if (v?.status === 'intact') return <span className="text-mint-400 text-xs">✓ On-chain match</span>
+                    if (v?.status === 'tampered') return <span className="text-red-400 text-xs">⚠ Tampered</span>
+                    if (v?.status === 'unavailable') return <span className="text-amber-400 text-xs">Chain offline</span>
+                    if (v?.status === 'error') return <span className="text-red-400 text-xs">Verify failed</span>
+                    return (
+                      <button
+                        onClick={() => handleVerify(item.record.id)}
+                        className="text-cyan-400 hover:text-cyan-300 text-sm"
+                      >
+                        Verify
+                      </button>
+                    )
+                  })()}
+                  <button
+                    onClick={() => handleDownloadReceipt(item.record.id)}
+                    className="text-cyan-400 hover:text-cyan-300 text-sm"
+                    title="Download a signed receipt with the hash, contract ID, and canonical payload for independent verification"
+                  >
+                    Receipt ↓
+                  </button>
                   <button onClick={() => setEditingRecord(item)} className="text-yellow-400 hover:text-yellow-300 text-sm">Edit</button>
                   <button onClick={() => setDeletingRecord(item)} className="text-red-400 hover:text-red-300 text-sm">Delete</button>
                 </div>
               </div>
 
-              {item.record.treatment && (
+              {item.record.subjective && (
                 <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase mb-1">Treatment</p>
-                  <p className="text-white">{item.record.treatment}</p>
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">S — Subjective</p>
+                  <p className="text-medical-100 text-sm">{item.record.subjective}</p>
+                </div>
+              )}
+              {item.record.objective && (
+                <div className="mb-3">
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">O — Objective</p>
+                  <p className="text-medical-100 text-sm">{item.record.objective}</p>
+                </div>
+              )}
+              {item.record.assessment && (
+                <div className="mb-3">
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">A — Assessment</p>
+                  <p className="text-white text-sm">{item.record.assessment}</p>
+                </div>
+              )}
+              {item.record.plan && (
+                <div className="mb-3">
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">P — Plan</p>
+                  <p className="text-medical-100 text-sm">{item.record.plan}</p>
                 </div>
               )}
 
-              {item.record.notes && (
+              {item.vitals && item.vitals.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase mb-1">Notes</p>
-                  <p className="text-medical-300">{item.record.notes}</p>
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-2">Vitals</p>
+                  <div className="flex flex-wrap gap-2">
+                    {item.vitals.map((v, i) => (
+                      <span key={i} className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-200 text-sm">
+                        <span className="text-rose-400/80 text-xs mr-1">{v.kind.replace(/_/g, ' ')}</span>
+                        <span className="font-mono">{v.value}</span>
+                        <span className="text-medical-400 text-xs ml-1">{v.unit}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
+
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-medical-500 text-xs uppercase tracking-wider">Orders</p>
+                  {canOrder && (
+                    <button
+                      onClick={() => handleAddOrder(item.record.id)}
+                      className="text-cyan-400 hover:text-cyan-300 text-xs"
+                    >
+                      + Add order
+                    </button>
+                  )}
+                </div>
+                {item.orders && item.orders.length > 0 ? (
+                  <ul className="space-y-2">
+                    {item.orders.map((o) => {
+                      const kindColor =
+                        o.kind === 'lab' ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20'
+                        : o.kind === 'imaging' ? 'bg-violet-500/10 text-violet-300 border-violet-500/20'
+                        : 'bg-mint-500/10 text-mint-300 border-mint-500/20'
+                      const statusColor =
+                        o.status === 'ordered' ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                        : o.status === 'fulfilled' ? 'bg-mint-500/10 text-mint-300 border-mint-500/30'
+                        : 'bg-medical-500/10 text-medical-400 border-white/10'
+                      return (
+                        <li key={o.id} className="flex items-center gap-3 py-1">
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider border ${kindColor}`}>
+                            {o.kind}
+                          </span>
+                          <span className="text-medical-100 text-sm flex-1 min-w-0 truncate">{o.summary}</span>
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider border ${statusColor}`}>
+                            {o.status}
+                          </span>
+                          {o.status === 'ordered' && canResolveOrder && (
+                            <>
+                              <button
+                                onClick={() => handleResolveOrder(o.id, 'fulfilled')}
+                                className="text-mint-400 hover:text-mint-300 text-xs"
+                              >
+                                Fulfil
+                              </button>
+                              <button
+                                onClick={() => handleResolveOrder(o.id, 'cancelled')}
+                                className="text-red-400 hover:text-red-300 text-xs"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-medical-600 text-xs">No orders yet.</p>
+                )}
+              </div>
 
               {item.medications.length > 0 && (
                 <div className="mb-3">
@@ -329,7 +579,7 @@ export default function Records() {
                 <p className="text-medical-300 text-xs font-mono break-all">{item.record.record_hash}</p>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       )}
 
@@ -361,16 +611,62 @@ export default function Records() {
                 </select>
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Diagnosis</label>
-                <input type="text" value={formData.diagnosis} onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                <label className="block text-medical-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">S</span> — Subjective <span className="text-medical-500 text-xs">(patient-reported symptoms, history)</span>
+                </label>
+                <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Treatment</label>
-                <input type="text" value={formData.treatment} onChange={(e) => setFormData({ ...formData, treatment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                <label className="block text-medical-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">O</span> — Objective <span className="text-medical-500 text-xs">(exam findings, vitals narrative)</span>
+                </label>
+                <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Notes</label>
-                <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                <label className="block text-medical-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">A</span> — Assessment <span className="text-medical-500 text-xs">(clinical judgment / diagnosis)</span>
+                </label>
+                <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+              </div>
+              <div>
+                <label className="block text-medical-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">P</span> — Plan <span className="text-medical-500 text-xs">(treatment, follow-up)</span>
+                </label>
+                <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+              </div>
+
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-medical-500 mb-3">Vitals (optional)</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {([
+                    ['temp_c', 'Temp', '°C', '36.8'],
+                    ['bp_systolic', 'BP sys', 'mmHg', '120'],
+                    ['bp_diastolic', 'BP dia', 'mmHg', '80'],
+                    ['hr', 'Heart rate', 'bpm', '72'],
+                    ['spo2', 'SpO₂', '%', '98'],
+                    ['weight_kg', 'Weight', 'kg', '65'],
+                  ] as const).map(([key, label, unit, placeholder]) => (
+                    <div key={key}>
+                      <label className="block text-medical-400 text-xs mb-1">
+                        {label} <span className="text-medical-600">({unit})</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        inputMode="decimal"
+                        value={formData.vitals[key]}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            vitals: { ...formData.vitals, [key]: e.target.value },
+                          })
+                        }
+                        placeholder={placeholder}
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-medical-600 focus:outline-none focus:border-cyan-400/50 text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -514,9 +810,10 @@ export default function Records() {
 
 function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatient; onSave: (data: any) => Promise<void>; onCancel: () => void }) {
   const [formData, setFormData] = useState({
-    diagnosis: record.record.diagnosis || '',
-    treatment: record.record.treatment || '',
-    notes: record.record.notes || '',
+    subjective: record.record.subjective || '',
+    objective: record.record.objective || '',
+    assessment: record.record.assessment || '',
+    plan: record.record.plan || '',
     medications: record.medications.length > 0 ? record.medications : [{ name: '', dosage: '', frequency: '' }],
     allergies: record.allergies.length > 0 ? record.allergies : [{ allergen: '', severity: 'mild' }]
   })
@@ -547,9 +844,10 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
       const meds = formData.medications.filter(m => m.name.trim())
       const alls = formData.allergies.filter(a => a.allergen.trim())
       await onSave({
-        diagnosis: formData.diagnosis,
-        treatment: formData.treatment,
-        notes: formData.notes,
+        subjective: formData.subjective,
+        objective: formData.objective,
+        assessment: formData.assessment,
+        plan: formData.plan,
         medications: meds.length > 0 ? meds : undefined,
         allergies: alls.length > 0 ? alls : undefined
       })
@@ -573,16 +871,20 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-auto">
           <div>
-            <label className="block text-medical-300 text-sm mb-2">Diagnosis</label>
-            <input type="text" value={formData.diagnosis} onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">S</span> — Subjective</label>
+            <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
           </div>
           <div>
-            <label className="block text-medical-300 text-sm mb-2">Treatment</label>
-            <input type="text" value={formData.treatment} onChange={(e) => setFormData({ ...formData, treatment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">O</span> — Objective</label>
+            <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
           </div>
           <div>
-            <label className="block text-medical-300 text-sm mb-2">Notes</label>
-            <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">A</span> — Assessment</label>
+            <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+          </div>
+          <div>
+            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">P</span> — Plan</label>
+            <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
           </div>
 
           <div>

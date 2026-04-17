@@ -6,6 +6,8 @@ import api from '../services/api'
 export default function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [otp, setOtp] = useState('')
+    const [otpRequired, setOtpRequired] = useState(false)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const { login } = useAuth()
@@ -17,9 +19,11 @@ export default function Login() {
         setLoading(true)
 
         try {
-            console.log('Attempting login with:', email)
-            const res = await api.post('/api/auth/login', { email, password })
-            console.log('Login response:', res.data)
+            const res = await api.post('/api/auth/login', {
+                email,
+                password,
+                otp: otp || undefined,
+            })
             const data = res.data
             if (data.token && data.user) {
                 login(data.token, data.user)
@@ -29,22 +33,32 @@ export default function Login() {
                 setLoading(false)
             }
         } catch (err: any) {
-            console.error('Login error:', err)
             const status = err.response?.status
+            const body = err.response?.data
+            const rawBody = typeof body === 'string' ? body : ''
             let errMsg = ''
-            
-            if (status === 401) {
-                errMsg = 'Invalid email or password. Please try again.'
+
+            if (status === 401 && rawBody.includes('OTP required')) {
+                setOtpRequired(true)
+                errMsg = 'Enter the 6-digit code from your authenticator app.'
+            } else if (status === 401 && rawBody.includes('Invalid OTP')) {
+                setOtpRequired(true)
+                errMsg = 'That code did not verify. Try again (codes rotate every 30s).'
+            } else if (status === 401) {
+                errMsg = 'Invalid email or password.'
             } else if (status === 403) {
                 errMsg = 'Account is disabled. Contact administrator.'
             } else if (status === 404) {
                 errMsg = 'User not found.'
             } else if (status === 0) {
-                errMsg = 'Cannot connect to server. Please check your connection.'
+                errMsg = 'Cannot connect to server.'
             } else {
-                errMsg = err.response?.data?.message || err.response?.data || err.message || 'Login failed'
+                errMsg =
+                    typeof body === 'string'
+                        ? body
+                        : body?.message || err.message || 'Login failed'
             }
-            
+
             setError(errMsg)
             setLoading(false)
         }
@@ -101,12 +115,34 @@ export default function Login() {
                             />
                         </div>
 
+                        {otpRequired && (
+                            <div>
+                                <label className="block text-medical-300 text-sm mb-2">
+                                    Authenticator code
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={6}
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                                    className="w-full px-4 py-3 bg-white/5 border border-cyan-400/40 rounded-xl text-white font-mono tracking-[0.4em] text-center focus:outline-none focus:border-cyan-400 transition-all"
+                                    placeholder="123456"
+                                    autoFocus
+                                />
+                                <p className="text-medical-500 text-xs mt-1">
+                                    Codes rotate every 30 seconds.
+                                </p>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || (otpRequired && otp.length < 6)}
                             className="w-full bg-gradient-to-r from-cyan-500 to-mint-500 text-white py-3 rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50 glow-cyan"
                         >
-                            {loading ? 'Signing in...' : 'Sign In'}
+                            {loading ? 'Signing in...' : otpRequired ? 'Verify & Sign In' : 'Sign In'}
                         </button>
                     </form>
                 </div>

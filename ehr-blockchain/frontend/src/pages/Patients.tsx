@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getPatients, createPatientWithAccount, getAllUsers, updatePatient, deletePatient } from '../services/api'
+import { getPatients, createPatientWithAccount, getAllUsers, updatePatient, deletePatient, activateBreakGlass } from '../services/api'
 import Layout from '../components/Layout'
+import PageHeader from '../components/PageHeader'
+import { useAuth } from '../context/AuthContext'
 
 interface Patient {
   id: string
@@ -9,6 +11,9 @@ interface Patient {
   last_name: string | null
   date_of_birth: string
   sex: string
+  blood_type: string | null
+  contact_number: string | null
+  address: string | null
   created_at: string
   user_id: string | null
 }
@@ -23,7 +28,10 @@ function EditPatientForm({ patient, onSave, onCancel }: { patient: Patient; onSa
     first_name: patient.first_name || '',
     last_name: patient.last_name || '',
     date_of_birth: patient.date_of_birth,
-    sex: patient.sex
+    sex: patient.sex,
+    blood_type: patient.blood_type || '',
+    contact_number: patient.contact_number || '',
+    address: patient.address || '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -31,9 +39,16 @@ function EditPatientForm({ patient, onSave, onCancel }: { patient: Patient; onSa
     e.preventDefault()
     setSaving(true)
     try {
-      await onSave(formData)
+      await onSave({
+        ...formData,
+        blood_type: formData.blood_type || undefined,
+        contact_number: formData.contact_number || undefined,
+        address: formData.address || undefined,
+      })
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to update patient')
+      const body = err.response?.data
+      const msg = typeof body === 'string' ? body : body?.message || 'Failed to update patient'
+      alert(msg)
     } finally {
       setSaving(false)
     }
@@ -55,12 +70,36 @@ function EditPatientForm({ patient, onSave, onCancel }: { patient: Patient; onSa
         <label className="block text-medical-300 text-sm mb-2">Date of Birth</label>
         <input type="date" required value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50" />
       </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-medical-300 text-sm mb-2">Sex</label>
+          <select value={formData.sex} onChange={(e) => setFormData({ ...formData, sex: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-medical-300 text-sm mb-2">Blood Type</label>
+          <select value={formData.blood_type} onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
+            <option value="">Unknown</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
+      </div>
       <div>
-        <label className="block text-medical-300 text-sm mb-2">Sex</label>
-        <select value={formData.sex} onChange={(e) => setFormData({ ...formData, sex: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-        </select>
+        <label className="block text-medical-300 text-sm mb-2">Contact Number</label>
+        <input type="tel" value={formData.contact_number} onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })} placeholder="e.g. +63 912 345 6789" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+      </div>
+      <div>
+        <label className="block text-medical-300 text-sm mb-2">Address</label>
+        <textarea value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2} placeholder="Street, City, Postal Code" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
       </div>
       <div className="flex gap-4">
         <button type="button" onClick={onCancel} className="flex-1 px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
@@ -75,6 +114,7 @@ function EditPatientForm({ patient, onSave, onCancel }: { patient: Patient; onSa
 }
 
 export default function Patients() {
+  const { user } = useAuth()
   const [patients, setPatients] = useState<Patient[]>([])
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([])
   const [users, setUsers] = useState<User[]>([])
@@ -83,7 +123,7 @@ export default function Patients() {
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
   const [deletingPatient, setDeletingPatient] = useState<Patient | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [formData, setFormData] = useState({ first_name: '', last_name: '', date_of_birth: '', sex: 'male', email: '', password: '' })
+  const [formData, setFormData] = useState({ first_name: '', last_name: '', date_of_birth: '', sex: 'male', email: '', password: '', blood_type: '', contact_number: '', address: '' })
   const [creating, setCreating] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const navigate = useNavigate()
@@ -137,12 +177,15 @@ export default function Patients() {
         date_of_birth: formData.date_of_birth,
         sex: formData.sex,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        blood_type: formData.blood_type || undefined,
+        contact_number: formData.contact_number || undefined,
+        address: formData.address || undefined,
       })
       setSuccessMsg(`Patient account created! Login: ${formData.email}`)
       setTimeout(() => {
         setShowModal(false)
-        setFormData({ first_name: '', last_name: '', date_of_birth: '', sex: 'male', email: '', password: '' })
+        setFormData({ first_name: '', last_name: '', date_of_birth: '', sex: 'male', email: '', password: '', blood_type: '', contact_number: '', address: '' })
         setSuccessMsg('')
         loadPatients()
       }, 2000)
@@ -166,21 +209,47 @@ export default function Patients() {
 
   return (
     <Layout>
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Patients</h1>
-          <p className="text-medical-400 mt-1">Manage patient records</p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Patient
-        </button>
-      </div>
+      <PageHeader
+        section="Directory"
+        title="Patients"
+        subtitle="Manage patient records and linked accounts"
+        actions={
+          <>
+            {(user?.role === 'doctor' || user?.role === 'nurse') && (
+              <button
+                onClick={async () => {
+                  const reason = prompt(
+                    'Break-glass emergency access\n\nEvery read during the next 30 minutes will be logged as an elevated audit event and flagged on the admin dashboard. Proceed only in clinical emergencies.\n\nReason (≥8 characters):'
+                  )
+                  if (!reason || reason.trim().length < 8) return
+                  try {
+                    await activateBreakGlass(reason.trim())
+                    alert('Break-glass activated for 30 minutes. All reads are elevated-logged.')
+                  } catch (e: any) {
+                    alert(e.response?.data || 'Failed to activate')
+                  }
+                }}
+                className="px-4 py-2 bg-amber-500/10 border border-amber-400/30 text-amber-200 rounded-xl hover:bg-amber-500/20 text-sm"
+                title="Emergency access — bypasses normal grant checks. Logged at high severity."
+              >
+                ⚡ Break-glass
+              </button>
+            )}
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Patient
+            </button>
+          </>
+        }
+      />
 
       {/* Search Bar */}
-      <div className="mb-4">
+      <div className="mb-4 fade-up" style={{ animationDelay: '80ms' }}>
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-medical-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -216,7 +285,8 @@ export default function Patients() {
                 <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Account</th>
                 <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Date of Birth</th>
                 <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Sex</th>
-                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Created</th>
+                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Blood Type</th>
+                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Contact</th>
                 <th className="text-right text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Actions</th>
               </tr>
             </thead>
@@ -239,8 +309,15 @@ export default function Patients() {
                   <td className="px-6 py-4">
                     <span className="capitalize text-medical-300">{patient.sex}</span>
                   </td>
-                  <td className="px-6 py-4 text-medical-400 text-sm">
-                    {new Date(patient.created_at).toLocaleDateString()}
+                  <td className="px-6 py-4">
+                    {patient.blood_type ? (
+                      <span className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-rose-300 text-xs font-mono">{patient.blood_type}</span>
+                    ) : (
+                      <span className="text-medical-500 text-sm">—</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-medical-300 text-sm">
+                    {patient.contact_number || <span className="text-medical-500">—</span>}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => navigate(`/records?patient=${patient.id}`)} className="text-cyan-400 hover:text-cyan-300 mr-4">View Records</button>
@@ -293,6 +370,30 @@ export default function Patients() {
                   <option value="female">Female</option>
                 </select>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-medical-300 text-sm mb-2">Blood Type</label>
+                  <select value={formData.blood_type} onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
+                    <option value="">Unknown</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-medical-300 text-sm mb-2">Contact Number</label>
+                  <input type="tel" value={formData.contact_number} onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })} placeholder="e.g. +63 912 345 6789" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-medical-300 text-sm mb-2">Address</label>
+                <textarea value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2} placeholder="Street, City, Postal Code" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+              </div>
               <div className="border-t border-white/10 pt-4 mt-4">
                 <h3 className="text-white font-medium mb-4">Patient Login Account</h3>
               </div>
@@ -302,7 +403,7 @@ export default function Patients() {
               </div>
               <div>
                 <label className="block text-medical-300 text-sm mb-2">Password</label>
-                <input type="password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" placeholder="Min 6 characters" />
+                <input type="password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" placeholder="Min 8 characters" minLength={8} />
               </div>
               <button type="submit" disabled={creating} className="w-full bg-gradient-to-r from-cyan-500 to-mint-500 text-white py-3 rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                 {creating ? (
@@ -361,9 +462,15 @@ export default function Patients() {
                 Cancel
               </button>
               <button onClick={async () => {
-                await deletePatient(deletingPatient.id)
-                setDeletingPatient(null)
-                loadPatients()
+                try {
+                  await deletePatient(deletingPatient.id)
+                  setDeletingPatient(null)
+                  loadPatients()
+                } catch (err: any) {
+                  const body = err.response?.data
+                  const msg = typeof body === 'string' ? body : (body?.message || err.message || 'Failed to delete patient')
+                  alert(msg)
+                }
               }} className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all">
                 Delete
               </button>

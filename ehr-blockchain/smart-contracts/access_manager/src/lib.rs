@@ -61,7 +61,12 @@ impl AccessManager {
             .get(&DataKey::PatientPermissions(patient_id.clone()))
             .unwrap_or_else(|| Vec::new(&env));
 
-        perms.push_back((patient_id, granted_to, record_id));
+        // BI-2 fix: previously the pushed value was dropped because the Vec was never
+        // written back. get_patient_permissions therefore always returned an empty list.
+        perms.push_back((patient_id.clone(), granted_to, record_id));
+        env.storage()
+            .persistent()
+            .set(&DataKey::PatientPermissions(patient_id), &perms);
     }
 
     pub fn revoke_access(
@@ -107,5 +112,63 @@ impl AccessManager {
             .persistent()
             .get(&DataKey::PatientPermissions(patient_id))
             .unwrap_or_else(|| Vec::new(&env))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use soroban_sdk::{testutils::Address as _, Env, BytesN};
+
+    fn setup() -> (Env, Address, BytesN<32>, BytesN<32>, BytesN<32>) {
+        let env = Env::default();
+        env.mock_all_auths();
+        let owner = Address::generate(&env);
+        let patient = BytesN::from_array(&env, &[1u8; 32]);
+        let staff = BytesN::from_array(&env, &[2u8; 32]);
+        let record = BytesN::from_array(&env, &[3u8; 32]);
+        (env, owner, patient, staff, record)
+    }
+
+    /// BI-2: grant_access must persist the PatientPermissions vector, otherwise
+    /// get_patient_permissions silently returns an empty list.
+    #[test]
+    fn grant_access_persists_patient_permissions_vector() {
+        let (env, owner, patient, staff, record) = setup();
+        let id = env.register_contract(None, AccessManager);
+        let client = AccessManagerClient::new(&env, &id);
+
+        client.init(&owner);
+        client.grant_access(&patient, &staff, &record, &3600);
+
+        let perms = client.get_patient_permissions(&patient);
+        assert_eq!(perms.len(), 1, "expected one permission after grant");
+        let (p, g, r) = perms.get(0).unwrap();
+        assert_eq!(p, patient);
+        assert_eq!(g, staff);
+        assert_eq!(r, record);
+    }
+
+    #[test]
+    fn grant_and_check_access_within_expiry() {
+        let (env, owner, patient, staff, record) = setup();
+        let id = env.register_contract(None, AccessManager);
+        let client = AccessManagerClient::new(&env, &id);
+
+        client.init(&owner);
+        client.grant_access(&patient, &staff, &record, &3600);
+        assert!(client.check_access(&patient, &staff, &record));
+    }
+
+    #[test]
+    fn revoke_access_flips_active_flag() {
+        let (env, owner, patient, staff, record) = setup();
+        let id = env.register_contract(None, AccessManager);
+        let client = AccessManagerClient::new(&env, &id);
+
+        client.init(&owner);
+        client.grant_access(&patient, &staff, &record, &3600);
+        client.revoke_access(&patient, &staff, &record);
+        assert!(!client.check_access(&patient, &staff, &record));
     }
 }

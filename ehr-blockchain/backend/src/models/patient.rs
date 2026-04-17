@@ -9,11 +9,14 @@ pub struct Patient {
     pub user_id: Option<Uuid>,
     pub date_of_birth: chrono::NaiveDate,
     pub sex: String,
-    pub encrypted_pii: Option<Vec<u8>>,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
+    pub blood_type: Option<String>,
+    pub contact_number: Option<String>,
+    pub address: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -22,6 +25,9 @@ pub struct CreatePatientRequest {
     pub sex: String,
     pub first_name: String,
     pub last_name: String,
+    pub blood_type: Option<String>,
+    pub contact_number: Option<String>,
+    pub address: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -32,6 +38,9 @@ pub struct CreatePatientWithAccountRequest {
     pub last_name: String,
     pub email: String,
     pub password: String,
+    pub blood_type: Option<String>,
+    pub contact_number: Option<String>,
+    pub address: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -42,6 +51,9 @@ pub struct PatientResponse {
     pub sex: String,
     pub first_name: String,
     pub last_name: String,
+    pub blood_type: Option<String>,
+    pub contact_number: Option<String>,
+    pub address: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -51,4 +63,7 @@ pub struct UpdatePatientRequest {
     pub sex: Option<String>,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
+    pub blood_type: Option<String>,
+    pub contact_number: Option<String>,
+    pub address: Option<String>,
 }

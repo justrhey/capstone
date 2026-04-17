@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
@@ -11,10 +11,20 @@ export default function Register() {
         first_name: '',
         last_name: '',
     })
+    const [consentChecked, setConsentChecked] = useState(false)
+    const [consentVersion, setConsentVersion] = useState<string>('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const { login } = useAuth()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        // Fetch the current privacy-notice version from the backend so the
+        // value we submit is guaranteed to match what the server expects.
+        api.get('/api/auth/consent-version')
+            .then((r) => setConsentVersion(r.data?.current || ''))
+            .catch(() => setConsentVersion(''))
+    }, [])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -23,10 +33,18 @@ export default function Register() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
+        if (!consentChecked) {
+            setError('You must accept the privacy notice to register.')
+            return
+        }
+        if (!consentVersion) {
+            setError('Could not load the current privacy notice. Please retry.')
+            return
+        }
         setLoading(true)
 
         try {
-            const res = await api.post('/api/auth/register', form)
+            const res = await api.post('/api/auth/register', { ...form, consent_version: consentVersion })
             login(res.data.token, res.data.user)
             navigate('/dashboard')
         } catch (err: any) {
@@ -135,9 +153,45 @@ export default function Register() {
                             </select>
                         </div>
 
+                        <div className="pt-2">
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={consentChecked}
+                                    onChange={(e) => setConsentChecked(e.target.checked)}
+                                    className="mt-1 w-4 h-4 accent-cyan-500"
+                                />
+                                <span className="text-medical-300 text-sm">
+                                    I acknowledge that my health records will be encrypted at rest,
+                                    anchored on the Stellar blockchain for integrity, and audit-logged. I have read
+                                    the{' '}
+                                    <a
+                                        href="#privacy-notice"
+                                        className="text-cyan-400 hover:text-cyan-300 underline decoration-dotted"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            alert(
+                                                'Privacy Notice ' + consentVersion + '\n\n' +
+                                                'Your medical records are:\n' +
+                                                '• Encrypted with AES-256-GCM before storage.\n' +
+                                                '• SHA-256 hash anchored on Stellar Testnet.\n' +
+                                                '• Access-gated by role-based + blockchain-enforced permissions.\n' +
+                                                '• Immutably audit-logged.\n\n' +
+                                                'You may revoke consent at any time from Settings. ' +
+                                                'Revoking does not delete existing records; request erasure separately.'
+                                            )
+                                        }}
+                                    >
+                                        Privacy Notice {consentVersion && <>({consentVersion})</>}
+                                    </a>{' '}
+                                    and accept.
+                                </span>
+                            </label>
+                        </div>
+
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || !consentChecked || !consentVersion}
                             className="w-full bg-gradient-to-r from-cyan-500 to-mint-500 text-white py-3 rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50 glow-cyan"
                         >
                             {loading ? 'Creating account...' : 'Create Account'}

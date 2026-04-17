@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getPatients, getRecordsByPatient } from '../services/api'
+import { getMyPatient, getRecordsByPatient, getMyExport } from '../services/api'
 import Layout from '../components/Layout'
+import PageHeader from '../components/PageHeader'
 
 interface RecordData {
   record: {
     id: string
     patient_id: string
-    diagnosis: string
-    treatment: string
-    notes: string
+    subjective: string | null
+    objective: string | null
+    assessment: string | null
+    plan: string | null
     record_hash: string
     blockchain_tx_id: string | null
     created_at: string
@@ -34,21 +36,18 @@ export default function MyRecords() {
 
   const loadRecords = async () => {
     if (!user?.id) return
-    
+
     try {
       setError('')
-      const res = await getPatients()
-      const patients = res.data
-      
-      const userId = user.id.toLowerCase()
-      const myPatients = patients.filter((p: any) => p.user_id?.toLowerCase() === userId)
-      
+      const res = await getMyPatient()
+      const myPatients = res.data || []
+
       if (myPatients.length === 0) {
         setError('No patient profile linked to your account. Please contact admin.')
         setLoading(false)
         return
       }
-      
+
       const myPatient = myPatients[0]
       const recordRes = await getRecordsByPatient(myPatient.id)
       setRecords(recordRes.data)
@@ -60,12 +59,52 @@ export default function MyRecords() {
     }
   }
 
+  const [exporting, setExporting] = useState(false)
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const res = await getMyExport()
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], {
+        type: 'application/fhir+json',
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `my-health-record-${new Date().toISOString().slice(0, 10)}.fhir.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      const body = err.response?.data
+      const msg = typeof body === 'string' ? body : body?.message || 'Export failed'
+      alert(msg)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <Layout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">My Medical Records</h1>
-        <p className="text-medical-400 mt-1">View your health records</p>
-      </div>
+      <PageHeader
+        section="Personal"
+        title="My Medical Records"
+        subtitle="Your records, encrypted at rest and anchored on Stellar Soroban"
+        actions={
+          <button
+            onClick={handleExport}
+            disabled={exporting || loading || !!error}
+            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium disabled:opacity-50 flex items-center gap-2"
+            title="Download all your records as a FHIR R4 Bundle (application/fhir+json)"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3" />
+            </svg>
+            {exporting ? 'Exporting…' : 'Download my data (FHIR)'}
+          </button>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
@@ -93,7 +132,7 @@ export default function MyRecords() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-white font-medium">{item.record.diagnosis || 'No diagnosis'}</h3>
+                    <h3 className="text-white font-medium">{item.record.assessment || 'No assessment'}</h3>
                     {item.blockchain_verified ? (
                       <span className="flex items-center gap-1 px-2 py-0.5 bg-mint-500/10 border border-mint-500/20 rounded-full text-mint-400 text-xs">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -111,17 +150,22 @@ export default function MyRecords() {
                 </div>
               </div>
 
-              {item.record.treatment && (
+              {item.record.subjective && (
                 <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase mb-1">Treatment</p>
-                  <p className="text-white">{item.record.treatment}</p>
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">S — Subjective</p>
+                  <p className="text-medical-100 text-sm">{item.record.subjective}</p>
                 </div>
               )}
-
-              {item.record.notes && (
+              {item.record.objective && (
                 <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase mb-1">Notes</p>
-                  <p className="text-medical-300">{item.record.notes}</p>
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">O — Objective</p>
+                  <p className="text-medical-100 text-sm">{item.record.objective}</p>
+                </div>
+              )}
+              {item.record.plan && (
+                <div className="mb-3">
+                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">P — Plan</p>
+                  <p className="text-medical-100 text-sm">{item.record.plan}</p>
                 </div>
               )}
 

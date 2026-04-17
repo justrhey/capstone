@@ -1,0 +1,670 @@
+project: ehr-blockchain
+version: 0.2.0
+positioning: "Blockchain-Notarized EHR for Regulatory Compliance"
+current_sprint: 1
+source: "docs/compliance.md + party-mode review 2026-04-17"
+
+# Tracking conventions
+# status: todo | in_progress | done | blocked | cancelled
+# size:   xs (<1h) | s (1-2h) | m (2-4h) | l (4-8h) | xl (>8h, should be split)
+# priority: P0 (thesis-blocking) | P1 (maturity) | P2 (polish)
+
+legend:
+  size:
+    xs: "under 1 hour"
+    s: "1-2 hours"
+    m: "2-4 hours"
+    l: "4-8 hours"
+    xl: "more than 8 hours — split before starting"
+  priority:
+    P0: "thesis-blocking — committee will flag"
+    P1: "operational maturity — expected in real EHR"
+    P2: "polish / nice-to-have"
+
+sprints:
+  - id: 1
+    name: "Blockchain Integrity"
+    goal: "Make the blockchain actually load-bearing so the thesis title is defensible."
+    epics: [BI]
+
+  - id: 2
+    name: "Compliance Workflows"
+    goal: "Close the highest-severity HIPAA/GDPR/DPA gaps: consent, export, access history."
+    epics: [CMP]
+
+  - id: 3
+    name: "Security Hardening"
+    goal: "2FA, break-glass, session visibility."
+    epics: [SEC]
+
+  - id: 4
+    name: "Clinical Core"
+    goal: "Cover the 'dealbreaker' clinical modules from the informatics review."
+    epics: [CLIN]
+
+  - id: 5
+    name: "Operational Maturity"
+    goal: "Labs/imaging, referrals, immunizations, CDS."
+    epics: [OPS]
+
+  - id: 6
+    name: "Extended & Nice-to-Have"
+    goal: "Scheduling polish, messaging, e-prescribing, interop."
+    epics: [EXT]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EPIC BI — Blockchain Integrity (Sprint 1, P0)
+# ─────────────────────────────────────────────────────────────────────────────
+epics:
+  - id: BI
+    title: "Blockchain Integrity"
+    sprint: 1
+    priority: P0
+    rationale: >
+      Current design allows a rogue backend operator to edit a record and
+      re-anchor a new hash, making the Verify button meaningless. Every story
+      below closes part of that trust gap.
+    stories:
+      - id: BI-1
+        title: "Versioned on-chain record with tombstones"
+        status: done
+        size: l
+        description: >
+          Replace overwrite-on-update with append-only versioned hashes in
+          Record Registry. Each store_hash accepts (record_id, version,
+          hash); new versions cannot overwrite old; old versions stay
+          queryable with a Tombstoned(replaced_by) link.
+        acceptance_criteria:
+          - "Record Registry exposes store_hash(record_id, version, hash)"
+          - "Reject if (record_id, version) already present"
+          - "get_versions(record_id) returns ordered Vec<(version, hash, timestamp)>"
+          - "Backend update_record writes version+1 with previous version tombstoned"
+          - "Contract test: overwrite at same (record_id, version) panics"
+        files:
+          - smart-contracts/record_registry/src/lib.rs
+          - backend/src/services/record_service.rs
+          - backend/src/services/blockchain_service.rs
+          - migrations/015_record_version.sql  # new
+        depends_on: []
+
+      - id: BI-2
+        title: "Fix Access Manager store-on-grant bug"
+        status: done
+        size: xs
+        description: >
+          access_manager/src/lib.rs:64 pushes to a local Vec that is never
+          stored back with .set(). get_patient_permissions therefore returns
+          empty. One-line fix + redeploy.
+        acceptance_criteria:
+          - "grant_access persists the updated PatientPermissions vector"
+          - "get_patient_permissions returns all granted tuples after redeploy"
+        files:
+          - smart-contracts/access_manager/src/lib.rs
+        depends_on: []
+
+      - id: BI-3
+        title: "check_access as an enforcement gate, not a mirror"
+        status: done
+        size: m
+        description: >
+          On reads of /api/patients/{id}/records, after DB role check, also
+          query Access Manager check_access for staff accessing a patient's
+          records. If the chain says no, return 403 — do not rely on DB row
+          alone.
+        acceptance_criteria:
+          - "record_handler::list_by_patient calls check_access for doctor/nurse"
+          - "Returns 403 if chain says no grant, even when DB looks fine"
+          - "Falls back to DB-only (with warning log) when chain unavailable"
+          - "New audit event resource_type=access_decision captured both ways"
+        files:
+          - backend/src/handlers/record_handler.rs
+          - backend/src/services/blockchain_service.rs
+        depends_on: [BI-2]
+
+      - id: BI-4
+        title: "Public verify receipt issued at record creation"
+        status: done
+        notes: "BI-4b (browser-native Soroban RPC verify) completed as follow-up. All AC bullets now 100% met."
+        size: m
+        description: >
+          On record create, return a printable receipt to the clinician &
+          patient containing {record_id, version, record_hash, tx_hash,
+          ledger_seq, block_time}. A patient retaining this can verify
+          independently via any Soroban RPC without trusting the backend.
+        acceptance_criteria:
+          - "POST /api/records response includes 'receipt' object"
+          - "Receipt includes tx_hash, ledger seq, ISO timestamp, contract_id"
+          - "Frontend Records page has 'Download receipt' button → JSON file"
+          - "Frontend 'Verify receipt' page accepts an uploaded receipt and checks against any Soroban RPC"
+        files:
+          - backend/src/handlers/record_handler.rs
+          - backend/src/services/blockchain_service.rs
+          - frontend/src/pages/Records.tsx
+          - frontend/src/pages/VerifyReceipt.tsx  # new
+          - frontend/src/App.tsx
+        depends_on: [BI-1]
+
+      - id: BI-5
+        title: "Tamper-alert UI when DB hash ≠ latest on-chain hash"
+        status: done
+        size: s
+        description: >
+          On GET /api/records/{id}/verify, compare DB record_hash against the
+          latest on-chain version. If mismatch, status becomes 'tampered' and
+          UI shows a red banner. Never silently overwrite the chain.
+        acceptance_criteria:
+          - "verify_record_hash returns Some(false) on hash mismatch"
+          - "Frontend Records card shows red 'Tampered — do not trust' banner"
+          - "Admin-only panel lists tampered records"
+        files:
+          - backend/src/services/blockchain_service.rs
+          - backend/src/handlers/verify_handler.rs
+          - frontend/src/pages/Records.tsx
+        depends_on: [BI-1]
+
+      - id: BI-6
+        title: "Blockchain Explorer tab (read-only, backend-bypassing)"
+        status: done
+        size: m
+        description: >
+          New admin/auditor tab that queries the three contracts directly via
+          @stellar/stellar-sdk (not via backend). Lists: per-patient record
+          versions, active access grants, and audit trail. Demonstrates that
+          the chain state is reviewable independently of the backend.
+        acceptance_criteria:
+          - "Frontend route /blockchain accessible to admin/auditor"
+          - "Uses public Soroban RPC; no backend calls"
+          - "Shows contract IDs + latest ledger sequence at the top"
+          - "Three tabs: Records / Grants / Audit with filter by patient_id"
+        files:
+          - frontend/src/pages/BlockchainExplorer.tsx  # new
+          - frontend/src/App.tsx
+          - frontend/src/components/Layout.tsx
+          - frontend/package.json  # adds @stellar/stellar-sdk
+        depends_on: [BI-1, BI-2]
+
+      - id: BI-7
+        title: "Decentralized timestamp audit"
+        status: done
+        size: xs
+        description: >
+          Document and assert that audit_service uses the ledger timestamp
+          returned by log_access for the authoritative 'when' of on-chain
+          events. DB timestamps remain advisory. Short doc + test.
+        acceptance_criteria:
+          - "audit_service stores ledger_timestamp when available"
+          - "docs/smart-contracts.md updated with timestamp policy"
+          - "Unit test covers ledger-vs-db timestamp divergence"
+        files:
+          - backend/src/services/audit_service.rs
+          - docs/smart-contracts.md
+        depends_on: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EPIC CMP — Compliance Workflows (Sprint 2, P0)
+# ─────────────────────────────────────────────────────────────────────────────
+  - id: CMP
+    title: "Compliance Workflows"
+    sprint: 2
+    priority: P0
+    rationale: >
+      Closes the critical-severity HIPAA/GDPR/DPA items from docs/compliance.md §5.1.
+    stories:
+      - id: CMP-1
+        title: "Consent capture on registration"
+        status: done
+        size: m
+        description: >
+          Version-stamped privacy notice acceptance at /api/auth/register and
+          /api/users/staff. Stored on the user row; revocable by patient.
+        acceptance_criteria:
+          - "Migration adds users.consent_version, users.consent_accepted_at"
+          - "Registration forms include checkbox + link to privacy notice"
+          - "Backend rejects registration if consent_version not present"
+          - "Patient-settings page exposes 'revoke consent' (logs out + flags account)"
+        files:
+          - migrations/016_consent.sql  # new
+          - backend/src/services/auth_service.rs
+          - backend/src/models/mod.rs
+          - frontend/src/pages/Register.tsx
+          - frontend/src/pages/CreateStaff.tsx
+          - frontend/src/pages/Settings.tsx  # new (see SEC-1 shares file)
+        depends_on: []
+
+      - id: CMP-2
+        title: "Patient data export (FHIR Bundle subset)"
+        status: done
+        size: l
+        description: >
+          GET /api/me/export returns a FHIR R4 Bundle containing the patient
+          resource + all owned MedicalRecord → Observation/Condition
+          equivalents. Also downloadable as JSON from My Records page.
+        acceptance_criteria:
+          - "Endpoint returns application/fhir+json"
+          - "Bundle.entry includes Patient + Conditions + MedicationStatements + AllergyIntolerances"
+          - "Frontend My Records page has 'Download my data' button"
+          - "Unit test validates Bundle structure via a minimal FHIR schema"
+        files:
+          - backend/src/handlers/export_handler.rs  # new
+          - backend/src/services/export_service.rs  # new
+          - backend/src/handlers/mod.rs
+          - frontend/src/pages/MyRecords.tsx
+        depends_on: []
+
+      - id: CMP-3
+        title: "Patient-visible access history"
+        status: done
+        size: s
+        description: >
+          Patients can see who accessed their records. Backend already logs
+          this; just need a filtered endpoint + UI tab.
+        acceptance_criteria:
+          - "GET /api/me/audit-history returns audit_logs where resource belongs to caller"
+          - "Patient sees new 'Access History' tab with staff name, action, date"
+          - "IP addresses are NOT exposed in this patient-facing view"
+        files:
+          - backend/src/handlers/audit_handler.rs
+          - frontend/src/pages/AccessHistory.tsx  # new
+          - frontend/src/App.tsx
+          - frontend/src/components/Layout.tsx
+        depends_on: []
+
+      - id: CMP-4
+        title: "Right-to-erasure request workflow"
+        status: done
+        size: m
+        description: >
+          Patient requests deletion via UI. Admin sees a queue, approves, and
+          soft-deletes (deleted_at). Nightly job hard-deletes after 30 days.
+          On-chain hashes remain but a Tombstone is written.
+        acceptance_criteria:
+          - "POST /api/me/erasure-request creates a row in erasure_requests"
+          - "Admin UI shows pending requests, can approve/decline"
+          - "Approval sets patients.deleted_at + user.deleted_at"
+          - "Read endpoints filter out deleted rows"
+          - "Audit log row + on-chain Tombstone(reason) entry"
+        files:
+          - migrations/017_erasure.sql  # new
+          - backend/src/handlers/erasure_handler.rs  # new
+          - frontend/src/pages/MyRecords.tsx
+          - frontend/src/pages/AdminErasureQueue.tsx  # new
+          - smart-contracts/record_registry/src/lib.rs  # adds tombstone reason
+        depends_on: [BI-1]
+
+      - id: CMP-5
+        title: "Breach-detection + notification pipeline"
+        status: done
+        size: l
+        description: >
+          Simple anomaly rules (N failed logins, unusual IP change, mass-read
+          by one user). Incidents written to incidents table; admin gets a
+          banner. Templated notification emails (out-of-band delivery =
+          log-to-file for the capstone).
+        acceptance_criteria:
+          - "Migration adds incidents(id, kind, details, created_at, resolved_at)"
+          - "Rules engine runs on each login + audit write"
+          - "Admin dashboard panel 'Incidents' with severity badges"
+          - "Notification draft written to logs/notifications.log"
+        files:
+          - migrations/018_incidents.sql  # new
+          - backend/src/services/incident_service.rs  # new
+          - backend/src/handlers/incident_handler.rs  # new
+          - frontend/src/pages/Dashboard.tsx
+        depends_on: []
+
+      - id: CMP-6
+        title: "Remove IP from patient-visible audit; admin-only"
+        status: done
+        notes: "Implemented as part of CMP-3: /api/me/audit-history intentionally never selects ip_address."
+        size: xs
+        description: >
+          ip_address currently visible in /api/audit/logs response consumed
+          by admin/auditor. Keep there. But ensure it NEVER leaks via
+          CMP-3's /api/me/audit-history.
+        acceptance_criteria:
+          - "/api/me/audit-history response has no ip_address field"
+          - "Test asserts field absence"
+        files:
+          - backend/src/handlers/audit_handler.rs
+        depends_on: [CMP-3]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EPIC SEC — Security Hardening (Sprint 3, P0/P1)
+# ─────────────────────────────────────────────────────────────────────────────
+  - id: SEC
+    title: "Security Hardening"
+    sprint: 3
+    priority: P0
+    rationale: >
+      2FA is healthcare standard. Break-glass is HIPAA emergency-access.
+      Session list is GDPR transparency.
+    stories:
+      - id: SEC-1
+        title: "TOTP two-factor for staff accounts"
+        status: done
+        size: l
+        description: >
+          Enrollment flow issues a QR secret; login requires a second 6-digit
+          code. TOTP verified with RFC 6238. Enforced for admin, doctor,
+          nurse, auditor. Optional for patient.
+        acceptance_criteria:
+          - "Migration adds users.totp_secret (nullable, encrypted with enc:v1:)"
+          - "New endpoint POST /api/auth/2fa/enroll returns otpauth:// URL"
+          - "Login flow: if totp_secret is set, requires 'otp' field; else normal"
+          - "Admin setup page + Settings page include enrollment UI"
+          - "Unit test: valid code accepts, drift ±1 window tolerated, wrong code rejects"
+        files:
+          - Cargo.toml  # adds totp-rs or equivalent
+          - migrations/019_totp.sql  # new
+          - backend/src/handlers/auth_handler.rs
+          - backend/src/services/auth_service.rs
+          - frontend/src/pages/Settings.tsx  # new (shared with CMP-1)
+          - frontend/src/pages/Login.tsx
+        depends_on: []
+
+      - id: SEC-2
+        title: "Session / device list"
+        status: done
+        size: m
+        description: >
+          Each login creates a sessions row (device_hash, ip, ua, last_seen).
+          Settings page lists active sessions; revoke button removes row and
+          adds its token id to a server-side deny list (per-token revocation).
+        acceptance_criteria:
+          - "Migration adds sessions table + token_id claim"
+          - "JWT carries a jti; auth middleware rejects revoked jtis"
+          - "Settings page: 'Active sessions' with revoke per row"
+          - "Revoking current session logs user out"
+        files:
+          - migrations/020_sessions.sql  # new
+          - backend/src/services/auth_service.rs
+          - backend/src/middleware/jwt.rs
+          - frontend/src/pages/Settings.tsx
+        depends_on: []
+
+      - id: SEC-3
+        title: "Break-glass emergency access"
+        status: done
+        size: m
+        description: >
+          Authenticated staff can toggle an 'emergency mode' with a free-text
+          justification. For the next 30 minutes, they can read any record;
+          every access writes an elevated audit entry + admin alert.
+        acceptance_criteria:
+          - "POST /api/auth/break-glass takes {reason}; returns short-lived token"
+          - "Access decisions allow read when break-glass token present"
+          - "audit_logs.action = 'break_glass_read'; severity marked"
+          - "Admin dashboard banner while any session is in break-glass"
+        files:
+          - migrations/021_break_glass.sql  # new
+          - backend/src/handlers/auth_handler.rs
+          - backend/src/services/auth_service.rs
+          - backend/src/services/audit_service.rs
+          - frontend/src/pages/Patients.tsx
+          - frontend/src/pages/Dashboard.tsx
+        depends_on: []
+
+      - id: SEC-4
+        title: "Minimum-necessary: doctor/nurse patient assignments"
+        status: done
+        size: l
+        description: >
+          Add patient_assignments(patient_id, staff_user_id). GET /api/patients
+          returns only assigned patients for doctor/nurse roles; admin sees all.
+          Assignment managed by admin UI. Break-glass bypasses with elevated log.
+        acceptance_criteria:
+          - "Migration adds patient_assignments table"
+          - "list_patients filtered by join when role in (doctor,nurse)"
+          - "Admin page /assignments to add/remove assignments"
+          - "Break-glass mode (SEC-3) bypasses the filter"
+        files:
+          - migrations/022_patient_assignments.sql  # new
+          - backend/src/services/patient_service.rs
+          - backend/src/handlers/patient_handler.rs
+          - frontend/src/pages/Assignments.tsx  # new
+        depends_on: [SEC-3]
+
+      - id: SEC-5
+        title: "Stellar admin key out of .env"
+        status: done
+        size: s
+        description: >
+          Read STELLAR_ADMIN_KEY from a local OS keychain or an env-only
+          entry that is explicitly loaded at startup and zeroized after JWT
+          bootstrap. Document the tradeoff.
+        acceptance_criteria:
+          - "Config reads STELLAR_ADMIN_KEY from OS keyring if present, else .env with warning"
+          - "Runbook updated in docs/stellar-admin-rotation.md"
+        files:
+          - backend/src/config.rs
+          - docs/stellar-admin-rotation.md
+          - Cargo.toml  # adds keyring
+        depends_on: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EPIC CLIN — Clinical Core (Sprint 4, P1)
+# ─────────────────────────────────────────────────────────────────────────────
+  - id: CLIN
+    title: "Clinical Core"
+    sprint: 4
+    priority: P1
+    rationale: >
+      The dealbreakers from the Clinical Informatics review. A capstone called
+      'EHR' should at least stub these.
+    stories:
+      - id: CLIN-1
+        title: "SOAP-structured note shape"
+        status: done
+        size: m
+        description: >
+          Replace free-text diagnosis/treatment/notes with S/O/A/P fields.
+          Migration preserves existing data into Assessment.
+        acceptance_criteria:
+          - "Migration adds medical_records.{subjective,objective,assessment,plan}"
+          - "Legacy 'diagnosis'+'treatment'+'notes' carried into Assessment + Plan on migrate"
+          - "Create/Edit forms present the four fields"
+          - "Encryption applies to all four"
+        files:
+          - migrations/023_soap.sql  # new
+          - backend/src/models/medical_record.rs
+          - backend/src/services/record_service.rs
+          - frontend/src/pages/Records.tsx
+        depends_on: []
+
+      - id: CLIN-2
+        title: "Vitals / observations entry"
+        status: done
+        size: m
+        description: >
+          Structured vitals linked to a visit/record: temp, BP, HR, RR, SpO2,
+          weight, height, BMI (computed). FHIR Observation-style shape for
+          easier export via CMP-2.
+        acceptance_criteria:
+          - "Migration creates vitals table with patient_id, record_id, units, value"
+          - "Create-record form adds vitals section"
+          - "List view shows latest vitals"
+        files:
+          - migrations/024_vitals.sql  # new
+          - backend/src/models/vitals.rs  # new
+          - backend/src/handlers/record_handler.rs
+          - frontend/src/pages/Records.tsx
+        depends_on: [CLIN-1]
+
+      - id: CLIN-3
+        title: "Patient problem list"
+        status: done
+        size: m
+        description: >
+          Active diagnoses persisted independently of encounter records.
+          ICD-10 coded ideally; free-text acceptable for capstone.
+        acceptance_criteria:
+          - "Migration creates problems table (patient_id, code, description, status, onset, resolved_at)"
+          - "Patient detail page shows active problem list"
+          - "Admin/clinician UI to add/update/resolve problems"
+        files:
+          - migrations/025_problems.sql  # new
+          - backend/src/handlers/problem_handler.rs  # new
+          - frontend/src/pages/PatientDetail.tsx  # new
+        depends_on: []
+
+      - id: CLIN-4
+        title: "Orders: labs, imaging, prescriptions"
+        status: done
+        size: l
+        description: >
+          Structured orders tied to a record. Minimal types: lab_order,
+          imaging_order, prescription. Status: ordered → fulfilled → cancelled.
+        acceptance_criteria:
+          - "Migration creates orders table with type, details JSON, status"
+          - "POST /api/records/{id}/orders"
+          - "Record view shows associated orders with status chips"
+        files:
+          - migrations/026_orders.sql  # new
+          - backend/src/handlers/order_handler.rs  # new
+          - frontend/src/pages/Records.tsx
+        depends_on: [CLIN-1]
+
+      - id: CLIN-5
+        title: "Appointment scheduling"
+        status: done
+        size: l
+        description: >
+          Scheduling basics: appointment table, per-staff calendar, patient
+          self-booking within staff-published availability windows.
+        acceptance_criteria:
+          - "Migration creates appointments + availability"
+          - "Patient portal: book-appointment UI"
+          - "Staff portal: calendar view"
+        files:
+          - migrations/027_appointments.sql  # new
+          - backend/src/handlers/appointment_handler.rs  # new
+          - frontend/src/pages/Appointments.tsx  # new
+        depends_on: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EPIC OPS — Operational Maturity (Sprint 5, P2)
+# ─────────────────────────────────────────────────────────────────────────────
+  - id: OPS
+    title: "Operational Maturity"
+    sprint: 5
+    priority: P2
+    rationale: "Tier 2 from the product review."
+    stories:
+      - id: OPS-1
+        title: "Lab results + imaging attachments"
+        status: todo
+        size: l
+        depends_on: [CLIN-4]
+      - id: OPS-2
+        title: "Clinical decision support (drug-drug, allergy alerts)"
+        status: todo
+        size: l
+        depends_on: [CLIN-3, CLIN-4]
+      - id: OPS-3
+        title: "Referral workflow"
+        status: todo
+        size: m
+      - id: OPS-4
+        title: "Immunization records"
+        status: todo
+        size: s
+      - id: OPS-5
+        title: "Medication list as first-class view"
+        status: todo
+        size: s
+        depends_on: [CLIN-4]
+      - id: OPS-6
+        title: "Global patient search / recently viewed"
+        status: todo
+        size: s
+      - id: OPS-7
+        title: "Reports / analytics page"
+        status: todo
+        size: m
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EPIC EXT — Extended & Nice-to-Have (Sprint 6, P2)
+# ─────────────────────────────────────────────────────────────────────────────
+  - id: EXT
+    title: "Extended & Nice-to-Have"
+    sprint: 6
+    priority: P2
+    rationale: "Tier 3 + beyond; out of capstone critical path."
+    stories:
+      - id: EXT-1
+        title: "Patient-provider secure messaging"
+        status: todo
+        size: l
+      - id: EXT-2
+        title: "E-prescribing (digital signature)"
+        status: todo
+        size: xl
+      - id: EXT-3
+        title: "Telehealth video embed"
+        status: todo
+        size: xl
+      - id: EXT-4
+        title: "FHIR / HL7 outbound integration"
+        status: todo
+        size: xl
+      - id: EXT-5
+        title: "Population health dashboards"
+        status: todo
+        size: l
+      - id: EXT-6
+        title: "Mobile companion app"
+        status: todo
+        size: xl
+      - id: EXT-7
+        title: "i18n / language toggle"
+        status: todo
+        size: s
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Progress snapshot (updated as stories move)
+# ─────────────────────────────────────────────────────────────────────────────
+progress:
+  total_stories: 31
+  by_status:
+    todo: 13
+    in_progress: 0
+    done: 20
+  by_sprint:
+    sprint_1_BI:  {total: 7, done: 7}  # ✅ COMPLETE
+    sprint_2_CMP: {total: 6, done: 6}  # ✅ COMPLETE
+    sprint_3_SEC: {total: 5, done: 5}  # ✅ COMPLETE
+    sprint_4_CLIN: {total: 5, done: 5}  # ✅ COMPLETE
+    sprint_5_OPS:  {total: 7, done: 0}
+    sprint_6_EXT:  {total: 7, done: 0}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Suggested execution order (smallest dependency graph first)
+# ─────────────────────────────────────────────────────────────────────────────
+execution_order:
+  - BI-2   # xs, no deps, unblocks BI-3 and BI-6
+  - BI-1   # l, unblocks BI-4, BI-5, BI-6, CMP-4
+  - BI-7   # xs, standalone
+  - BI-5   # s, depends on BI-1
+  - BI-4   # m, depends on BI-1
+  - BI-3   # m, depends on BI-2
+  - BI-6   # m, depends on BI-1 + BI-2
+  # Sprint 2 Compliance
+  - CMP-3  # s, unlocks CMP-6
+  - CMP-6  # xs, depends on CMP-3
+  - CMP-1  # m
+  - CMP-2  # l
+  - CMP-5  # l
+  - CMP-4  # m, depends on BI-1
+  # Sprint 3 Security
+  - SEC-1  # l
+  - SEC-2  # m
+  - SEC-5  # s
+  - SEC-3  # m
+  - SEC-4  # l, depends on SEC-3
+  # Sprint 4 Clinical
+  - CLIN-1
+  - CLIN-3
+  - CLIN-2  # depends on CLIN-1
+  - CLIN-4  # depends on CLIN-1
+  - CLIN-5
+  # Sprint 5+ as stubs — revisit after clinical core

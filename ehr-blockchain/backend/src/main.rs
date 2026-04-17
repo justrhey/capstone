@@ -45,27 +45,40 @@ async fn main() -> io::Result<()> {
         Ok(pool) => {
             println!("Database connected successfully");
 
-            sqlx::migrate!("./migrations")
-                .run(&pool)
-                .await
-                .expect("Failed to run migrations");
+            if let Err(e) = sqlx::migrate!("../migrations").run(&pool).await {
+                eprintln!("⚠️  Migration run skipped / failed: {}. \
+                           If tables already exist from manual psql runs, \
+                           that's expected. Otherwise investigate.", e);
+            } else {
+                println!("Migrations applied successfully");
+            }
+
+            // One-shot: encrypt any legacy plaintext rows. Idempotent.
+            services::encryption::backfill_encrypt_on_startup(&pool, &cfg.encryption_key).await;
 
             println!("Migrations applied successfully");
 
             let server_host = cfg.server_host.clone();
             let server_port = cfg.server_port;
+            let config_data = web::Data::new(cfg);
             println!("Starting server at http://{}:{}", server_host, server_port);
 
             HttpServer::new(move || {
                 let cors = Cors::default()
-                    .allow_any_origin()
-                    .allow_any_method()
-                    .allow_any_header()
+                    .allowed_origin_fn(|origin, _req_head| {
+                        origin.as_bytes().starts_with(b"http://localhost:")
+                            || origin.as_bytes().starts_with(b"http://127.0.0.1:")
+                    })
+                    .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+                    .allowed_headers(vec!["Authorization", "Content-Type"])
+                    .supports_credentials()
                     .max_age(3600);
 
                 App::new()
+                    .wrap(middleware::jwt::JwtMiddleware)
                     .wrap(cors)
                     .app_data(web::Data::new(pool.clone()))
+                    .app_data(config_data.clone())
                     .service(root)
                     .service(health_check)
                     .configure(handlers::auth_handler::auth_routes)
@@ -73,6 +86,15 @@ async fn main() -> io::Result<()> {
                     .configure(handlers::record_handler::record_routes)
                     .configure(handlers::verify_handler::verify_routes)
                     .configure(handlers::user_handler::user_routes)
+                    .configure(handlers::audit_handler::audit_routes)
+                    .configure(handlers::permission_handler::permission_routes)
+                    .configure(handlers::export_handler::export_routes)
+                    .configure(handlers::incident_handler::incident_routes)
+                    .configure(handlers::erasure_handler::erasure_routes)
+                    .configure(handlers::assignment_handler::assignment_routes)
+                    .configure(handlers::problem_handler::problem_routes)
+                    .configure(handlers::order_handler::order_routes)
+                    .configure(handlers::appointment_handler::appointment_routes)
             })
             .bind((server_host, server_port))?
             .run()
@@ -82,17 +104,23 @@ async fn main() -> io::Result<()> {
             println!("⚠️  Database not available - running in demo mode (auth endpoints disabled)");
             let server_host = cfg.server_host.clone();
             let server_port = cfg.server_port;
+            let config_data = web::Data::new(cfg);
             println!("Starting server at http://{}:{}", server_host, server_port);
 
             HttpServer::new(move || {
                 let cors = Cors::default()
-                    .allow_any_origin()
-                    .allow_any_method()
-                    .allow_any_header()
+                    .allowed_origin_fn(|origin, _req_head| {
+                        origin.as_bytes().starts_with(b"http://localhost:")
+                            || origin.as_bytes().starts_with(b"http://127.0.0.1:")
+                    })
+                    .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+                    .allowed_headers(vec!["Authorization", "Content-Type"])
+                    .supports_credentials()
                     .max_age(3600);
 
                 App::new()
                     .wrap(cors)
+                    .app_data(config_data.clone())
                     .service(root)
                     .service(health_check)
                     .configure(handlers::auth_handler::auth_routes)

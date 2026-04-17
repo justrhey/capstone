@@ -1,6 +1,12 @@
 pub mod auth_service;
+pub mod audit_service;
 pub mod encryption;
+pub mod export_service;
 pub mod hash_service;
+pub mod incident_service;
+pub mod pagination;
 pub mod patient_service;
+pub mod rate_limit;
 pub mod record_service;
+pub mod totp_service;
 pub mod blockchain_service;

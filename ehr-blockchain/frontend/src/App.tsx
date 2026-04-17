@@ -10,6 +10,15 @@ import MyRecords from './pages/MyRecords'
 import Permissions from './pages/Permissions'
 import AuditLogs from './pages/AuditLogs'
 import CreateStaff from './pages/CreateStaff'
+import Staff from './pages/Staff'
+import VerifyReceipt from './pages/VerifyReceipt'
+import BlockchainExplorer from './pages/BlockchainExplorer'
+import AccessHistory from './pages/AccessHistory'
+import Settings from './pages/Settings'
+import ErasureQueue from './pages/ErasureQueue'
+import Assignments from './pages/Assignments'
+import Problems from './pages/Problems'
+import Appointments from './pages/Appointments'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -72,6 +81,78 @@ export default function App() {
                     element={
                         <ProtectedRoute roles={['admin']}>
                             <CreateStaff />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/staff"
+                    element={
+                        <ProtectedRoute roles={['admin']}>
+                            <Staff />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/verify-receipt"
+                    element={
+                        <ProtectedRoute>
+                            <VerifyReceipt />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/blockchain"
+                    element={
+                        <ProtectedRoute roles={['admin', 'auditor']}>
+                            <BlockchainExplorer />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/access-history"
+                    element={
+                        <ProtectedRoute roles={['patient']}>
+                            <AccessHistory />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/settings"
+                    element={
+                        <ProtectedRoute>
+                            <Settings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/erasure"
+                    element={
+                        <ProtectedRoute roles={['admin']}>
+                            <ErasureQueue />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/assignments"
+                    element={
+                        <ProtectedRoute roles={['admin']}>
+                            <Assignments />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/problems"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Problems />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/appointments"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Appointments />
                         </ProtectedRoute>
                     }
                 />

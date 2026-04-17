@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import api from '../services/api'
+import { createStaff } from '../services/api'
 import Layout from '../components/Layout'
+import PageHeader from '../components/PageHeader'
 
 const STAFF_ROLES = [
     { value: 'doctor', label: 'Doctor' },
@@ -31,7 +32,7 @@ export default function CreateStaff() {
         setLoading(true)
 
         try {
-            await api.post('/api/auth/register', form)
+            await createStaff(form as any)
             setSuccess(`Staff account created successfully!`)
             setForm({
                 email: '',
@@ -50,10 +51,11 @@ export default function CreateStaff() {
     return (
         <Layout>
             <div className="max-w-2xl">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-white">Create Staff Account</h1>
-                    <p className="text-medical-400 mt-1">Add new doctors, nurses, or auditors to the system</p>
-                </div>
+                <PageHeader
+                    section="Admin"
+                    title="Create Staff Account"
+                    subtitle="Add new doctors, nurses, or auditors to the system"
+                />
 
                 {success && (
                     <div className="mb-6 p-4 bg-mint-500/10 border border-mint-500/20 rounded-xl text-mint-400">
@@ -67,7 +69,7 @@ export default function CreateStaff() {
                     </div>
                 )}
 
-                <div className="glass-card p-6">
+                <div className="glass-card p-6 fade-up" style={{ animationDelay: '80ms' }}>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>

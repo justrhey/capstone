@@ -16,6 +16,12 @@ pub struct User {
     pub last_name: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub consent_version: Option<String>,
+    pub consent_accepted_at: Option<DateTime<Utc>>,
+    pub deleted_at: Option<DateTime<Utc>>,
+    pub totp_secret: Option<String>,
+    pub totp_pending_secret: Option<String>,
+    pub totp_enrolled_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,6 +30,9 @@ pub struct Claims {
     pub email: String,
     pub role: String,
     pub exp: usize,
+    /// Session id. Middleware looks this up to enforce per-device revocation.
+    #[serde(default)]
+    pub jti: Option<Uuid>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,12 +42,17 @@ pub struct RegisterRequest {
     pub role: String,
     pub first_name: String,
     pub last_name: String,
+    /// Privacy-notice version the user is accepting. Must match the server's
+    /// `CURRENT_CONSENT_VERSION` constant at registration time.
+    pub consent_version: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
+    /// Required if the user has TOTP enrolled.
+    pub otp: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -54,6 +68,8 @@ pub struct UserResponse {
     pub role: String,
     pub first_name: String,
     pub last_name: String,
+    pub consent_current: bool,
+    pub totp_enabled: bool,
 }
 
 impl From<&User> for UserResponse {
@@ -64,6 +80,12 @@ impl From<&User> for UserResponse {
             role: user.role.clone(),
             first_name: user.first_name.clone(),
             last_name: user.last_name.clone(),
+            consent_current: user
+                .consent_version
+                .as_deref()
+                .map(|v| v == crate::services::auth_service::CURRENT_CONSENT_VERSION)
+                .unwrap_or(false),
+            totp_enabled: user.totp_secret.is_some(),
         }
     }
 }
