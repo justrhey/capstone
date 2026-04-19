@@ -274,14 +274,14 @@ export default function Settings() {
           {sessions.length === 0 ? (
             <p className="text-medical-500 text-sm">No sessions recorded yet.</p>
           ) : (
-            <ul className="divide-y divide-white/5">
+            <ul className="divide-y divide-white/5 max-h-48 overflow-y-auto">
               {sessions.map((s) => {
                 const isCurrent = s.id === currentSessionId
                 const isRevoked = !!s.revoked_at
                 return (
-                  <li key={s.id} className="py-3 flex items-start gap-4">
+                  <li key={s.id} className="py-2 flex items-start gap-4">
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm flex items-center gap-2">
+                      <p className="text-white text-xs flex items-center gap-2">
                         {isCurrent && (
                           <span className="px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider border bg-mint-500/10 text-mint-300 border-mint-500/30">
                             this device
@@ -296,7 +296,7 @@ export default function Settings() {
                           {s.user_agent ? s.user_agent.slice(0, 60) : 'unknown device'}
                         </span>
                       </p>
-                      <p className="text-medical-500 text-xs mt-1">
+                      <p className="text-medical-500 text-[10px] mt-1">
                         {s.ip_address && <>IP <span className="font-mono">{s.ip_address}</span> · </>}
                         started {new Date(s.created_at).toLocaleString()}
                         {s.revoked_at && <> · revoked {new Date(s.revoked_at).toLocaleString()}</>}

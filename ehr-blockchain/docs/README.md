@@ -490,5 +490,42 @@ psql -h localhost -U ehr_admin -d ehr_db -c "SELECT 1"
 
 ---
 
-*Document Version: 1.0*  
+## Changelog / What's New
+
+### Version 1.1 (April 2026)
+
+#### New Features
+- **Full CRUD Operations**: Added complete Create, Read, Update, and Delete functionality for:
+  - Patients (`PUT /api/patients/{id}`, `DELETE /api/patients/{id}`)
+  - Medical Records (`PUT /api/records/{id}`, `DELETE /api/records/{id}`)
+- **Frontend Edit/Delete UI**: Interactive edit and delete buttons on Patients and Records pages
+- **Blockchain Re-verification**: When records are updated, new hash is automatically stored on blockchain
+
+#### Improvements
+- **Error Handling**: Better error messages with specific status codes (401, 409, 500)
+- **Patient Name Fields**: Added `first_name` and `last_name` columns to patients table
+- **Login Errors**: Clear "Invalid email or password" message persists on screen
+- **Encryption Key**: Fixed valid 32-byte hex key configuration
+- **Delete Protection**: Prevents deleting patients with existing medical records
+
+#### API Endpoints Added
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| PUT | `/api/patients/{id}` | Update patient info |
+| DELETE | `/api/patients/{id}` | Delete patient |
+| GET | `/api/records/{id}` | Get single record |
+| PUT | `/api/records/{id}` | Update record (re-hashes & re-verifies) |
+| DELETE | `/api/records/{id}` | Delete record |
+
+#### Database Changes
+```sql
+-- Added missing columns to patients table
+ALTER TABLE patients ADD COLUMN first_name VARCHAR(100);
+ALTER TABLE patients ADD COLUMN last_name VARCHAR(100);
+```
+
+---
+
+*Document Version: 1.1*  
 *Last Updated: April 2026*
