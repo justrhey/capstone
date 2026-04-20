@@ -21,6 +21,8 @@ pub struct Appointment {
     pub resolved_at: Option<DateTime<Utc>>,
     pub resolved_by: Option<Uuid>,
     pub notes: Option<String>,
+    pub meeting_url: Option<String>,
+    pub is_telehealth: bool,
 }
 
 #[derive(Debug, Serialize, FromRow)]
@@ -35,6 +37,8 @@ pub struct AppointmentWithNames {
     pub created_at: DateTime<Utc>,
     pub resolved_at: Option<DateTime<Utc>>,
     pub notes: Option<String>,
+    pub meeting_url: Option<String>,
+    pub is_telehealth: bool,
     pub patient_first_name: Option<String>,
     pub patient_last_name: Option<String>,
     pub staff_first_name: Option<String>,
@@ -49,6 +53,8 @@ pub struct BookRequest {
     pub start_at: DateTime<Utc>,
     pub duration_minutes: Option<i32>,
     pub reason: Option<String>,
+    #[serde(default)]
+    pub is_telehealth: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -60,6 +66,7 @@ pub struct StatusUpdateRequest {
 fn select_with_names() -> &'static str {
     "SELECT a.id, a.patient_id, a.staff_user_id, a.start_at, a.duration_minutes, \
             a.reason, a.status, a.created_at, a.resolved_at, a.notes, \
+            a.meeting_url, a.is_telehealth, \
             p.first_name AS patient_first_name, p.last_name AS patient_last_name, \
             u.first_name AS staff_first_name, u.last_name AS staff_last_name, u.role AS staff_role \
      FROM appointments a \
@@ -156,9 +163,20 @@ async fn book_appointment(
         return Err(AppError::BadRequest("duration_minutes must be 1–480".into()));
     }
 
+    // Jitsi-Meet room per-appointment — no signaling server needed, the
+    // participants join the public meet.jit.si instance using the generated
+    // room name. Capstone-grade: trades privacy (room name is guessable only
+    // via the UUID) for zero infra cost.
+    let (is_tele, meet_url) = if b.is_telehealth {
+        let room = format!("ehr-{}", Uuid::new_v4());
+        (true, Some(format!("https://meet.jit.si/{}", room)))
+    } else {
+        (false, None)
+    };
+
     let row = sqlx::query_as::<_, Appointment>(
-        "INSERT INTO appointments (patient_id, staff_user_id, start_at, duration_minutes, reason, booked_by) \
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+        "INSERT INTO appointments (patient_id, staff_user_id, start_at, duration_minutes, reason, booked_by, is_telehealth, meeting_url) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
     )
     .bind(patient_id)
     .bind(b.staff_user_id)
@@ -166,6 +184,8 @@ async fn book_appointment(
     .bind(duration)
     .bind(&b.reason)
     .bind(claims.sub)
+    .bind(is_tele)
+    .bind(&meet_url)
     .fetch_one(pool.get_ref())
     .await?;
 

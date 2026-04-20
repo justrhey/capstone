@@ -10,3 +10,4 @@ pub mod rate_limit;
 pub mod record_service;
 pub mod totp_service;
 pub mod blockchain_service;
+pub mod cds_service;

@@ -65,51 +65,97 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center mesh-bg relative overflow-hidden">
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-slow" />
-            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-mint-500/10 rounded-full blur-3xl animate-pulse-slow" />
-
-            <div className="relative z-10 w-full max-w-md mx-4">
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-mint-400 glow-cyan mb-4">
-                        <span className="text-white font-bold text-2xl">E</span>
+        <div className="min-h-screen flex" style={{ background: 'var(--bg)' }}>
+            {/* Left pane: wordmark + attribution */}
+            <div className="hidden lg:flex flex-col justify-between w-[44%] p-10" style={{ background: 'var(--sidebar)', borderRight: '1px solid var(--hairline)' }}>
+                <div>
+                    <div className="flex items-baseline gap-2.5">
+                        <span className="font-serif text-[44px] font-semibold leading-none" style={{ color: 'var(--brand)', fontVariationSettings: "'opsz' 144" }}>
+                            EHR
+                        </span>
+                        <span className="font-mono text-[11px]" style={{ color: 'var(--ink-muted)' }}>v1.0</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-white">EHR System</h1>
-                    <p className="text-medical-400 mt-2">Blockchain-Based Electronic Health Records</p>
+                    <p className="chart-label mt-2">Blockchain Health Records</p>
                 </div>
 
-                <div className="glass-card p-8">
-                    <h2 className="text-xl font-semibold text-white mb-6">Sign In</h2>
+                <div className="space-y-6 max-w-md">
+                    <p className="font-serif text-[22px] leading-[1.35]" style={{ color: 'var(--ink)', fontVariationSettings: "'opsz' 72" }}>
+                        Clinical records notarized to the Stellar ledger. Every write is hashed, every read is logged.
+                    </p>
+                    <div className="grid grid-cols-3 gap-6 pt-4" style={{ borderTop: '1px solid var(--hairline)' }}>
+                        <div>
+                            <p className="chart-label">Encryption</p>
+                            <p className="text-[13px] mt-1 font-mono" style={{ color: 'var(--ink-2)' }}>AES-256-GCM</p>
+                        </div>
+                        <div>
+                            <p className="chart-label">Anchor</p>
+                            <p className="text-[13px] mt-1 font-mono" style={{ color: 'var(--ink-2)' }}>SHA-256</p>
+                        </div>
+                        <div>
+                            <p className="chart-label">Network</p>
+                            <p className="text-[13px] mt-1 font-mono" style={{ color: 'var(--ink-2)' }}>Soroban</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p className="text-[11px] font-mono" style={{ color: 'var(--ink-faint)' }}>
+                    © {new Date().getFullYear()} · HIPAA / GDPR / DPA-aligned
+                </p>
+            </div>
+
+            {/* Right pane: the form */}
+            <div className="flex-1 flex items-center justify-center p-8">
+                <div className="w-full max-w-[380px]">
+                    <div className="lg:hidden mb-8">
+                        <span className="font-serif text-[36px] font-semibold" style={{ color: 'var(--brand)' }}>EHR</span>
+                        <p className="chart-label mt-1">Blockchain Health Records</p>
+                    </div>
+
+                    <p className="chart-label mb-2">Authentication</p>
+                    <h2 className="font-serif text-[26px] leading-tight mb-1" style={{ color: 'var(--ink)', fontVariationSettings: "'opsz' 72" }}>
+                        Sign in to your chart
+                    </h2>
+                    <p className="text-[13px] mb-8" style={{ color: 'var(--ink-muted)' }}>
+                        Access is logged to the audit trail on every session.
+                    </p>
 
                     {error && (
-                        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/40 rounded-xl text-red-300 text-sm flex items-center gap-2">
-                            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <div
+                            className="mb-5 px-3 py-2.5 text-[12px] flex items-start gap-2"
+                            style={{
+                                background: 'rgba(224, 101, 93, 0.08)',
+                                border: '1px solid rgba(224, 101, 93, 0.32)',
+                                borderRadius: '3px',
+                                color: '#e0655d',
+                            }}
+                        >
+                            <svg className="w-4 h-4 mt-[1px] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
-                            {error}
+                            <span>{error}</span>
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-medical-300 text-sm mb-2">Email</label>
+                            <label className="chart-label block mb-1.5">Email</label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all"
+                                className="w-full px-3 py-2.5 text-[14px]"
                                 placeholder="you@example.com"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-medical-300 text-sm mb-2">Password</label>
+                            <label className="chart-label block mb-1.5">Password</label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all"
+                                className="w-full px-3 py-2.5 text-[14px]"
                                 placeholder="••••••••"
                                 required
                             />
@@ -117,9 +163,7 @@ export default function Login() {
 
                         {otpRequired && (
                             <div>
-                                <label className="block text-medical-300 text-sm mb-2">
-                                    Authenticator code
-                                </label>
+                                <label className="chart-label block mb-1.5">Authenticator code</label>
                                 <input
                                     type="text"
                                     inputMode="numeric"
@@ -127,11 +171,12 @@ export default function Login() {
                                     maxLength={6}
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full px-4 py-3 bg-white/5 border border-cyan-400/40 rounded-xl text-white font-mono tracking-[0.4em] text-center focus:outline-none focus:border-cyan-400 transition-all"
-                                    placeholder="123456"
+                                    className="w-full px-3 py-2.5 font-mono tracking-[0.4em] text-center text-[16px]"
+                                    style={{ borderColor: 'var(--accent)' }}
+                                    placeholder="000000"
                                     autoFocus
                                 />
-                                <p className="text-medical-500 text-xs mt-1">
+                                <p className="text-[11px] mt-1 font-mono" style={{ color: 'var(--ink-muted)' }}>
                                     Codes rotate every 30 seconds.
                                 </p>
                             </div>
@@ -140,18 +185,35 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={loading || (otpRequired && otp.length < 6)}
-                            className="w-full bg-gradient-to-r from-cyan-500 to-mint-500 text-white py-3 rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50 glow-cyan"
+                            className="w-full py-2.5 text-[14px] font-medium transition-colors"
+                            style={{
+                                background: loading || (otpRequired && otp.length < 6) ? 'var(--ink-faint)' : 'var(--accent)',
+                                color: '#ffffff',
+                                borderRadius: '3px',
+                                cursor: loading || (otpRequired && otp.length < 6) ? 'not-allowed' : 'pointer',
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!loading && !(otpRequired && otp.length < 6)) {
+                                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-dark)'
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!loading && !(otpRequired && otp.length < 6)) {
+                                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent)'
+                                }
+                            }}
                         >
-                            {loading ? 'Signing in...' : otpRequired ? 'Verify & Sign In' : 'Sign In'}
+                            {loading ? 'Signing in…' : otpRequired ? 'Verify & sign in' : 'Sign in'}
                         </button>
                     </form>
-                </div>
 
-                <div className="mt-6 flex items-center justify-center gap-2 text-medical-500 text-xs">
-                    <svg className="w-4 h-4 text-mint-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span>Secured by Stellar Soroban Blockchain</span>
+                    <div className="mt-6 pt-5 flex items-center gap-2 text-[11px] font-mono" style={{ borderTop: '1px solid var(--hairline)', color: 'var(--ink-muted)' }}>
+                        <span
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ background: 'var(--success)' }}
+                        />
+                        <span>Secured by Stellar Soroban · Testnet</span>
+                    </div>
                 </div>
             </div>
         </div>

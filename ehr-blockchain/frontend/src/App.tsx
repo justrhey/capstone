@@ -19,6 +19,16 @@ import ErasureQueue from './pages/ErasureQueue'
 import Assignments from './pages/Assignments'
 import Problems from './pages/Problems'
 import Appointments from './pages/Appointments'
+import Immunizations from './pages/Immunizations'
+import Medications from './pages/Medications'
+import Referrals from './pages/Referrals'
+import Reports from './pages/Reports'
+import CdsCheck from './pages/CdsCheck'
+import Attachments from './pages/Attachments'
+import Messages from './pages/Messages'
+import PopulationHealth from './pages/PopulationHealth'
+import FhirPush from './pages/FhirPush'
+import PrescriptionReceipt from './pages/PrescriptionReceipt'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -156,7 +166,87 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
-                
+                <Route
+                    path="/immunizations"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Immunizations />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/medications"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Medications />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/referrals"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Referrals />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/reports"
+                    element={
+                        <ProtectedRoute roles={['admin', 'auditor']}>
+                            <Reports />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/cds"
+                    element={
+                        <ProtectedRoute roles={['doctor', 'nurse']}>
+                            <CdsCheck />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/attachments"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Attachments />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/messages"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Messages />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/population"
+                    element={
+                        <ProtectedRoute roles={['admin', 'auditor']}>
+                            <PopulationHealth />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/fhir-push"
+                    element={
+                        <ProtectedRoute roles={['admin']}>
+                            <FhirPush />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/prescription-receipt"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <PrescriptionReceipt />
+                        </ProtectedRoute>
+                    }
+                />
+
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
