@@ -66,145 +66,126 @@ export default function Register() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center mesh-bg relative overflow-hidden">
-            <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-slow" />
-            <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-mint-500/10 rounded-full blur-3xl animate-pulse-slow" />
-
-            <div className="relative z-10 w-full max-w-md mx-4">
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-mint-400 glow-cyan mb-4">
-                        <span className="text-white font-bold text-2xl">E</span>
+        <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+            <div className="w-full max-w-[440px] px-6 py-12">
+                <div className="mb-8">
+                    <div className="flex items-baseline gap-2.5">
+                        <span className="font-serif text-[36px] font-semibold leading-none" style={{ color: 'var(--brand)' }}>EHR</span>
+                        <span className="font-mono text-[10px]" style={{ color: 'var(--ink-muted)' }}>v1.0</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-white">Create Account</h1>
-                    <p className="text-medical-400 mt-2">Join the Blockchain EHR Network</p>
+                    <p className="chart-label mt-2">Blockchain Health Records</p>
                 </div>
 
-                <div className="glass-card p-8">
-                    <h2 className="text-xl font-semibold text-white mb-6">Registration</h2>
+                <p className="chart-label mb-2">Registration</p>
+                <h2 className="font-serif text-[26px] leading-tight mb-1" style={{ color: 'var(--ink)', fontVariationSettings: "'opsz' 72" }}>
+                    Create a patient account
+                </h2>
+                <p className="text-[13px] mb-7" style={{ color: 'var(--ink-muted)' }}>
+                    Staff accounts are provisioned by an administrator.
+                </p>
 
-                    {error && (
-                        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/40 rounded-xl text-red-300 text-sm flex items-center gap-2">
-                            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                            </svg>
-                            {error}
-                        </div>
-                    )}
+                {error && (
+                    <div
+                        className="mb-5 px-3 py-2.5 text-[12px] flex items-start gap-2"
+                        style={{ background: 'rgba(224, 101, 93, 0.08)', border: '1px solid rgba(224, 101, 93, 0.32)', borderRadius: '3px', color: '#e0655d' }}
+                    >
+                        <svg className="w-4 h-4 mt-[1px] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{error}</span>
+                    </div>
+                )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-medical-300 text-sm mb-2">First Name</label>
-                                <input
-                                    type="text"
-                                    name="first_name"
-                                    value={form.first_name}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-medical-300 text-sm mb-2">Last Name</label>
-                                <input
-                                    type="text"
-                                    name="last_name"
-                                    value={form.last_name}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all"
-                                    required
-                                />
-                            </div>
-                        </div>
-
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-medical-300 text-sm mb-2">Email</label>
+                            <label className="chart-label block mb-1.5">First name</label>
+                            <input type="text" name="first_name" value={form.first_name} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" required />
+                        </div>
+                        <div>
+                            <label className="chart-label block mb-1.5">Last name</label>
+                            <input type="text" name="last_name" value={form.last_name} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" required />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="chart-label block mb-1.5">Email</label>
+                        <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" placeholder="you@example.com" required />
+                    </div>
+
+                    <div>
+                        <label className="chart-label block mb-1.5">Password</label>
+                        <input type="password" name="password" value={form.password} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" placeholder="Minimum 8 characters" required />
+                    </div>
+
+                    <div className="pt-1">
+                        <label className="flex items-start gap-2.5 cursor-pointer">
                             <input
-                                type="email"
-                                name="email"
-                                value={form.email}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all"
-                                required
+                                type="checkbox"
+                                checked={consentChecked}
+                                onChange={(e) => setConsentChecked(e.target.checked)}
+                                className="mt-1 w-3.5 h-3.5"
+                                style={{ accentColor: 'var(--accent)' }}
                             />
-                        </div>
+                            <span className="text-[12px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+                                I acknowledge that my health records will be encrypted at rest, anchored on the Stellar
+                                blockchain for integrity, and audit-logged. I have read the{' '}
+                                <a
+                                    href="#privacy-notice"
+                                    className="underline decoration-dotted"
+                                    style={{ color: 'var(--accent)' }}
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        alert(
+                                            'Privacy Notice ' + consentVersion + '\n\n' +
+                                            'Your medical records are:\n' +
+                                            '• Encrypted with AES-256-GCM before storage.\n' +
+                                            '• SHA-256 hash anchored on Stellar Testnet.\n' +
+                                            '• Access-gated by role-based + blockchain-enforced permissions.\n' +
+                                            '• Immutably audit-logged.\n\n' +
+                                            'You may revoke consent at any time from Settings. ' +
+                                            'Revoking does not delete existing records; request erasure separately.'
+                                        )
+                                    }}
+                                >
+                                    Privacy Notice {consentVersion && <span className="font-mono">({consentVersion})</span>}
+                                </a>{' '}
+                                and accept its terms.
+                            </span>
+                        </label>
+                    </div>
 
-                        <div>
-                            <label className="block text-medical-300 text-sm mb-2">Password</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={form.password}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all"
-                                required
-                            />
-                        </div>
+                    <button
+                        type="submit"
+                        disabled={loading || !consentChecked || !consentVersion}
+                        className="w-full py-2.5 text-[14px] font-medium transition-colors"
+                        style={{
+                            background: loading || !consentChecked || !consentVersion ? 'var(--ink-faint)' : 'var(--accent)',
+                            color: '#ffffff',
+                            borderRadius: '3px',
+                            cursor: loading || !consentChecked || !consentVersion ? 'not-allowed' : 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!loading && consentChecked && consentVersion) {
+                                (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-dark)'
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!loading && consentChecked && consentVersion) {
+                                (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent)'
+                            }
+                        }}
+                    >
+                        {loading ? 'Creating account…' : 'Create account'}
+                    </button>
+                </form>
 
-                        <div>
-                            <label className="block text-medical-300 text-sm mb-2">Role</label>
-                            <select
-                                name="role"
-                                value={form.role}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all appearance-none [&>option]:bg-slate-800"
-                            >
-                                <option value="patient">Patient</option>
-                            </select>
-                        </div>
-
-                        <div className="pt-2">
-                            <label className="flex items-start gap-3 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={consentChecked}
-                                    onChange={(e) => setConsentChecked(e.target.checked)}
-                                    className="mt-1 w-4 h-4 accent-cyan-500"
-                                />
-                                <span className="text-medical-300 text-sm">
-                                    I acknowledge that my health records will be encrypted at rest,
-                                    anchored on the Stellar blockchain for integrity, and audit-logged. I have read
-                                    the{' '}
-                                    <a
-                                        href="#privacy-notice"
-                                        className="text-cyan-400 hover:text-cyan-300 underline decoration-dotted"
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            alert(
-                                                'Privacy Notice ' + consentVersion + '\n\n' +
-                                                'Your medical records are:\n' +
-                                                '• Encrypted with AES-256-GCM before storage.\n' +
-                                                '• SHA-256 hash anchored on Stellar Testnet.\n' +
-                                                '• Access-gated by role-based + blockchain-enforced permissions.\n' +
-                                                '• Immutably audit-logged.\n\n' +
-                                                'You may revoke consent at any time from Settings. ' +
-                                                'Revoking does not delete existing records; request erasure separately.'
-                                            )
-                                        }}
-                                    >
-                                        Privacy Notice {consentVersion && <>({consentVersion})</>}
-                                    </a>{' '}
-                                    and accept.
-                                </span>
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading || !consentChecked || !consentVersion}
-                            className="w-full bg-gradient-to-r from-cyan-500 to-mint-500 text-white py-3 rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50 glow-cyan"
-                        >
-                            {loading ? 'Creating account...' : 'Create Account'}
-                        </button>
-                    </form>
-
-                    <p className="mt-6 text-center text-sm text-medical-400">
-                        Already have an account?{' '}
-                        <Link to="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-                            Sign In
-                        </Link>
-                    </p>
-                </div>
+                <p className="mt-6 pt-5 text-[12px]" style={{ borderTop: '1px solid var(--hairline)', color: 'var(--ink-muted)' }}>
+                    Already have an account?{' '}
+                    <Link to="/login" className="underline" style={{ color: 'var(--accent)' }}>
+                        Sign in
+                    </Link>
+                </p>
             </div>
         </div>
     )

@@ -3,7 +3,7 @@
 -- helper (see services/encryption.rs). Threads are derived client-side from
 -- (sender_id, recipient_id) pairs, newest-first.
 
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sender_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -15,8 +15,8 @@ CREATE TABLE messages (
 );
 
 -- Index for thread queries: all messages between a pair, newest first.
-CREATE INDEX idx_messages_pair_time ON messages
+CREATE INDEX IF NOT EXISTS idx_messages_pair_time ON messages
     (LEAST(sender_id, recipient_id), GREATEST(sender_id, recipient_id), created_at DESC);
 
 -- Index for unread lookup for a given recipient.
-CREATE INDEX idx_messages_unread ON messages (recipient_id, read_at) WHERE read_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages (recipient_id, read_at) WHERE read_at IS NULL;

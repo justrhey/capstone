@@ -2,7 +2,7 @@
 -- Stored inline as BYTEA for the capstone; production would offload to S3/MinIO
 -- and keep only the pointer + content hash here.
 
-CREATE TABLE attachments (
+CREATE TABLE IF NOT EXISTS attachments (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id       UUID REFERENCES orders(id) ON DELETE CASCADE,
     record_id      UUID REFERENCES medical_records(id) ON DELETE CASCADE,
@@ -17,5 +17,5 @@ CREATE TABLE attachments (
     CHECK (order_id IS NOT NULL OR record_id IS NOT NULL)
 );
 
-CREATE INDEX idx_attachments_order  ON attachments (order_id, uploaded_at DESC);
-CREATE INDEX idx_attachments_record ON attachments (record_id, uploaded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_attachments_order  ON attachments (order_id, uploaded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_attachments_record ON attachments (record_id, uploaded_at DESC);

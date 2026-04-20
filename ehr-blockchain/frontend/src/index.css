@@ -2,111 +2,616 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Clinical Chart (light) aesthetic.
+ *
+ * Off-white paper surfaces, a single solid teal accent, sharp 3-4px corners,
+ * hairline borders instead of shadows. Typography leans authoritative:
+ * Fraunces (variable serif) for headings and small-caps chart labels,
+ * IBM Plex Sans for body, IBM Plex Mono for IDs, hashes, timestamps, and
+ * chain receipts.
+ *
+ * Legacy semantic classes from the old glass/glow design (.glass-card,
+ * .glass-light, .mesh-bg, .glow-cyan, .accent-rail, .fade-up, .bento-hero,
+ * .text-glow) are reimplemented here so every existing page inherits the
+ * new look without per-file edits.
+ */
+
+:root {
+    /*
+     * Tells the browser this site is a light theme. Without this, Windows
+     * Chrome/Edge render the native <select> dropdown popup with OS dark
+     * colors when the OS is in dark mode — even though the page CSS
+     * declares white option backgrounds. color-scheme forces light.
+     */
+    color-scheme: light;
+
+    --bg:          #fafaf7;   /* paper */
+    --bg-deep:     #f2f3f4;
+    --surface:     #ffffff;   /* card */
+    --surface-alt: #fafaf7;
+    --sidebar:     #f2f3f4;   /* panel beside content */
+
+    --ink:         #0e1a24;   /* body / primary heading */
+    --ink-2:       #2a333b;
+    --ink-3:       #3f4b56;
+    --ink-muted:   #5f6d7a;
+    --ink-faint:   #8a95a0;
+
+    --hairline:    #e7eaed;
+    --hairline-2:  #dbe1e7;
+    --hairline-strong: #c8d0d7;
+
+    /* Input shape — distinct from card white so the user immediately sees
+     * the input shape. --input-bg is a noticeably greyer paper that reads
+     * as "here's a field, type here"; --input-border is darker than the
+     * card hairlines so the outline is unambiguous. */
+    --input-bg:      #eef1f4;
+    --input-bg-hover:#e6eaee;
+    --input-bg-focus:#ffffff;
+    --input-border:  #b8c1c9;
+    --input-border-hover: #8593a0;
+
+    --accent:      #0b6a7a;   /* clinical teal — functional accent */
+    --accent-dim:  #2e7a87;
+    --accent-dark: #084a57;
+    --accent-wash: rgba(11, 106, 122, 0.06);
+    --accent-tint: rgba(11, 106, 122, 0.14);
+
+    /* Brand (wordmark) colour — deliberately NOT the functional teal. Deep
+     * navy reads as authoritative medical/academic ink and keeps the
+     * logo identity separate from the interaction accent. */
+    --brand:       #1e3a5f;
+
+    --success:     #2e6948;
+    --warning:     #a36a00;
+    --danger:      #a0131d;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'ss01', 'cv01', 'cv09';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Subtle ruled chart-paper texture — barely perceptible, just adds tone. */
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-    min-height: 100vh;
+    background-image:
+        linear-gradient(to bottom, rgba(95, 109, 122, 0.05) 1px, transparent 1px),
+        linear-gradient(to right,  rgba(95, 109, 122, 0.03) 1px, transparent 1px);
+    background-size: 100% 28px, 28px 100%;
 }
 
-.glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Typography. Fraunces uses optical sizing axis: small → crisp, display → warm. */
+h1, h2, h3, h4, .serif {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: 'opsz' 36;
+    letter-spacing: -0.015em;
+    color: var(--ink);
 }
 
-.glass-light {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+.font-mono, code, pre, .mono {
+    font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
+    font-feature-settings: 'zero' 1;
 }
 
+/* Small-caps chart label — echoes medical-record form field labels. */
+.chart-label {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: 'opsz' 9;
+    font-feature-settings: 'smcp' 1, 'c2sc' 1;
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/* text-white override.                                                    */
+/* ────────────────────────────────────────────────────────────────────── */
+/*
+ * 27 existing pages use `text-white` as the primary text color on their
+ * old dark-mode cards. In light mode that text would vanish. Override
+ * `.text-white` to ink unless it's sitting on a teal/danger-tinted
+ * background (buttons, badges) where white-on-color is intentional.
+ *
+ * The selectors catch every known path: gradient buttons, solid-cyan
+ * buttons, solid-mint success buttons, red destructive buttons, and
+ * inline accent chips.
+ */
+.text-white {
+    color: var(--ink);
+}
+
+[class*="bg-gradient-to-"].text-white,
+[class*="bg-cyan-5"].text-white,
+[class*="bg-cyan-6"].text-white,
+[class*="bg-mint-5"].text-white,
+[class*="bg-mint-6"].text-white,
+[class*="bg-red-5"].text-white,
+[class*="bg-red-6"].text-white,
+[class*="bg-amber-5"].text-white,
+button[class*="bg-gradient"] .text-white {
+    color: #ffffff !important;
+}
+
+/* White-ish transparency utilities used as INPUT backgrounds on the old
+ * theme don't make sense in light mode. Rewrite the most common ones. */
+.bg-white\/5,
+.bg-white\/10 {
+    background-color: var(--surface) !important;
+}
+
+.border-white\/5,
+.border-white\/10,
+.border-white\/20 {
+    border-color: var(--hairline) !important;
+}
+
+/* placeholder-medical-500 is used on many inputs; map it to ink-faint. */
+.placeholder-medical-500::placeholder {
+    color: var(--ink-faint) !important;
+}
+
+/* divide-white/* and border-white/* on cards come from the old dark theme;
+ * make them visible hairlines on paper. */
+[class*="divide-white"] > * + * {
+    border-color: var(--hairline) !important;
+}
+
+/*
+ * Native option dropdowns. Several pages pin options to `bg-slate-800`
+ * with Tailwind's arbitrary variant `[&>option]:bg-slate-800`, which
+ * compiles to `.[…] > option` — higher specificity than a naked
+ * `option` rule. Force the override.
+ *
+ * Browsers differ on how much `<option>` styling they honour (the native
+ * dropdown popup is OS-themed in some builds), but Chrome, Edge, and
+ * Firefox on desktop all respect `background-color` + `color`.
+ */
+option,
+select > option,
+select[class*="bg-slate"] > option {
+    background: var(--surface) !important;
+    background-color: var(--surface) !important;
+    color: var(--ink) !important;
+}
+
+/* The old theme also used `bg-slate-800` on the select control itself.
+ * The `input, select, textarea` reset above sets this to `var(--surface)`
+ * with !important, but add an explicit `.bg-slate-800` hit just so no
+ * cascade weirdness leaks through on nested elements. */
+.bg-slate-800 {
+    background: var(--surface) !important;
+    background-color: var(--surface) !important;
+    color: var(--ink);
+}
+
+/* Ring utilities the old theme used for accent focus rings — map them to
+ * the teal accent wash so they read correctly on paper. */
+.ring-cyan-400\/20,
+.ring-cyan-400\/40,
+.ring-cyan-500\/20,
+.ring-cyan-500\/30 {
+    --tw-ring-color: rgba(11, 106, 122, 0.25) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/* Button system.                                                          */
+/* ────────────────────────────────────────────────────────────────────── */
+/*
+ * The codebase uses several button shapes:
+ *   - Primary:  bg-gradient-to-r from-cyan-500 to-mint-500 text-white
+ *   - Solid:    bg-cyan-500 text-white / bg-cyan-600
+ *   - Outline:  bg-white/5 border border-white/10 text-medical-300
+ *   - Danger:   text-red-400 / bg-red-500/10 etc.
+ *
+ * In the palette swap, both gradient stops resolve to the same teal so
+ * buttons render flat — but their hover variants also resolve to teal,
+ * leaving no hover affordance. Force a true darken-on-hover here.
+ */
+
+/* Primary (gradient or solid cyan) — solid teal, sharp corners, darken hover. */
+button[class*="bg-gradient-to-"],
+a[class*="bg-gradient-to-"][class*="text-white"] {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-radius: 3px !important;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+button[class*="bg-gradient-to-"]:hover:not(:disabled),
+a[class*="bg-gradient-to-"][class*="text-white"]:hover {
+    background: var(--accent-dark) !important;
+}
+
+button[class*="bg-gradient-to-"]:disabled,
+a[class*="bg-gradient-to-"][class*="text-white"][aria-disabled="true"] {
+    background: var(--ink-faint) !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+
+/*
+ * Secondary / "ghost" buttons. No outline — filled with a soft paper-grey,
+ * text in ink-muted, hovers shift to the teal accent (text only). The
+ * paper fill is enough to separate them from plain text links without
+ * needing a border.
+ */
+button[class*="bg-white/5"],
+button[class*="bg-white/10"],
+a[class*="bg-white/5"],
+a[class*="bg-white/10"] {
+    background: var(--bg-deep) !important;
+    border: 0 !important;
+    border-color: transparent !important;
+    color: var(--ink-2) !important;
+}
+button[class*="bg-white/5"]:hover,
+button[class*="bg-white/10"]:hover,
+a[class*="bg-white/5"]:hover,
+a[class*="bg-white/10"]:hover {
+    background: #e5e9ec !important;
+    color: var(--accent) !important;
+}
+
+/* Tighten the "pill"-rounded corners everywhere for a clinical feel. */
+.rounded-xl  { border-radius: 3px !important; }
+.rounded-2xl { border-radius: 4px !important; }
+
+/* ────────────────────────────────────────────────────────────────────── */
+/* No pastels — outline-only chips + solid saturated accents.             */
+/* ────────────────────────────────────────────────────────────────────── */
+/*
+ * The old dark theme used tinted pale fills (`bg-cyan-500/10` etc.) for
+ * status chips, KPI icon boxes, and subtle highlights. On a light paper
+ * surface those read as washed-out pastels — exactly what a clinical
+ * dashboard shouldn't look like. Wipe the fills out and let the saturated
+ * border + saturated text carry the status meaning, Epic-style.
+ *
+ * `bg-white/5` and `bg-white/10` are paper (overridden earlier). All
+ * other low-opacity colored fills below go transparent.
+ */
+[class*="bg-cyan-500/"],
+[class*="bg-cyan-400/"],
+[class*="bg-mint-500/"],
+[class*="bg-mint-400/"],
+[class*="bg-red-500/"],
+[class*="bg-red-400/"],
+[class*="bg-amber-500/"],
+[class*="bg-amber-400/"],
+[class*="bg-medical-500/"] {
+    background-color: transparent !important;
+}
+/* The saturated base shades (no /opacity) ARE intentional — they're button
+ * fills. Leave those alone. Only the /XX opacity variants above get wiped. */
+
+/* Borders on those same chips stay at full saturation so the outline
+ * actually reads. These all used to be 30-40% opacity of the accent; now
+ * they sit at the solid pigment. */
+/*
+ * No outlines anywhere. The old dark theme leaned heavily on colored
+ * borders at low opacity; on a light theme they read as outlined pills —
+ * a pattern the user explicitly wants to avoid. Kill every color-opacity
+ * border on any element.
+ */
+[class*="border-cyan-500/"],
+[class*="border-cyan-400/"],
+[class*="border-mint-500/"],
+[class*="border-mint-400/"],
+[class*="border-red-500/"],
+[class*="border-red-400/"],
+[class*="border-amber-500/"],
+[class*="border-amber-400/"] {
+    border-color: transparent !important;
+    border-width: 0 !important;
+}
+
+/*
+ * Status chips are filled, not outlined. Match the codebase convention:
+ * wherever a span/div has BOTH `bg-{color}-500/{opacity}` (pale fill)
+ * AND `text-{color}-300` (the status-text color), treat it as a chip and
+ * replace with a solid saturated fill + white text. `text-{color}-400`
+ * is reserved for icon accents on panels (not chips) so it's excluded.
+ */
+[class*="bg-cyan-500/"][class*="text-cyan-300"],
+[class*="bg-cyan-500/"][class*="text-cyan-200"] {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+}
+[class*="bg-mint-500/"][class*="text-mint-300"],
+[class*="bg-mint-500/"][class*="text-mint-200"] {
+    background: var(--success) !important;
+    color: #ffffff !important;
+}
+[class*="bg-red-500/"][class*="text-red-300"],
+[class*="bg-red-500/"][class*="text-red-400"] {
+    background: var(--danger) !important;
+    color: #ffffff !important;
+}
+[class*="bg-amber-500/"][class*="text-amber-300"],
+[class*="bg-amber-500/"][class*="text-amber-400"] {
+    background: var(--warning) !important;
+    color: #ffffff !important;
+}
+[class*="bg-medical-500/"][class*="text-medical-400"] {
+    background: var(--bg-deep) !important;
+    color: var(--ink-muted) !important;
+}
+
+/* Inline ring used for the "tampered record" highlight + a few
+ * active-selection rings. Keep the saturation. */
+[class*="ring-red-500/40"] {
+    --tw-ring-color: var(--danger) !important;
+}
+[class*="ring-cyan-500/40"],
+[class*="ring-cyan-400/40"] {
+    --tw-ring-color: var(--accent) !important;
+}
+
+/* The accent-wash variable drives the sidebar-active background and the
+ * global-search result highlight. Pull it from a pastel to a neutral
+ * paper-grey with the faintest teal bias so it reads as "selected row",
+ * not "teal pastel". */
+:root {
+    --accent-wash: #eef2f3;
+    --accent-tint: rgba(11, 106, 122, 0.08);
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/* Legacy utility shims — reimplemented for the clinical paper aesthetic. */
+/* ────────────────────────────────────────────────────────────────────── */
+
+/* Was: translucent blurred panels over radial mesh. Now: solid white
+ * cards with hairline border, no shadow, no blur. */
+.glass,
+.glass-light,
 .glass-card {
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    box-shadow: none;
 }
 
-.glow-green {
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+/* Sidebar + header use paper-adjacent grey to recede behind content. */
+.glass-light {
+    background: var(--sidebar);
+    border-color: var(--hairline);
+    border-radius: 0;
 }
 
-.glow-cyan {
-    box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
-}
-
+/* Glow effects and text-shadows → deleted. Solid pigment only. */
+.glow-green,
+.glow-cyan,
 .text-glow {
-    text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    box-shadow: none;
+    text-shadow: none;
 }
 
+/* Page background. Was a teal/mint radial mesh; now paper. */
 .mesh-bg {
-    background:
-        radial-gradient(at 20% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 50%),
-        radial-gradient(at 80% 20%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0%, rgba(2, 6, 23, 1) 100%);
+    background: var(--bg);
+    background-image:
+        linear-gradient(to bottom, rgba(95, 109, 122, 0.05) 1px, transparent 1px),
+        linear-gradient(to right,  rgba(95, 109, 122, 0.03) 1px, transparent 1px);
+    background-size: 100% 28px, 28px 100%;
+}
+
+/* Hero panels. Flat white surface, 1px border, no gradient wash. */
+.bento-hero {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+}
+
+/* Accent rail — solid teal 2px bar, no glow. */
+.accent-rail {
+    position: relative;
+    padding-left: 20px;
+}
+.accent-rail::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: var(--accent);
+    border-radius: 0;
+    box-shadow: none;
 }
 
 @keyframes fade-up {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
-
 .fade-up {
     opacity: 0;
-    animation: fade-up 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: fade-up 420ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-.accent-rail {
-    position: relative;
+/* ────────────────────────────────────────────────────────────────────── */
+/* Form controls — white inputs with teal focus ring.                     */
+/* ────────────────────────────────────────────────────────────────────── */
+
+input, select, textarea, button {
+    font-family: inherit;
 }
 
-.accent-rail::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 16px;
-    bottom: 16px;
-    width: 2px;
-    border-radius: 2px;
-    background: linear-gradient(180deg, rgba(6, 182, 212, 0.9) 0%, rgba(34, 197, 94, 0.35) 100%);
-    box-shadow: 0 0 12px rgba(6, 182, 212, 0.55);
+/*
+ * Filled-input pattern.
+ *
+ * Every input sits on a grey paper fill (--input-bg) that's distinctly
+ * darker than the white card backdrop. Even without looking at the
+ * border, the user sees the input as a distinct shape. On focus the
+ * fill lightens to pure white + teal border + teal ring — classic
+ * "now this field is active" affordance.
+ *
+ * Buttons and chips are untouched — they match `button[class*="..."]`
+ * or a combined bg+text class selector. This rule uses tag selectors
+ * so it only hits form controls, not ghost buttons.
+ */
+input, select, textarea {
+    background: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--ink) !important;
+    border-radius: 4px;
+    transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.bento-hero {
-    background:
-        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.18) 0%, transparent 55%),
-        radial-gradient(at 0% 100%, rgba(34, 197, 94, 0.12) 0%, transparent 55%),
-        rgba(255, 255, 255, 0.05);
+input::placeholder, textarea::placeholder {
+    color: var(--ink-faint) !important;
+    opacity: 1;
 }
+
+/* Hover: darken fill and border slightly. Clear "you can click here". */
+input:hover:not(:focus):not(:disabled),
+select:hover:not(:focus):not(:disabled),
+textarea:hover:not(:focus):not(:disabled) {
+    background: var(--input-bg-hover) !important;
+    border-color: var(--input-border-hover) !important;
+}
+
+/* Focus: white bg + teal border + teal focus ring. Unmistakable. */
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    background: var(--input-bg-focus) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(11, 106, 122, 0.22) !important;
+}
+
+/* Disabled: greyed out, not-allowed. */
+input:disabled, select:disabled, textarea:disabled {
+    background: var(--bg-deep) !important;
+    color: var(--ink-muted) !important;
+    border-color: var(--hairline) !important;
+    cursor: not-allowed;
+}
+
+/* Invalid (after user interaction): danger red border + red glow. */
+input:user-invalid,
+textarea:user-invalid,
+select:user-invalid {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px rgba(160, 19, 29, 0.14) !important;
+}
+
+/* Checkbox and radio stay small. Paint them teal. */
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--accent) !important;
+    background: transparent !important;
+    border: 1px solid var(--input-border) !important;
+    box-shadow: none !important;
+    width: 16px;
+    height: 16px;
+}
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
+    box-shadow: 0 0 0 3px rgba(11, 106, 122, 0.22) !important;
+}
+
+/* File inputs — give the "Choose file" trigger the ghost-button look. */
+input[type="file"] {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+}
+input[type="file"]::file-selector-button {
+    background: var(--ink) !important;
+    color: #ffffff !important;
+    border: 0 !important;
+    border-radius: 3px !important;
+    padding: 6px 12px !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    cursor: pointer;
+    margin-right: 12px;
+    transition: background 120ms ease;
+}
+input[type="file"]::file-selector-button:hover {
+    background: var(--accent) !important;
+}
+
+/*
+ * Native select chevron. Re-declared here so the path color matches the
+ * slightly darker input border for consistency, and so `!important` beats
+ * any inline styling on the select.
+ */
+select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%230E1A24' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    padding-right: 32px !important;
+}
+
+/*
+ * Tailwind's `placeholder-medical-500` class targets `::placeholder` and
+ * was set to an ink-faint grey earlier. Make sure placeholders remain
+ * readable on the new darker input fill.
+ */
+.placeholder-medical-500::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: var(--ink-muted) !important;
+    opacity: 1 !important;
+}
+
+/* Chevron for native selects. */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%235F6D7A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    padding-right: 28px !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/* Scrollbar.                                                              */
+/* ────────────────────────────────────────────────────────────────────── */
 
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 10px;
+    height: 10px;
 }
-
 ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
+    background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+    background: var(--hairline-2);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-faint);
+    background-clip: padding-box;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+/* Selection. */
+::selection {
+    background: rgba(11, 106, 122, 0.18);
+    color: var(--ink);
 }

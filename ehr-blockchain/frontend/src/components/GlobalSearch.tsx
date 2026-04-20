@@ -103,9 +103,16 @@ export default function GlobalSearch() {
 
   return (
     <div ref={boxRef} className="relative w-72">
-      <div className="glass-card flex items-center gap-2 px-3 py-2">
-        <svg className="w-4 h-4 text-medical-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+      <div
+        className="flex items-center gap-2 px-2.5 py-1.5"
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--hairline-2)',
+          borderRadius: '2px',
+        }}
+      >
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--ink-muted)' }}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
         </svg>
         <input
           ref={inputRef}
@@ -117,22 +124,34 @@ export default function GlobalSearch() {
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Search patients…"
-          className="flex-1 bg-transparent text-white placeholder-medical-500 text-sm focus:outline-none"
+          className="flex-1 text-[13px]"
+          style={{ background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
         />
-        <span className="text-medical-600 text-[10px] font-mono border border-white/10 rounded px-1.5 py-0.5">
+        <span
+          className="text-[10px] font-mono px-1.5 py-0.5"
+          style={{ color: 'var(--ink-muted)', border: '1px solid var(--hairline)', borderRadius: '2px' }}
+        >
           ⌘K
         </span>
       </div>
 
       {open && (q.trim().length >= 2 || recent.length > 0) && (
-        <div className="absolute right-0 mt-2 w-80 glass-card border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl">
+        <div
+          className="absolute right-0 mt-1.5 w-80 overflow-hidden z-50"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--hairline-2)',
+            borderRadius: '3px',
+            boxShadow: '0 4px 16px rgba(14, 26, 36, 0.08)',
+          }}
+        >
           {q.trim().length >= 2 ? (
             <>
-              <p className="px-3 pt-3 pb-2 text-[10px] uppercase tracking-[0.18em] text-medical-500">
-                {loading ? 'Searching…' : `Results (${hits.length})`}
+              <p className="chart-label px-3 pt-2.5 pb-1.5">
+                {loading ? 'Searching…' : `Results · ${hits.length}`}
               </p>
               {hits.length === 0 && !loading && (
-                <p className="px-3 py-3 text-medical-500 text-sm">No matches.</p>
+                <p className="px-3 py-3 text-[13px]" style={{ color: 'var(--ink-muted)' }}>No matches.</p>
               )}
               <ul className="max-h-72 overflow-auto">
                 {hits.map((h, i) => (
@@ -140,17 +159,18 @@ export default function GlobalSearch() {
                     <button
                       onClick={() => pick(h)}
                       onMouseEnter={() => setActiveIdx(i)}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-3 ${
-                        i === activeIdx
-                          ? 'bg-cyan-500/10 text-white'
-                          : 'text-medical-200 hover:bg-white/5'
-                      }`}
+                      className="w-full text-left px-3 py-2 text-[13px] flex items-center justify-between gap-3"
+                      style={{
+                        background: i === activeIdx ? 'var(--accent-wash)' : 'transparent',
+                        color: 'var(--ink)',
+                        borderLeft: i === activeIdx ? '2px solid var(--accent)' : '2px solid transparent',
+                      }}
                     >
                       <span className="truncate">
                         {h.first_name} {h.last_name}
                       </span>
-                      <span className="text-medical-600 text-[10px] font-mono shrink-0">
-                        {h.id.slice(0, 8)}…
+                      <span className="font-mono text-[10px] shrink-0" style={{ color: 'var(--ink-faint)' }}>
+                        {h.id.slice(0, 8)}
                       </span>
                     </button>
                   </li>
@@ -159,21 +179,22 @@ export default function GlobalSearch() {
             </>
           ) : (
             <>
-              <p className="px-3 pt-3 pb-2 text-[10px] uppercase tracking-[0.18em] text-medical-500">
-                Recently viewed
-              </p>
+              <p className="chart-label px-3 pt-2.5 pb-1.5">Recently viewed</p>
               <ul>
                 {recent.map((h) => (
                   <li key={h.id}>
                     <button
                       onClick={() => pick(h)}
-                      className="w-full text-left px-3 py-2 text-sm text-medical-200 hover:bg-white/5 flex items-center justify-between gap-3"
+                      className="w-full text-left px-3 py-2 text-[13px] flex items-center justify-between gap-3 transition-colors"
+                      style={{ color: 'var(--ink)' }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-wash)')}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
                     >
                       <span className="truncate">
                         {h.first_name} {h.last_name}
                       </span>
-                      <span className="text-medical-600 text-[10px] font-mono shrink-0">
-                        {h.id.slice(0, 8)}…
+                      <span className="font-mono text-[10px] shrink-0" style={{ color: 'var(--ink-faint)' }}>
+                        {h.id.slice(0, 8)}
                       </span>
                     </button>
                   </li>

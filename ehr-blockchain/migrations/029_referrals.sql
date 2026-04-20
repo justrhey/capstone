@@ -2,7 +2,7 @@
 -- A doctor/nurse refers a patient to another staff member (specialist, etc).
 -- Simple state machine: pending → accepted | declined | completed | cancelled.
 
-CREATE TABLE referrals (
+CREATE TABLE IF NOT EXISTS referrals (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patient_id    UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     from_user_id  UUID NOT NULL REFERENCES users(id) ON DELETE SET NULL,
@@ -16,6 +16,6 @@ CREATE TABLE referrals (
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_referrals_patient ON referrals (patient_id, created_at DESC);
-CREATE INDEX idx_referrals_to      ON referrals (to_user_id, status);
-CREATE INDEX idx_referrals_from    ON referrals (from_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_referrals_patient ON referrals (patient_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_referrals_to      ON referrals (to_user_id, status);
+CREATE INDEX IF NOT EXISTS idx_referrals_from    ON referrals (from_user_id, created_at DESC);

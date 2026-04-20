@@ -2,7 +2,7 @@
 -- Patients book a slot against a staff member; staff can mark completed,
 -- cancelled, or no-show. Admins see everything.
 
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patient_id         UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     staff_user_id      UUID NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
@@ -18,8 +18,8 @@ CREATE TABLE appointments (
     notes              TEXT
 );
 
-CREATE INDEX idx_appointments_staff_time   ON appointments (staff_user_id, start_at);
-CREATE INDEX idx_appointments_patient_time ON appointments (patient_id,   start_at);
-CREATE INDEX idx_appointments_scheduled
+CREATE INDEX IF NOT EXISTS idx_appointments_staff_time   ON appointments (staff_user_id, start_at);
+CREATE INDEX IF NOT EXISTS idx_appointments_patient_time ON appointments (patient_id,   start_at);
+CREATE INDEX IF NOT EXISTS idx_appointments_scheduled
     ON appointments (start_at)
     WHERE status = 'scheduled';
