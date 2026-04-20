@@ -95,6 +95,8 @@ async fn main() -> io::Result<()> {
                     .configure(handlers::problem_handler::problem_routes)
                     .configure(handlers::order_handler::order_routes)
                     .configure(handlers::appointment_handler::appointment_routes)
+                    .configure(handlers::immunization_handler::immunization_routes)
+                    .configure(handlers::search_handler::search_routes)
             })
             .bind((server_host, server_port))?
             .run()

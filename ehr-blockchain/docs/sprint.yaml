@@ -566,17 +566,20 @@ epics:
         size: m
       - id: OPS-4
         title: "Immunization records"
-        status: todo
+        status: done
         size: s
+        notes: "Migration 028_immunizations + backend handler + /immunizations frontend page."
       - id: OPS-5
         title: "Medication list as first-class view"
-        status: todo
+        status: done
         size: s
         depends_on: [CLIN-4]
+        notes: "Flattened med list via GET /api/patients/{id}/medications + /medications page."
       - id: OPS-6
         title: "Global patient search / recently viewed"
-        status: todo
+        status: done
         size: s
+        notes: "GET /api/search/patients + GlobalSearch component in Layout header with Cmd/Ctrl+K and sessionStorage recent list."
       - id: OPS-7
         title: "Reports / analytics page"
         status: todo
@@ -626,15 +629,15 @@ epics:
 progress:
   total_stories: 31
   by_status:
-    todo: 13
+    todo: 10
     in_progress: 0
-    done: 20
+    done: 23
   by_sprint:
     sprint_1_BI:  {total: 7, done: 7}  # ✅ COMPLETE
     sprint_2_CMP: {total: 6, done: 6}  # ✅ COMPLETE
     sprint_3_SEC: {total: 5, done: 5}  # ✅ COMPLETE
     sprint_4_CLIN: {total: 5, done: 5}  # ✅ COMPLETE
-    sprint_5_OPS:  {total: 7, done: 0}
+    sprint_5_OPS:  {total: 7, done: 3}  # OPS-4, OPS-5, OPS-6
     sprint_6_EXT:  {total: 7, done: 0}
 
 # ─────────────────────────────────────────────────────────────────────────────

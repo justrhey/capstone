@@ -19,6 +19,8 @@ import ErasureQueue from './pages/ErasureQueue'
 import Assignments from './pages/Assignments'
 import Problems from './pages/Problems'
 import Appointments from './pages/Appointments'
+import Immunizations from './pages/Immunizations'
+import Medications from './pages/Medications'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -156,7 +158,23 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
-                
+                <Route
+                    path="/immunizations"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Immunizations />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/medications"
+                    element={
+                        <ProtectedRoute roles={['patient', 'doctor', 'nurse', 'admin']}>
+                            <Medications />
+                        </ProtectedRoute>
+                    }
+                />
+
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>

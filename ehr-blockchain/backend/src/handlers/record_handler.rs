@@ -256,6 +256,53 @@ async fn get_receipt(
     Ok(HttpResponse::Ok().json(receipt))
 }
 
+/// OPS-5: flattened medication list for a patient — every Medication row from
+/// every record, newest first, with the source record id so the UI can link.
+#[derive(Debug, serde::Serialize, sqlx::FromRow)]
+struct MedicationListRow {
+    id: Uuid,
+    record_id: Uuid,
+    name: String,
+    dosage: String,
+    frequency: String,
+    created_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[get("/api/patients/{id}/medications")]
+async fn list_patient_medications(
+    req: HttpRequest,
+    path: web::Path<Uuid>,
+    pool: web::Data<PgPool>,
+) -> Result<impl Responder, AppError> {
+    let claims = require_claims(&req)?;
+    let patient_id = path.into_inner();
+
+    if claims.role == "patient" {
+        let owner: Option<Uuid> = sqlx::query_scalar(
+            "SELECT user_id FROM patients WHERE id = $1",
+        )
+        .bind(patient_id)
+        .fetch_optional(pool.get_ref())
+        .await?;
+        if owner != Some(claims.sub) {
+            return Err(AppError::Forbidden("Not your record".into()));
+        }
+    }
+
+    let rows = sqlx::query_as::<_, MedicationListRow>(
+        "SELECT m.id, m.record_id, m.name, m.dosage, m.frequency, m.created_at \
+         FROM medications m \
+         JOIN medical_records r ON r.id = m.record_id \
+         WHERE r.patient_id = $1 \
+         ORDER BY m.created_at DESC \
+         LIMIT 500",
+    )
+    .bind(patient_id)
+    .fetch_all(pool.get_ref())
+    .await?;
+    Ok(HttpResponse::Ok().json(rows))
+}
+
 pub fn record_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(create)
         .service(list_all)
@@ -263,5 +310,6 @@ pub fn record_routes(cfg: &mut web::ServiceConfig) {
         .service(get)
         .service(get_receipt)
         .service(update)
-        .service(delete);
+        .service(delete)
+        .service(list_patient_medications);
 }

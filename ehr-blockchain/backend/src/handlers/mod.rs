@@ -12,3 +12,5 @@ pub mod assignment_handler;
 pub mod problem_handler;
 pub mod order_handler;
 pub mod appointment_handler;
+pub mod immunization_handler;
+pub mod search_handler;

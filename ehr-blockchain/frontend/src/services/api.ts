@@ -135,4 +135,14 @@ export const getAllUsers = () => api.get('/api/users')
 export const getStaff = () => api.get('/api/users/staff')
 export const createStaff = (data: { email: string; password: string; role: 'doctor' | 'nurse' | 'auditor' | 'admin'; first_name: string; last_name: string }) => api.post('/api/users/staff', data)
 
+// Immunizations (OPS-4)
+export const listPatientImmunizations = (patientId: string) => api.get(`/api/patients/${patientId}/immunizations`)
+export const createImmunization = (data: { patient_id: string; vaccine: string; dose_number?: number; administered_on: string; manufacturer?: string; lot_number?: string; site?: string; notes?: string }) => api.post('/api/immunizations', data)
+
+// Medications list (OPS-5)
+export const listPatientMedications = (patientId: string) => api.get(`/api/patients/${patientId}/medications`)
+
+// Global patient search (OPS-6)
+export const searchPatients = (q: string) => api.get(`/api/search/patients?q=${encodeURIComponent(q)}`)
+
 export default api

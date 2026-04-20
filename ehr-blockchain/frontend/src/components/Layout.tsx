@@ -1,11 +1,14 @@
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
+import GlobalSearch from './GlobalSearch'
 
 const navItems = [
   { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', roles: ['patient', 'doctor', 'nurse', 'admin', 'auditor'] },
   { label: 'Patients', path: '/patients', icon: 'patients', roles: ['doctor', 'nurse', 'admin'] },
   { label: 'Records', path: '/records', icon: 'records', roles: ['doctor', 'nurse', 'admin'] },
   { label: 'Problem List', path: '/problems', icon: 'records', roles: ['patient', 'doctor', 'nurse', 'admin'] },
+  { label: 'Medications', path: '/medications', icon: 'records', roles: ['patient', 'doctor', 'nurse', 'admin'] },
+  { label: 'Immunizations', path: '/immunizations', icon: 'records', roles: ['patient', 'doctor', 'nurse', 'admin'] },
   { label: 'Appointments', path: '/appointments', icon: 'audit', roles: ['patient', 'doctor', 'nurse', 'admin'] },
   { label: 'My Records', path: '/my-records', icon: 'records', roles: ['patient'] },
   { label: 'Access History', path: '/access-history', icon: 'audit', roles: ['patient'] },
@@ -108,6 +111,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </h2>
 
           <div className="flex items-center gap-4">
+            {user && ['doctor', 'nurse', 'admin', 'auditor'].includes(user.role) && (
+              <GlobalSearch />
+            )}
             <div className="glass-card px-4 py-2 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-mint-400 glow-green animate-pulse" />
               <span className="text-mint-300 text-xs font-medium">Connected</span>
