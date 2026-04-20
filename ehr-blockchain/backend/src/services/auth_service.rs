@@ -118,19 +118,28 @@ pub async fn register_user(
         return Err(AppError::BadRequest("Password must be at least 8 characters".into()));
     }
 
-    // CMP-1: require the client to explicitly acknowledge the current privacy notice.
-    match req.consent_version.as_deref() {
-        Some(v) if v == CURRENT_CONSENT_VERSION => {}
-        Some(_) => {
-            return Err(AppError::BadRequest(format!(
-                "Stale consent version. Current is {}.",
-                CURRENT_CONSENT_VERSION
-            )));
-        }
-        None => {
-            return Err(AppError::BadRequest(
-                "consent_version is required — you must accept the privacy notice to register.".into(),
-            ));
+    // CMP-1: privacy-notice consent capture.
+    // Patient self-registration: the user has just clicked the checkbox, so
+    // we require them to submit the current consent_version explicitly.
+    // Admin-driven staff creation (allow_privileged_role=true): the admin is
+    // not the person whose consent is being recorded, so we stamp the
+    // current version automatically. The staff member is expected to re-
+    // review the privacy notice on first login via Settings, and may revoke
+    // consent at any time.
+    if !allow_privileged_role {
+        match req.consent_version.as_deref() {
+            Some(v) if v == CURRENT_CONSENT_VERSION => {}
+            Some(_) => {
+                return Err(AppError::BadRequest(format!(
+                    "Stale consent version. Current is {}.",
+                    CURRENT_CONSENT_VERSION
+                )));
+            }
+            None => {
+                return Err(AppError::BadRequest(
+                    "consent_version is required — you must accept the privacy notice to register.".into(),
+                ));
+            }
         }
     }
 
