@@ -145,4 +145,39 @@ export const listPatientMedications = (patientId: string) => api.get(`/api/patie
 // Global patient search (OPS-6)
 export const searchPatients = (q: string) => api.get(`/api/search/patients?q=${encodeURIComponent(q)}`)
 
+// Referrals (OPS-3)
+export const listReferrals = () => api.get('/api/referrals')
+export const createReferral = (data: { patient_id: string; to_user_id: string; specialty?: string; reason: string }) => api.post('/api/referrals', data)
+export const updateReferralStatus = (id: string, status: 'accepted' | 'declined' | 'completed' | 'cancelled', note?: string) =>
+  api.put(`/api/referrals/${id}/status`, { status, note })
+
+// Reports (OPS-7)
+export const getReportsSummary = () => api.get('/api/reports/summary')
+
+// Clinical Decision Support (OPS-2)
+export const cdsCheck = (data: { patient_id: string; new_meds: string[] }) => api.post('/api/cds/check', data)
+
+// Attachments (OPS-1)
+export const listOrderAttachments = (orderId: string) => api.get(`/api/orders/${orderId}/attachments`)
+export const uploadOrderAttachment = (orderId: string, data: { filename: string; mime_type: string; content_base64: string }) =>
+  api.post(`/api/orders/${orderId}/attachments`, data)
+export const downloadAttachment = (id: string) => api.get(`/api/attachments/${id}/download`, { responseType: 'blob' })
+export const deleteAttachment = (id: string) => api.delete(`/api/attachments/${id}`)
+
+// Messaging (EXT-1)
+export const listMessageThreads = () => api.get('/api/messages')
+export const getMessageThread = (counterpartyId: string) => api.get(`/api/messages/thread/${counterpartyId}`)
+export const sendMessage = (data: { to_user_id: string; patient_id?: string; body: string }) => api.post('/api/messages', data)
+export const getUnreadMessages = () => api.get('/api/messages/unread-count')
+export const markMessageRead = (id: string) => api.put(`/api/messages/${id}/read`)
+
+// Prescription receipt (EXT-2)
+export const getPrescriptionReceipt = (orderId: string) => api.get(`/api/orders/${orderId}/prescription-receipt`)
+
+// FHIR outbound (EXT-4)
+export const stageFhirPush = (data: { patient_id: string; endpoint: string }) => api.post('/api/fhir/stage-push', data)
+
+// Population health (EXT-5)
+export const getPopulationCohorts = () => api.get('/api/population/cohorts')
+
 export default api

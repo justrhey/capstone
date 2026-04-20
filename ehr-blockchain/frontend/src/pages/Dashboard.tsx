@@ -251,22 +251,22 @@ export default function Dashboard() {
   const quickActions: Array<{ label: string; path: string }> =
     user?.role === 'admin'
       ? [
-          { label: 'Create staff', path: '/create-staff' },
-          { label: 'Patients', path: '/patients' },
-          { label: 'Audit logs', path: '/audit' },
-        ]
+        { label: 'Create staff', path: '/create-staff' },
+        { label: 'Patients', path: '/patients' },
+        { label: 'Audit logs', path: '/audit' },
+      ]
       : user?.role === 'doctor' || user?.role === 'nurse'
         ? [
-            { label: 'Patients', path: '/patients' },
-            { label: 'Records', path: '/records' },
-          ]
+          { label: 'Patients', path: '/patients' },
+          { label: 'Records', path: '/records' },
+        ]
         : user?.role === 'auditor'
           ? [{ label: 'Audit logs', path: '/audit' }]
           : user?.role === 'patient'
             ? [
-                { label: 'My records', path: '/my-records' },
-                { label: 'Permissions', path: '/permissions' },
-              ]
+              { label: 'My records', path: '/my-records' },
+              { label: 'Permissions', path: '/permissions' },
+            ]
             : []
 
   // Role-specific bento: [hero, two secondary, optional tertiary]
@@ -278,34 +278,34 @@ export default function Dashboard() {
   const bento: Bento =
     user?.role === 'admin'
       ? {
-          hero: { label: 'Total Users', value: stats.totalUsers, icon: 'users', accent: 'cyan', hint: `${stats.totalPatients} patients · ${stats.totalRecords} records` },
-          secondary: [
-            { label: 'Patients', value: stats.totalPatients, icon: 'patients', accent: 'mint' },
-            { label: 'Records', value: stats.totalRecords, icon: 'records', accent: 'cyan' },
-            { label: 'Audit events', value: stats.auditCount, icon: 'audit', accent: 'amber' },
-            { label: 'System', value: 'Online', icon: 'shield', accent: 'mint' },
-          ],
-        }
+        hero: { label: 'Total Users', value: stats.totalUsers, icon: 'users', accent: 'cyan', hint: `${stats.totalPatients} patients · ${stats.totalRecords} records` },
+        secondary: [
+          { label: 'Patients', value: stats.totalPatients, icon: 'patients', accent: 'mint' },
+          { label: 'Records', value: stats.totalRecords, icon: 'records', accent: 'cyan' },
+          { label: 'Audit events', value: stats.auditCount, icon: 'audit', accent: 'amber' },
+          { label: 'System', value: 'Online', icon: 'shield', accent: 'mint' },
+        ],
+      }
       : user?.role === 'doctor' || user?.role === 'nurse'
         ? {
-            hero: { label: 'Records', value: stats.totalRecords, icon: 'records', accent: 'cyan', hint: `${stats.totalPatients} patients in the system` },
-            secondary: [
-              { label: 'Patients', value: stats.totalPatients, icon: 'patients', accent: 'mint' },
-              { label: 'Audit events', value: stats.auditCount, icon: 'audit', accent: 'amber' },
-            ],
-          }
+          hero: { label: 'Records', value: stats.totalRecords, icon: 'records', accent: 'cyan', hint: `${stats.totalPatients} patients in the system` },
+          secondary: [
+            { label: 'Patients', value: stats.totalPatients, icon: 'patients', accent: 'mint' },
+            { label: 'Audit events', value: stats.auditCount, icon: 'audit', accent: 'amber' },
+          ],
+        }
         : user?.role === 'auditor'
           ? {
-              hero: { label: 'Audit events', value: stats.auditCount, icon: 'audit', accent: 'amber', hint: 'Mutations across the system' },
-              secondary: [{ label: 'Flagged events', value: 0, icon: 'shield', accent: 'rose' }],
-            }
+            hero: { label: 'Audit events', value: stats.auditCount, icon: 'audit', accent: 'amber', hint: 'Mutations across the system' },
+            secondary: [{ label: 'Flagged events', value: 0, icon: 'shield', accent: 'rose' }],
+          }
           : {
-              hero: { label: 'My records', value: stats.totalRecords, icon: 'records', accent: 'cyan', hint: stats.totalPatients > 0 ? 'Patient profile linked' : 'No profile linked yet' },
-              secondary: [
-                { label: 'Active permissions', value: stats.activePermissions, icon: 'key', accent: 'mint' },
-                { label: 'Linked profile', value: stats.totalPatients > 0 ? 'Yes' : 'No', icon: 'profile', accent: 'cyan' },
-              ],
-            }
+            hero: { label: 'My records', value: stats.totalRecords, icon: 'records', accent: 'cyan', hint: stats.totalPatients > 0 ? 'Patient profile linked' : 'No profile linked yet' },
+            secondary: [
+              { label: 'Active permissions', value: stats.activePermissions, icon: 'key', accent: 'mint' },
+              { label: 'Linked profile', value: stats.totalPatients > 0 ? 'Yes' : 'No', icon: 'profile', accent: 'cyan' },
+            ],
+          }
 
   return (
     <Layout>

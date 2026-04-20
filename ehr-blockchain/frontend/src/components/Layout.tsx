@@ -1,6 +1,8 @@
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import GlobalSearch from './GlobalSearch'
+import { LOCALES } from '../i18n/translations'
+import { useTranslation } from '../i18n/useTranslation'
 
 const navItems = [
   { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', roles: ['patient', 'doctor', 'nurse', 'admin', 'auditor'] },
@@ -10,6 +12,13 @@ const navItems = [
   { label: 'Medications', path: '/medications', icon: 'records', roles: ['patient', 'doctor', 'nurse', 'admin'] },
   { label: 'Immunizations', path: '/immunizations', icon: 'records', roles: ['patient', 'doctor', 'nurse', 'admin'] },
   { label: 'Appointments', path: '/appointments', icon: 'audit', roles: ['patient', 'doctor', 'nurse', 'admin'] },
+  { label: 'Referrals', path: '/referrals', icon: 'patients', roles: ['patient', 'doctor', 'nurse', 'admin'] },
+  { label: 'Messages', path: '/messages', icon: 'audit', roles: ['patient', 'doctor', 'nurse', 'admin'] },
+  { label: 'CDS Check', path: '/cds', icon: 'key', roles: ['doctor', 'nurse'] },
+  { label: 'Attachments', path: '/attachments', icon: 'records', roles: ['patient', 'doctor', 'nurse', 'admin'] },
+  { label: 'Reports', path: '/reports', icon: 'dashboard', roles: ['admin', 'auditor'] },
+  { label: 'Population Health', path: '/population', icon: 'dashboard', roles: ['admin', 'auditor'] },
+  { label: 'FHIR Outbound', path: '/fhir-push', icon: 'key', roles: ['admin'] },
   { label: 'My Records', path: '/my-records', icon: 'records', roles: ['patient'] },
   { label: 'Access History', path: '/access-history', icon: 'audit', roles: ['patient'] },
   { label: 'Permissions', path: '/permissions', icon: 'key', roles: ['patient'] },
@@ -37,6 +46,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const { t, locale, setLocale } = useTranslation()
 
   const handleLogout = () => {
     logout()
@@ -79,7 +89,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }`}
                 >
                   {icons[item.icon]}
-                  <span>{item.label}</span>
+                  <span>{t(item.label)}</span>
                   {isActive && (
                     <div className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-400 glow-cyan" />
                   )}
@@ -99,7 +109,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             onClick={handleLogout}
             className="w-full px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors border border-transparent hover:border-red-500/20"
           >
-            Sign Out
+            {t('Sign Out')}
           </button>
         </div>
       </aside>
@@ -114,9 +124,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {user && ['doctor', 'nurse', 'admin', 'auditor'].includes(user.role) && (
               <GlobalSearch />
             )}
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as typeof locale)}
+              title="Language"
+              className="glass-card px-3 py-2 bg-slate-800 text-medical-300 text-xs focus:outline-none [&>option]:bg-slate-800"
+            >
+              {LOCALES.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
             <div className="glass-card px-4 py-2 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-mint-400 glow-green animate-pulse" />
-              <span className="text-mint-300 text-xs font-medium">Connected</span>
+              <span className="text-mint-300 text-xs font-medium">{t('Connected')}</span>
               <span className="text-medical-500 text-[10px] ml-1">Soroban Network</span>
             </div>
             <div className="glass-card px-3 py-2">
