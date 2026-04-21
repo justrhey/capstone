@@ -492,6 +492,62 @@ psql -h localhost -U ehr_admin -d ehr_db -c "SELECT 1"
 
 ## Changelog / What's New
 
+### Version 1.2 (April 2026)
+
+#### New Features
+- **Database Startup Script**: Created `/home/nami/database.sh` for easy PostgreSQL startup
+- **Chapter 3 System Architecture Diagrams**: Added Mermaid diagrams for documentation:
+  - High-Level Architecture (4-layer box diagram)
+  - System Components (Frontend/Backend/Database)
+  - User Authentication Flow (Login, Register, TOTP)
+  - Patient Management Flow (CRUD operations)
+  - Medical Record Creation Flow (SOAP + Blockchain)
+  - Blockchain Verification Flow (Hash comparison)
+  - Database Entity Relationship Diagram
+  - Technology Stack Diagram
+  - Security Features Diagram
+
+#### Improvements
+- **Login Page Redesign**: Enhanced UI with:
+  - Softer shadows and larger typography
+  - Decorative gradient accent line
+  - Updated welcome text ("Welcome back")
+  - Rounded inputs (6px) with more padding
+  - Gradient button with glow effect
+  - Animated pulse indicator for connection status
+- **Input Outlines**: Added visible outlines to all input fields in Create/Edit Medical Record modals:
+  - Better border visibility (`border-white/20`)
+  - Subtle outline effect for focus states
+
+#### Testing & Verification
+- **System Test Results**: Verified working components:
+  - PostgreSQL database connects successfully
+  - Database has 21+ tables with data
+  - Backend compiles with 8 warnings (non-critical)
+  - Frontend builds successfully
+  - Health endpoint returns `{"database":"connected","status":"ok"}`
+  - All core EHR features present (patients, records, vitals, medications, allergies, orders, audit logs)
+
+#### Documentation
+- **docs/chapter3-diagrams.md**: Updated with print-friendly Mermaid diagrams
+- **docs/README.md**: Complete technical documentation with setup instructions
+
+#### Quick Start Scripts
+```bash
+# Start PostgreSQL
+/home/nami/database.sh
+
+# Then start backend from ehr-blockchain directory
+cd /home/nami/capstone/ehr-blockchain
+./target/release/ehr-backend
+
+# Start frontend from frontend directory
+cd /home/nami/capstone/ehr-blockchain/frontend
+npm run dev
+```
+
+---
+
 ### Version 1.1 (April 2026)
 
 #### New Features
@@ -527,5 +583,5 @@ ALTER TABLE patients ADD COLUMN last_name VARCHAR(100);
 
 ---
 
-*Document Version: 1.1*  
+*Document Version: 1.2*  
 *Last Updated: April 2026*

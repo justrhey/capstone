@@ -603,7 +603,7 @@ export default function Records() {
               )}
               <div>
                 <label className="block text-medical-300 text-sm mb-2">Patient</label>
-                <select required value={formData.patient_id} onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
+                <select required value={formData.patient_id} onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/20 rounded-xl text-white outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800" style={{ outline: '2px solid transparent', outlineOffset: '2px' }}>
                   <option value="">-- Select patient --</option>
                   {patients.map((p) => (
                     <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>
@@ -614,25 +614,25 @@ export default function Records() {
                 <label className="block text-medical-300 text-sm mb-2">
                   <span className="text-cyan-300 font-semibold">S</span> — Subjective <span className="text-medical-500 text-xs">(patient-reported symptoms, history)</span>
                 </label>
-                <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+                <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
               <div>
                 <label className="block text-medical-300 text-sm mb-2">
                   <span className="text-cyan-300 font-semibold">O</span> — Objective <span className="text-medical-500 text-xs">(exam findings, vitals narrative)</span>
                 </label>
-                <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+                <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
               <div>
                 <label className="block text-medical-300 text-sm mb-2">
                   <span className="text-cyan-300 font-semibold">A</span> — Assessment <span className="text-medical-500 text-xs">(clinical judgment / diagnosis)</span>
                 </label>
-                <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
               <div>
                 <label className="block text-medical-300 text-sm mb-2">
                   <span className="text-cyan-300 font-semibold">P</span> — Plan <span className="text-medical-500 text-xs">(treatment, follow-up)</span>
                 </label>
-                <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+                <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
 
               <div className="border-t border-white/10 pt-4">
@@ -662,7 +662,8 @@ export default function Records() {
                           })
                         }
                         placeholder={placeholder}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-medical-600 focus:outline-none focus:border-cyan-400/50 text-sm"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-medical-600 focus:border-cyan-400/50 text-sm"
+                        style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }}
                       />
                     </div>
                   ))}
@@ -680,17 +681,17 @@ export default function Records() {
                       const meds = [...formData.medications]
                       meds[i].name = e.target.value
                       setFormData({ ...formData, medications: meds })
-                    }} className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                    }} className="flex-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                     <input type="text" placeholder="Dosage" value={med.dosage} onChange={(e) => {
                       const meds = [...formData.medications]
                       meds[i].dosage = e.target.value
                       setFormData({ ...formData, medications: meds })
-                    }} className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                    }} className="w-24 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                     <input type="text" placeholder="Freq" value={med.frequency} onChange={(e) => {
                       const meds = [...formData.medications]
                       meds[i].frequency = e.target.value
                       setFormData({ ...formData, medications: meds })
-                    }} className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                    }} className="w-20 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                     {formData.medications.length > 1 && (
                       <button type="button" onClick={() => removeMedication(i)} className="text-red-400">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -707,20 +708,20 @@ export default function Records() {
                   <label className="text-medical-300 text-sm">Allergies</label>
                   <button type="button" onClick={addAllergy} className="text-cyan-400 text-sm">+ Add</button>
                 </div>
-                {formData.allergies.map((allergy, i) => (
+{formData.allergies.map((allergy, i) => (
                   <div key={i} className="flex gap-2 mb-2">
                     <input type="text" placeholder="Allergen" value={allergy.allergen} onChange={(e) => {
                       const alls = [...formData.allergies]
                       alls[i].allergen = e.target.value
                       setFormData({ ...formData, allergies: alls })
-                    }} className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                    }} className="flex-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                     <select value={allergy.severity} onChange={(e) => {
                       const alls = [...formData.allergies]
                       alls[i].severity = e.target.value
                       setFormData({ ...formData, allergies: alls })
-                    }} className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm">
+                    }} className="w-28 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }}>
                       <option value="mild">Mild</option>
-                      <option value="moderate">Moderate</option>
+                      <option value="moderate">moderate</option>
                       <option value="severe">Severe</option>
                     </select>
                     {formData.allergies.length > 1 && (
@@ -872,19 +873,19 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-auto">
           <div>
             <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">S</span> — Subjective</label>
-            <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+            <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
           <div>
             <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">O</span> — Objective</label>
-            <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+            <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
           <div>
             <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">A</span> — Assessment</label>
-            <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+            <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
           <div>
             <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">P</span> — Plan</label>
-            <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+            <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
 
           <div>
@@ -898,17 +899,17 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
                   const meds = [...formData.medications]
                   meds[i].name = e.target.value
                   setFormData({ ...formData, medications: meds })
-                }} className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                }} className="flex-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                 <input type="text" placeholder="Dosage" value={med.dosage} onChange={(e) => {
                   const meds = [...formData.medications]
                   meds[i].dosage = e.target.value
                   setFormData({ ...formData, medications: meds })
-                }} className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                }} className="w-24 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                 <input type="text" placeholder="Freq" value={med.frequency} onChange={(e) => {
                   const meds = [...formData.medications]
                   meds[i].frequency = e.target.value
                   setFormData({ ...formData, medications: meds })
-                }} className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                }} className="w-20 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                 {formData.medications.length > 1 && (
                   <button type="button" onClick={() => removeMedication(i)} className="text-red-400">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -931,12 +932,12 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
                   const alls = [...formData.allergies]
                   alls[i].allergen = e.target.value
                   setFormData({ ...formData, allergies: alls })
-                }} className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm" />
+                }} className="flex-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
                 <select value={allergy.severity} onChange={(e) => {
                   const alls = [...formData.allergies]
                   alls[i].severity = e.target.value
                   setFormData({ ...formData, allergies: alls })
-                }} className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm">
+                }} className="w-28 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }}>
                   <option value="mild">Mild</option>
                   <option value="moderate">Moderate</option>
                   <option value="severe">Severe</option>
