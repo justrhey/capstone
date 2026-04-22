@@ -1,7 +1,10 @@
 import axios from 'axios'
 
+// Use current host IP for mobile access
+const API_BASE = window.location.hostname + ':8080'
+
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: `http://${API_BASE}`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -48,6 +51,7 @@ export const getMyPatient = () => api.get('/api/patients/me').catch(() => ({ dat
 
 // Records
 export const getRecords = () => api.get('/api/records')
+export const getMyRecords = () => api.get('/api/records/me').catch(() => ({ data: [] }))
 export const getRecord = (id: string) => api.get(`/api/records/${id}`)
 export const getRecordsByPatient = (patientId: string) => api.get(`/api/patients/${patientId}/records`)
 export const createRecord = (data: any) => api.post('/api/records', data)
@@ -56,8 +60,8 @@ export const deleteRecord = (id: string) => api.delete(`/api/records/${id}`)
 
 // Users
 export const getAllUsers = () => api.get('/api/users')
-export const getStaff = () => api.get('/api/users')
-export const createStaff = (data: any) => api.post('/api/auth/register', data)
+export const getStaff = () => api.get('/api/users/staff')  // Staff-only endpoint for patients too
+export const createStaff = (data: any) => api.post('/api/users/staff', data)
 
 // Permissions
 export const getPermissions = () => api.get('/api/permissions')

@@ -42,21 +42,19 @@ export default {
                     600: '#084a57',
                     700: '#063640',
                 },
-                // INVERTED scale — the codebase treats `text-medical-200` as
-                // the most prominent text color (body copy on the old dark
-                // cards). In light mode that needs to be the DARKEST ink;
-                // `medical-600+` fades to paper-adjacent greys for muted labels.
+                // FIXED: readable colors for dark mode UI (slate-900 background)
+                // Use white/slate for main text - much more readable!
                 medical: {
                     50:  '#fafaf7',
-                    100: '#f4f5f6',
-                    200: '#0e1a24',  // strong ink — primary body
-                    300: '#2a333b',
-                    400: '#5f6d7a',
-                    500: '#8a95a0',
-                    600: '#cbd1d6',
-                    700: '#e7eaed',
-                    800: '#f4f5f6',
-                    900: '#fafaf7',
+                    100: '#f1f5f9',  // very light text (almost white)
+                    200: '#e2e8f0',  // white-ish (main body text)
+                    300: '#cbd5e1',  // light grey
+                    400: '#94a3b8',  // muted grey (labels)
+                    500: '#64748b',   // dimmed (hints)
+                    600: '#475569',
+                    700: '#334155',
+                    800: '#1e293b',
+                    900: '#0f172a',
                     950: '#ffffff',
                 },
                 // Amber / red: pastel 50-200 collapsed to paper so nothing

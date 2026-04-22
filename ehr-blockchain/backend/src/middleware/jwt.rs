@@ -14,6 +14,7 @@ use crate::services::auth_service::decode_token;
 fn is_public_path(path: &str) -> bool {
     path == "/"
         || path == "/health"
+        || path == "/api/info"
         || path.starts_with("/api/auth/")
 }
 

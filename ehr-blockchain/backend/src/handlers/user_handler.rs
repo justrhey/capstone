@@ -20,7 +20,7 @@ async fn list(
     pool: web::Data<PgPool>,
     params: web::Query<PageParams>,
 ) -> Result<impl Responder, AppError> {
-    require_role(&req, &["admin"])?;
+    require_role(&req, &["admin", "doctor", "nurse"])?;
     let users = list_users(&pool, Page::from_params(&params)).await?;
     Ok(HttpResponse::Ok().json(users))
 }

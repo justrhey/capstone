@@ -294,7 +294,7 @@ export default function Records() {
       <div className="mb-6 fade-up" style={{ animationDelay: '80ms' }}>
         {/* Search Bar */}
         <div className="relative mb-4">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-medical-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -302,11 +302,11 @@ export default function Records() {
             placeholder="Search patient by name..."
             value={patientSearch}
             onChange={(e) => setPatientSearch(e.target.value)}
-            className="w-full max-w-md pl-10 pr-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50"
+            className="w-full max-w-md pl-10 pr-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50"
           />
         </div>
         
-        <label className="block text-medical-300 text-sm mb-2">Select Patient</label>
+        <label className="block text-slate-300 text-sm mb-2">Select Patient</label>
         <div className="flex gap-2">
           <select
             value={selectedPatient}
@@ -329,7 +329,7 @@ export default function Records() {
             </button>
           )}
         </div>
-        <p className="text-medical-500 text-xs mt-2">
+        <p className="text-slate-400 text-xs mt-2">
           Showing {filteredPatients.length} of {patients.length} patients
         </p>
       </div>
@@ -340,17 +340,17 @@ export default function Records() {
         </div>
       ) : !selectedPatient ? (
         <div className="glass-card p-12 text-center">
-          <svg className="w-16 h-16 mx-auto text-medical-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <p className="text-medical-400">Select a patient to view records</p>
+          <p className="text-slate-300">Select a patient to view records</p>
         </div>
       ) : records.length === 0 ? (
         <div className="glass-card p-12 text-center">
-          <svg className="w-16 h-16 mx-auto text-medical-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <p className="text-medical-400">No records for this patient</p>
+          <p className="text-slate-300">No records for this patient</p>
           <button onClick={() => setShowModal(true)} className="mt-4 text-cyan-400 hover:text-cyan-300">Create the first record</button>
         </div>
       ) : (
@@ -404,7 +404,7 @@ export default function Records() {
                       Encrypted
                     </span>
                   </div>
-                  <p className="text-medical-400 text-sm mt-1">
+                  <p className="text-slate-300 text-sm mt-1">
                     {new Date(item.record.created_at).toLocaleString()}
                   </p>
                 </div>
@@ -417,7 +417,7 @@ export default function Records() {
                       className="text-right mr-4 group"
                       title="View transaction on Stellar Expert"
                     >
-                      <p className="text-medical-500 text-xs">TX Hash ↗</p>
+                      <p className="text-slate-400 text-xs">TX Hash ↗</p>
                       <p className="text-cyan-300 group-hover:text-cyan-200 text-xs font-mono underline decoration-dotted underline-offset-2">
                         {item.blockchain_tx_hash.slice(0, 12)}...
                       </p>
@@ -425,7 +425,7 @@ export default function Records() {
                   )}
                   {(() => {
                     const v = verifyResults[item.record.id]
-                    if (v?.loading) return <span className="text-medical-400 text-xs">Verifying…</span>
+                    if (v?.loading) return <span className="text-slate-300 text-xs">Verifying…</span>
                     if (v?.status === 'intact') return <span className="text-mint-400 text-xs">✓ On-chain match</span>
                     if (v?.status === 'tampered') return <span className="text-red-400 text-xs">⚠ Tampered</span>
                     if (v?.status === 'unavailable') return <span className="text-amber-400 text-xs">Chain offline</span>
@@ -452,48 +452,48 @@ export default function Records() {
               </div>
 
               {item.record.subjective && (
-                <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">S — Subjective</p>
-                  <p className="text-medical-100 text-sm">{item.record.subjective}</p>
+                <div className="mb-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <p className="text-cyan-400 text-xs uppercase tracking-wider mb-2 font-semibold">S — Subjective</p>
+                  <p className="text-white text-sm leading-relaxed">{item.record.subjective}</p>
                 </div>
               )}
               {item.record.objective && (
-                <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">O — Objective</p>
-                  <p className="text-medical-100 text-sm">{item.record.objective}</p>
+                <div className="mb-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <p className="text-cyan-400 text-xs uppercase tracking-wider mb-2 font-semibold">O — Objective</p>
+                  <p className="text-white text-sm leading-relaxed">{item.record.objective}</p>
                 </div>
               )}
               {item.record.assessment && (
-                <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">A — Assessment</p>
-                  <p className="text-white text-sm">{item.record.assessment}</p>
+                <div className="mb-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <p className="text-cyan-400 text-xs uppercase tracking-wider mb-2 font-semibold">A — Assessment</p>
+                  <p className="text-white text-sm leading-relaxed font-medium">{item.record.assessment}</p>
                 </div>
               )}
               {item.record.plan && (
-                <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-1">P — Plan</p>
-                  <p className="text-medical-100 text-sm">{item.record.plan}</p>
+                <div className="mb-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+                  <p className="text-cyan-400 text-xs uppercase tracking-wider mb-2 font-semibold">P — Plan</p>
+                  <p className="text-white text-sm leading-relaxed">{item.record.plan}</p>
                 </div>
               )}
 
               {item.vitals && item.vitals.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase tracking-wider mb-2">Vitals</p>
+                <div className="mb-4">
+                  <p className="text-cyan-400 text-xs uppercase tracking-wider mb-2 font-semibold">Vitals</p>
                   <div className="flex flex-wrap gap-2">
                     {item.vitals.map((v, i) => (
-                      <span key={i} className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-200 text-sm">
-                        <span className="text-rose-400/80 text-xs mr-1">{v.kind.replace(/_/g, ' ')}</span>
-                        <span className="font-mono">{v.value}</span>
-                        <span className="text-medical-400 text-xs ml-1">{v.unit}</span>
+                      <span key={i} className="px-3 py-2 bg-rose-900/30 border border-rose-500/30 rounded-lg text-sm">
+                        <span className="text-rose-300 text-xs mr-1 font-medium">{v.kind.replace(/_/g, ' ')}</span>
+                        <span className="text-white font-mono font-bold">{v.value}</span>
+                        <span className="text-slate-300 text-xs ml-1">{v.unit}</span>
                       </span>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-medical-500 text-xs uppercase tracking-wider">Orders</p>
+<div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-cyan-400 text-xs uppercase tracking-wider font-semibold">Orders</p>
                   {canOrder && (
                     <button
                       onClick={() => handleAddOrder(item.record.id)}
@@ -513,13 +513,13 @@ export default function Records() {
                       const statusColor =
                         o.status === 'ordered' ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
                         : o.status === 'fulfilled' ? 'bg-mint-500/10 text-mint-300 border-mint-500/30'
-                        : 'bg-medical-500/10 text-medical-400 border-white/10'
+                        : 'bg-slate-600/10 text-slate-300 border-white/10'
                       return (
                         <li key={o.id} className="flex items-center gap-3 py-1">
                           <span className={`px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider border ${kindColor}`}>
                             {o.kind}
                           </span>
-                          <span className="text-medical-100 text-sm flex-1 min-w-0 truncate">{o.summary}</span>
+                          <span className="text-white text-sm flex-1 min-w-0 truncate">{o.summary}</span>
                           <span className={`px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider border ${statusColor}`}>
                             {o.status}
                           </span>
@@ -544,13 +544,13 @@ export default function Records() {
                     })}
                   </ul>
                 ) : (
-                  <p className="text-medical-600 text-xs">No orders yet.</p>
+                  <p className="text-slate-400 text-xs">No orders yet.</p>
                 )}
               </div>
 
               {item.medications.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-medical-500 text-xs uppercase mb-2">Medications</p>
+                  <p className="text-slate-400 text-xs uppercase mb-2">Medications</p>
                   <div className="flex flex-wrap gap-2">
                     {item.medications.map((med, i) => (
                       <span key={i} className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-300 text-sm">
@@ -563,7 +563,7 @@ export default function Records() {
 
               {item.allergies.length > 0 && (
                 <div>
-                  <p className="text-medical-500 text-xs uppercase mb-2">Allergies</p>
+                  <p className="text-slate-400 text-xs uppercase mb-2">Allergies</p>
                   <div className="flex flex-wrap gap-2">
                     {item.allergies.map((allergy, i) => (
                       <span key={i} className={`px-3 py-1 rounded-lg text-sm ${allergy.severity === 'severe' ? 'bg-red-500/10 border border-red-500/20 text-red-400' : allergy.severity === 'moderate' ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-400' : 'bg-orange-500/10 border border-orange-500/20 text-orange-400'}`}>
@@ -575,8 +575,8 @@ export default function Records() {
               )}
 
               <div className="mt-4 pt-4 border-t border-white/5">
-                <p className="text-medical-500 text-xs">Record Hash (SHA-256)</p>
-                <p className="text-medical-300 text-xs font-mono break-all">{item.record.record_hash}</p>
+                <p className="text-slate-400 text-xs">Record Hash (SHA-256)</p>
+                <p className="text-slate-300 text-xs font-mono break-all">{item.record.record_hash}</p>
               </div>
             </div>
           )})}
@@ -589,7 +589,7 @@ export default function Records() {
           <div className="glass-card w-full max-w-2xl p-6 mx-4 my-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-white">Create Medical Record</h2>
-              <button onClick={() => setShowModal(false)} className="text-medical-400 hover:text-white">
+              <button onClick={() => setShowModal(false)} className="text-slate-300 hover:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -602,7 +602,7 @@ export default function Records() {
                 </div>
               )}
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Patient</label>
+                <label className="block text-slate-300 text-sm mb-2">Patient</label>
                 <select required value={formData.patient_id} onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/20 rounded-xl text-white outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800" style={{ outline: '2px solid transparent', outlineOffset: '2px' }}>
                   <option value="">-- Select patient --</option>
                   {patients.map((p) => (
@@ -611,32 +611,32 @@ export default function Records() {
                 </select>
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">
-                  <span className="text-cyan-300 font-semibold">S</span> — Subjective <span className="text-medical-500 text-xs">(patient-reported symptoms, history)</span>
+                <label className="block text-slate-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">S</span> — Subjective <span className="text-slate-400 text-xs">(patient-reported symptoms, history)</span>
                 </label>
-                <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+                <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">
-                  <span className="text-cyan-300 font-semibold">O</span> — Objective <span className="text-medical-500 text-xs">(exam findings, vitals narrative)</span>
+                <label className="block text-slate-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">O</span> — Objective <span className="text-slate-400 text-xs">(exam findings, vitals narrative)</span>
                 </label>
-                <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+                <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">
-                  <span className="text-cyan-300 font-semibold">A</span> — Assessment <span className="text-medical-500 text-xs">(clinical judgment / diagnosis)</span>
+                <label className="block text-slate-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">A</span> — Assessment <span className="text-slate-400 text-xs">(clinical judgment / diagnosis)</span>
                 </label>
-                <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+                <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">
-                  <span className="text-cyan-300 font-semibold">P</span> — Plan <span className="text-medical-500 text-xs">(treatment, follow-up)</span>
+                <label className="block text-slate-300 text-sm mb-2">
+                  <span className="text-cyan-300 font-semibold">P</span> — Plan <span className="text-slate-400 text-xs">(treatment, follow-up)</span>
                 </label>
-                <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+                <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
               </div>
 
               <div className="border-t border-white/10 pt-4">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-medical-500 mb-3">Vitals (optional)</p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-3">Vitals (optional)</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {([
                     ['temp_c', 'Temp', '°C', '36.8'],
@@ -647,8 +647,8 @@ export default function Records() {
                     ['weight_kg', 'Weight', 'kg', '65'],
                   ] as const).map(([key, label, unit, placeholder]) => (
                     <div key={key}>
-                      <label className="block text-medical-400 text-xs mb-1">
-                        {label} <span className="text-medical-600">({unit})</span>
+                      <label className="block text-slate-300 text-xs mb-1">
+                        {label} <span className="text-slate-400">({unit})</span>
                       </label>
                       <input
                         type="number"
@@ -662,7 +662,7 @@ export default function Records() {
                           })
                         }
                         placeholder={placeholder}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-medical-600 focus:border-cyan-400/50 text-sm"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-slate-600 focus:border-cyan-400/50 text-sm"
                         style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }}
                       />
                     </div>
@@ -672,7 +672,7 @@ export default function Records() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-medical-300 text-sm">Medications</label>
+                  <label className="text-slate-300 text-sm">Medications</label>
                   <button type="button" onClick={addMedication} className="text-cyan-400 text-sm">+ Add</button>
                 </div>
                 {formData.medications.map((med, i) => (
@@ -705,7 +705,7 @@ export default function Records() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-medical-300 text-sm">Allergies</label>
+                  <label className="text-slate-300 text-sm">Allergies</label>
                   <button type="button" onClick={addAllergy} className="text-cyan-400 text-sm">+ Add</button>
                 </div>
 {formData.allergies.map((allergy, i) => (
@@ -780,13 +780,13 @@ export default function Records() {
           <div className="glass-card w-full max-w-md p-6 mx-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-white">Delete Medical Record</h2>
-              <button onClick={() => setDeletingRecord(null)} className="text-medical-400 hover:text-white">
+              <button onClick={() => setDeletingRecord(null)} className="text-slate-300 hover:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <p className="text-medical-300 mb-6">
+            <p className="text-slate-300 mb-6">
               Are you sure you want to delete this medical record for <span className="text-white font-medium">{deletingRecord.patientName}</span>? 
               This action cannot be undone. The blockchain verification will also be removed.
             </p>
@@ -864,7 +864,7 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
       <div className="glass-card w-full max-w-2xl p-6 mx-4 my-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-white">Edit Medical Record</h2>
-          <button onClick={onCancel} className="text-medical-400 hover:text-white">
+          <button onClick={onCancel} className="text-slate-300 hover:text-white">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -872,25 +872,25 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-auto">
           <div>
-            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">S</span> — Subjective</label>
-            <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+            <label className="block text-slate-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">S</span> — Subjective</label>
+            <textarea value={formData.subjective} onChange={(e) => setFormData({ ...formData, subjective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
           <div>
-            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">O</span> — Objective</label>
-            <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+            <label className="block text-slate-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">O</span> — Objective</label>
+            <textarea value={formData.objective} onChange={(e) => setFormData({ ...formData, objective: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
           <div>
-            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">A</span> — Assessment</label>
-            <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+            <label className="block text-slate-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">A</span> — Assessment</label>
+            <input type="text" value={formData.assessment} onChange={(e) => setFormData({ ...formData, assessment: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
           <div>
-            <label className="block text-medical-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">P</span> — Plan</label>
-            <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-medical-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
+            <label className="block text-slate-300 text-sm mb-2"><span className="text-cyan-300 font-semibold">P</span> — Plan</label>
+            <textarea value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })} rows={2} className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400/50 resize-none" style={{ outline: '2px solid rgba(255,255,255,0.1)', outlineOffset: '2px' }} />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-medical-300 text-sm">Medications</label>
+              <label className="text-slate-300 text-sm">Medications</label>
               <button type="button" onClick={addMedication} className="text-cyan-400 text-sm">+ Add</button>
             </div>
             {formData.medications.map((med, i) => (
@@ -923,7 +923,7 @@ function EditRecordModal({ record, onSave, onCancel }: { record: RecordWithPatie
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-medical-300 text-sm">Allergies</label>
+              <label className="text-slate-300 text-sm">Allergies</label>
               <button type="button" onClick={addAllergy} className="text-cyan-400 text-sm">+ Add</button>
             </div>
             {formData.allergies.map((allergy, i) => (

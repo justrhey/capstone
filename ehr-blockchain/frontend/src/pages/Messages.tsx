@@ -145,7 +145,7 @@ export default function Messages() {
       )}
 
       <div className="glass-card p-5 mb-6 fade-up" style={{ animationDelay: '60ms' }}>
-        <p className="text-[11px] uppercase tracking-[0.18em] text-medical-500 mb-2">Start a conversation</p>
+        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400 mb-2">Start a conversation</p>
         <select
           value={newRecipient}
           onChange={(e) => e.target.value && startNewThread(e.target.value)}
@@ -169,34 +169,34 @@ export default function Messages() {
 
       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4">
         <aside className="glass-card p-3 max-h-[60vh] overflow-y-auto fade-up" style={{ animationDelay: '120ms' }}>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-medical-500 px-2 pt-2 pb-3">
-            Threads ({threadList.length})
+          <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-400 font-semibold px-2 pt-2 pb-3">
+            Conversations ({threadList.length})
           </p>
           {threadList.length === 0 ? (
-            <p className="text-medical-500 text-sm px-2">No conversations yet.</p>
+            <p className="text-slate-400 text-sm px-2">No conversations yet.</p>
           ) : (
-            <ul>
+            <ul className="space-y-1">
               {threadList.map((t) => (
                 <li key={t.counterparty_id}>
                   <button
                     onClick={() => setActive(t)}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+                    className={`w-full text-left px-3 py-3 rounded-xl text-sm transition-all ${
                       active?.counterparty_id === t.counterparty_id
-                        ? 'bg-cyan-500/10 text-white border border-cyan-400/30'
-                        : 'text-medical-200 hover:bg-white/5'
+                        ? 'bg-cyan-600/20 text-white border border-cyan-500/50'
+                        : 'text-slate-200 hover:bg-slate-700/50 border border-transparent'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="truncate font-medium">
+                      <span className="truncate font-semibold text-white">
                         {t.counterparty_first_name} {t.counterparty_last_name}
                       </span>
                       {t.unread_count > 0 && (
-                        <span className="shrink-0 bg-red-500/20 text-red-300 text-[10px] rounded-full px-2 py-0.5 border border-red-500/30">
+                        <span className="shrink-0 bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5">
                           {t.unread_count}
                         </span>
                       )}
                     </div>
-                    <p className="text-medical-500 text-xs truncate mt-0.5">{t.last_body}</p>
+                    <p className="text-slate-400 text-xs truncate mt-1">{t.last_body}</p>
                   </button>
                 </li>
               ))}
@@ -207,29 +207,34 @@ export default function Messages() {
         <section className="glass-card p-5 flex flex-col min-h-[60vh] fade-up" style={{ animationDelay: '180ms' }}>
           {active ? (
             <>
-              <div className="border-b border-white/10 pb-3 mb-3">
-                <p className="text-white font-medium">
+              <div className="border-b border-slate-600 pb-4 mb-4 bg-slate-800/50 px-4 py-3 -mx-5 mt-[-20px] pt-5">
+                <p className="text-white font-bold text-lg">
                   {active.counterparty_first_name} {active.counterparty_last_name}
                 </p>
-                <p className="text-medical-500 text-xs">{active.counterparty_role}</p>
+                <p className="text-cyan-400 text-xs font-medium uppercase tracking-wide mt-1">
+                  {active.counterparty_role}
+                </p>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 {messages.length === 0 ? (
-                  <p className="text-medical-500 text-sm">No messages yet. Say hello.</p>
+                  <p className="text-slate-400 text-base text-center py-10">No messages yet. Say hello!</p>
                 ) : (
                   messages.map((m) => {
                     const mine = m.sender_id === user?.id
                     return (
                       <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                         <div
-                          className={`max-w-[70%] px-3 py-2 rounded-2xl text-sm ${
+                          className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
                             mine
-                              ? 'bg-gradient-to-br from-cyan-500/30 to-mint-500/20 text-white border border-cyan-400/30'
-                              : 'bg-white/5 text-medical-100 border border-white/10'
+                              ? 'bg-gradient-to-br from-cyan-600 to-cyan-700 text-white border border-cyan-500'
+                              : 'bg-slate-700 text-white border border-slate-600'
                           }`}
+                          style={{
+                            boxShadow: mine ? '0 2px 8px rgba(8, 145, 178, 0.3)' : '0 2px 6px rgba(0,0,0,0.2)',
+                          }}
                         >
-                          <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                          <p className="text-[10px] opacity-60 mt-1">
+                          <p className="whitespace-pre-wrap break-words font-medium leading-relaxed">{m.body}</p>
+                          <p className={`text-[11px] mt-2 ${mine ? 'text-cyan-100' : 'text-slate-300'}`}>
                             {new Date(m.created_at).toLocaleString()}
                           </p>
                         </div>
@@ -239,7 +244,7 @@ export default function Messages() {
                 )}
                 <div ref={bottomRef} />
               </div>
-              <div className="mt-3 flex gap-2 border-t border-white/10 pt-3">
+              <div className="mt-4 flex gap-3 border-t border-slate-600 pt-4">
                 <textarea
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -250,21 +255,21 @@ export default function Messages() {
                     }
                   }}
                   rows={2}
-                  placeholder="Type a message… (Shift+Enter for newline)"
-                  className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 text-sm focus:outline-none focus:border-cyan-400/50 resize-none"
+                  placeholder="Type a message..."
+                  className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 resize-none placeholder-slate-400"
                 />
                 <button
                   onClick={handleSend}
                   disabled={sending || !draft.trim()}
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-mint-500 text-white rounded-xl font-medium disabled:opacity-50"
+                  className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-xl font-semibold disabled:opacity-50 hover:from-cyan-500 hover:to-cyan-600 transition-all shadow-lg"
                 >
-                  {sending ? '…' : 'Send'}
+                  {sending ? '...' : 'Send'}
                 </button>
               </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-medical-500 text-sm">Select a conversation or start a new one.</p>
+              <p className="text-slate-400 text-base">Select a conversation or start a new one.</p>
             </div>
           )}
         </section>

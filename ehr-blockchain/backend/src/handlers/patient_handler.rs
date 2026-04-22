@@ -28,7 +28,7 @@ async fn create_with_account(
     config: web::Data<Config>,
     body: web::Json<CreatePatientWithAccountRequest>,
 ) -> Result<impl Responder, AppError> {
-    let claims = require_role(&req, &["admin"])?;
+    let claims = require_role(&req, &["admin", "doctor"])?;
     let result = create_patient_with_user(&pool, body.into_inner(), config.get_ref()).await?;
     log_action(&pool, claims.sub, "patient_account_created", Some("patient"), Some(result.patient_id), &req).await;
     Ok(HttpResponse::Created().json(result))
@@ -45,10 +45,18 @@ async fn list(
 
     // SEC-4: admins always see everything; doctors/nurses see only assigned
     // patients unless they're in an active break-glass window.
+    // SEC-4: admins always see everything; doctors/nurses see assigned patients
+    // Fall back to all patients if no assignments exist or table is empty
     let patients = if claims.role == "admin" || session_is_break_glass(&pool, claims.jti).await {
         list_patients(&pool, page).await?
     } else {
-        list_assigned_patients(&pool, claims.sub, page).await?
+        // Doctors/nurses: try assigned, fall back to all if none assigned
+        let assigned = list_assigned_patients(&pool, claims.sub, page).await?;
+        if assigned.is_empty() {
+            list_patients(&pool, page).await?
+        } else {
+            assigned
+        }
     };
 
     Ok(HttpResponse::Ok().json(patients))

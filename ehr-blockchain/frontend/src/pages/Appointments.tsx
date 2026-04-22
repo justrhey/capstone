@@ -39,7 +39,7 @@ function statusTone(s: Appointment['status']) {
     case 'completed':
       return 'bg-mint-500/10 text-mint-300 border-mint-500/30'
     case 'cancelled':
-      return 'bg-medical-500/10 text-medical-400 border-white/10'
+      return 'bg-medical-500/10 text-slate-400 border-white/10'
     case 'no_show':
       return 'bg-amber-500/10 text-amber-300 border-amber-500/30'
   }
@@ -136,7 +136,7 @@ export default function Appointments() {
         actions={
           <button
             onClick={load}
-            className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-medical-300 text-sm hover:bg-white/10"
+            className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-sm hover:bg-white/10"
           >
             Refresh
           </button>
@@ -151,7 +151,7 @@ export default function Appointments() {
 
       {isPatient && (
         <div className="glass-card p-5 mb-6 fade-up" style={{ animationDelay: '60ms' }}>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-medical-500 mb-3">Book an appointment</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-3">Book an appointment</p>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_120px_auto] gap-3">
             <select
               value={staffPick}
@@ -205,11 +205,11 @@ export default function Appointments() {
       ) : (
         <>
           <section className="glass-card p-5 mb-6 fade-up" style={{ animationDelay: '120ms' }}>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-medical-500 mb-3">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-3">
               Upcoming ({upcoming.length})
             </p>
             {upcoming.length === 0 ? (
-              <p className="text-medical-500 text-sm">No upcoming appointments.</p>
+              <p className="text-slate-500 text-sm">No upcoming appointments.</p>
             ) : (
               <ul className="divide-y divide-white/5">
                 {upcoming.map((a) => (
@@ -218,10 +218,10 @@ export default function Appointments() {
                       <p className="text-white text-sm font-mono">
                         {new Date(a.start_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </p>
-                      <p className="text-medical-400 text-xs font-mono">
+                      <p className="text-slate-400 text-xs font-mono">
                         {new Date(a.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
-                      <p className="text-medical-600 text-[10px]">{a.duration_minutes} min</p>
+                      <p className="text-slate-600 text-[10px]">{a.duration_minutes} min</p>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm">
@@ -230,7 +230,7 @@ export default function Appointments() {
                           : `${a.patient_first_name} ${a.patient_last_name}`}
                       </p>
                       {a.reason && (
-                        <p className="text-medical-400 text-xs mt-1">{a.reason}</p>
+                        <p className="text-slate-400 text-xs mt-1">{a.reason}</p>
                       )}
                     </div>
                     <span className={`shrink-0 px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider border ${statusTone(a.status)}`}>
@@ -267,11 +267,11 @@ export default function Appointments() {
           </section>
 
           <section className="glass-card p-5 fade-up" style={{ animationDelay: '180ms' }}>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-medical-500 mb-3">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-3">
               History ({history.length})
             </p>
             {history.length === 0 ? (
-              <p className="text-medical-500 text-sm">No past appointments yet.</p>
+              <p className="text-slate-500 text-sm">No past appointments yet.</p>
             ) : (
               <ul className="divide-y divide-white/5">
                 {history.slice(0, 30).map((a) => (
@@ -280,14 +280,14 @@ export default function Appointments() {
                       {a.status.replace('_', ' ')}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-medical-200 text-sm">
+                      <p className="text-slate-200 text-sm">
                         {new Date(a.start_at).toLocaleString()} ·{' '}
                         {isPatient
                           ? `${a.staff_first_name} ${a.staff_last_name}`
                           : `${a.patient_first_name} ${a.patient_last_name}`}
                       </p>
                       {a.reason && (
-                        <p className="text-medical-500 text-xs mt-1">{a.reason}</p>
+                        <p className="text-slate-500 text-xs mt-1">{a.reason}</p>
                       )}
                     </div>
                   </li>

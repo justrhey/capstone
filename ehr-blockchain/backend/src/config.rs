@@ -38,7 +38,10 @@ fn load_stellar_admin_key() -> String {
                 return s;
             }
             Err(e) => {
-                eprintln!("[config] could not read STELLAR_ADMIN_KEY_FILE={}: {}", path, e);
+                eprintln!(
+                    "[config] could not read STELLAR_ADMIN_KEY_FILE={}: {}",
+                    path, e
+                );
                 return "placeholder".into();
             }
         }
@@ -55,7 +58,46 @@ fn load_stellar_admin_key() -> String {
 
 impl Config {
     pub fn from_env() -> Result<Self, env::VarError> {
-        dotenvy::dotenv().ok();
+        // Try to load from executable's directory first, then current dir
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                let exe_env = exe_dir.join(".env");
+                if exe_env.exists() {
+                    if dotenvy::from_path(&exe_env).is_ok() {
+                        eprintln!("[config] Loaded .env from executable dir: {:?}", exe_env);
+                    }
+                }
+            }
+        }
+
+        // Try current working directory and parent dirs
+        let env_paths = [".env", "../.env", "../../.env", "../../../.env"];
+
+        let mut loaded = false;
+        for env_path in env_paths {
+            let path = std::path::Path::new(env_path);
+            if path.exists() {
+                if dotenvy::from_path(path).is_ok() {
+                    eprintln!("[config] Loaded .env from: {}", env_path);
+                    loaded = true;
+                    break;
+                }
+            }
+        }
+
+        if !loaded {
+            eprintln!("[config] Warning: No .env file found in any expected location");
+        }
+
+        let db_url = env::var("DATABASE_URL").unwrap_or_else(|_| "not_configured".into());
+        eprintln!(
+            "[config] DATABASE_URL: {}",
+            if db_url == "not_configured" {
+                "NOT CONFIGURED!"
+            } else {
+                "configured"
+            }
+        );
 
         Ok(Self {
             server_host: env::var("SERVER_HOST").unwrap_or_else(|_| "127.0.0.1".into()),
@@ -63,7 +105,7 @@ impl Config {
                 .unwrap_or_else(|_| "8080".into())
                 .parse()
                 .unwrap_or(8080),
-            database_url: env::var("DATABASE_URL").unwrap_or_else(|_| "not_configured".into()),
+            database_url: db_url,
             jwt_secret: env::var("JWT_SECRET").unwrap_or_else(|_| "dev-secret".into()),
             jwt_expiration_minutes: env::var("JWT_EXPIRATION_MINUTES")
                 .unwrap_or_else(|_| "15".into())

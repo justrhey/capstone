@@ -58,28 +58,28 @@ function EditPatientForm({ patient, onSave, onCancel }: { patient: Patient; onSa
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-medical-300 text-sm mb-2">First Name</label>
-          <input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+          <label className="block text-slate-300 text-sm mb-2">First Name</label>
+          <input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" />
         </div>
         <div>
-          <label className="block text-medical-300 text-sm mb-2">Last Name</label>
-          <input type="text" required value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+          <label className="block text-slate-300 text-sm mb-2">Last Name</label>
+          <input type="text" required value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" />
         </div>
       </div>
       <div>
-        <label className="block text-medical-300 text-sm mb-2">Date of Birth</label>
+        <label className="block text-slate-300 text-sm mb-2">Date of Birth</label>
         <input type="date" required value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-medical-300 text-sm mb-2">Sex</label>
+          <label className="block text-slate-300 text-sm mb-2">Sex</label>
           <select value={formData.sex} onChange={(e) => setFormData({ ...formData, sex: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
         </div>
         <div>
-          <label className="block text-medical-300 text-sm mb-2">Blood Type</label>
+          <label className="block text-slate-300 text-sm mb-2">Blood Type</label>
           <select value={formData.blood_type} onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
             <option value="">Unknown</option>
             <option value="A+">A+</option>
@@ -94,12 +94,12 @@ function EditPatientForm({ patient, onSave, onCancel }: { patient: Patient; onSa
         </div>
       </div>
       <div>
-        <label className="block text-medical-300 text-sm mb-2">Contact Number</label>
-        <input type="tel" value={formData.contact_number} onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })} placeholder="e.g. +63 912 345 6789" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+        <label className="block text-slate-300 text-sm mb-2">Contact Number</label>
+        <input type="tel" value={formData.contact_number} onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })} placeholder="e.g. +63 912 345 6789" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" />
       </div>
       <div>
-        <label className="block text-medical-300 text-sm mb-2">Address</label>
-        <textarea value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2} placeholder="Street, City, Postal Code" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+        <label className="block text-slate-300 text-sm mb-2">Address</label>
+        <textarea value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2} placeholder="Street, City, Postal Code" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
       </div>
       <div className="flex gap-4">
         <button type="button" onClick={onCancel} className="flex-1 px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
@@ -251,7 +251,7 @@ export default function Patients() {
       {/* Search Bar */}
       <div className="mb-4 fade-up" style={{ animationDelay: '80ms' }}>
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-medical-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -259,7 +259,7 @@ export default function Patients() {
             placeholder="Search patients by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full max-w-md pl-10 pr-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50"
+            className="w-full max-w-md pl-10 pr-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50"
           />
         </div>
       </div>
@@ -270,10 +270,10 @@ export default function Patients() {
         </div>
       ) : filteredPatients.length === 0 ? (
         <div className="glass-card p-12 text-center">
-          <svg className="w-16 h-16 mx-auto text-medical-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
-          <p className="text-medical-400">No patients yet</p>
+          <p className="text-slate-300">No patients yet</p>
           <button onClick={() => setShowModal(true)} className="mt-4 text-cyan-400 hover:text-cyan-300">Add your first patient</button>
         </div>
       ) : (
@@ -281,13 +281,13 @@ export default function Patients() {
           <table className="w-full">
             <thead className="bg-white/5 border-b border-white/10">
               <tr>
-                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Name</th>
-                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Account</th>
-                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Date of Birth</th>
-                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Sex</th>
-                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Blood Type</th>
-                <th className="text-left text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Contact</th>
-                <th className="text-right text-medical-400 text-xs font-medium uppercase tracking-wider px-6 py-4">Actions</th>
+                <th className="text-left text-slate-300 text-xs font-medium uppercase tracking-wider px-6 py-4">Name</th>
+                <th className="text-left text-slate-300 text-xs font-medium uppercase tracking-wider px-6 py-4">Account</th>
+                <th className="text-left text-slate-300 text-xs font-medium uppercase tracking-wider px-6 py-4">Date of Birth</th>
+                <th className="text-left text-slate-300 text-xs font-medium uppercase tracking-wider px-6 py-4">Sex</th>
+                <th className="text-left text-slate-300 text-xs font-medium uppercase tracking-wider px-6 py-4">Blood Type</th>
+                <th className="text-left text-slate-300 text-xs font-medium uppercase tracking-wider px-6 py-4">Contact</th>
+                <th className="text-right text-slate-300 text-xs font-medium uppercase tracking-wider px-6 py-4">Actions</th>
               </tr>
             </thead>
               <tbody className="divide-y divide-white/5">
@@ -302,22 +302,22 @@ export default function Patients() {
                     {accountEmail ? (
                       <span className="px-2 py-1 bg-mint-500/10 border border-mint-500/20 rounded text-mint-400 text-sm">{accountEmail}</span>
                     ) : (
-                      <span className="text-medical-500 text-sm">No account</span>
+                      <span className="text-slate-400 text-sm">No account</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-white">{patient.date_of_birth}</td>
                   <td className="px-6 py-4">
-                    <span className="capitalize text-medical-300">{patient.sex}</span>
+                    <span className="capitalize text-slate-300">{patient.sex}</span>
                   </td>
                   <td className="px-6 py-4">
                     {patient.blood_type ? (
                       <span className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-rose-300 text-xs font-mono">{patient.blood_type}</span>
                     ) : (
-                      <span className="text-medical-500 text-sm">—</span>
+                      <span className="text-slate-400 text-sm">—</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-medical-300 text-sm">
-                    {patient.contact_number || <span className="text-medical-500">—</span>}
+                  <td className="px-6 py-4 text-slate-300 text-sm">
+                    {patient.contact_number || <span className="text-slate-400">—</span>}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => navigate(`/records?patient=${patient.id}`)} className="text-cyan-400 hover:text-cyan-300 mr-4">View Records</button>
@@ -337,7 +337,7 @@ export default function Patients() {
           <div className="glass-card w-full max-w-md p-6 mx-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-white">Create Patient with Account</h2>
-              <button onClick={() => setShowModal(false)} className="text-medical-400 hover:text-white">
+              <button onClick={() => setShowModal(false)} className="text-slate-300 hover:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -351,20 +351,20 @@ export default function Patients() {
               )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-medical-300 text-sm mb-2">First Name</label>
-                  <input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                  <label className="block text-slate-300 text-sm mb-2">First Name</label>
+                  <input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" />
                 </div>
                 <div>
-                  <label className="block text-medical-300 text-sm mb-2">Last Name</label>
-                  <input type="text" required value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                  <label className="block text-slate-300 text-sm mb-2">Last Name</label>
+                  <input type="text" required value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" />
                 </div>
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Date of Birth</label>
+                <label className="block text-slate-300 text-sm mb-2">Date of Birth</label>
                 <input type="date" required value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50" />
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Sex</label>
+                <label className="block text-slate-300 text-sm mb-2">Sex</label>
                 <select value={formData.sex} onChange={(e) => setFormData({ ...formData, sex: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -372,7 +372,7 @@ export default function Patients() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-medical-300 text-sm mb-2">Blood Type</label>
+                  <label className="block text-slate-300 text-sm mb-2">Blood Type</label>
                   <select value={formData.blood_type} onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })} className="w-full px-4 py-3 bg-slate-800 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400/50 [&>option]:bg-slate-800">
                     <option value="">Unknown</option>
                     <option value="A+">A+</option>
@@ -386,24 +386,24 @@ export default function Patients() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-medical-300 text-sm mb-2">Contact Number</label>
-                  <input type="tel" value={formData.contact_number} onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })} placeholder="e.g. +63 912 345 6789" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                  <label className="block text-slate-300 text-sm mb-2">Contact Number</label>
+                  <input type="tel" value={formData.contact_number} onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })} placeholder="e.g. +63 912 345 6789" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" />
                 </div>
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Address</label>
-                <textarea value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2} placeholder="Street, City, Postal Code" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
+                <label className="block text-slate-300 text-sm mb-2">Address</label>
+                <textarea value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} rows={2} placeholder="Street, City, Postal Code" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50 resize-none" />
               </div>
               <div className="border-t border-white/10 pt-4 mt-4">
                 <h3 className="text-white font-medium mb-4">Patient Login Account</h3>
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Email Address</label>
-                <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" />
+                <label className="block text-slate-300 text-sm mb-2">Email Address</label>
+                <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" />
               </div>
               <div>
-                <label className="block text-medical-300 text-sm mb-2">Password</label>
-                <input type="password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-medical-500 focus:outline-none focus:border-cyan-400/50" placeholder="Min 8 characters" minLength={8} />
+                <label className="block text-slate-300 text-sm mb-2">Password</label>
+                <input type="password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/50" placeholder="Min 8 characters" minLength={8} />
               </div>
               <button type="submit" disabled={creating} className="w-full bg-gradient-to-r from-cyan-500 to-mint-500 text-white py-3 rounded-xl font-medium hover:from-cyan-400 hover:to-mint-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                 {creating ? (
@@ -426,7 +426,7 @@ export default function Patients() {
           <div className="glass-card w-full max-w-md p-6 mx-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-white">Edit Patient</h2>
-              <button onClick={() => setEditingPatient(null)} className="text-medical-400 hover:text-white">
+              <button onClick={() => setEditingPatient(null)} className="text-slate-300 hover:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -447,13 +447,13 @@ export default function Patients() {
           <div className="glass-card w-full max-w-md p-6 mx-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-white">Delete Patient</h2>
-              <button onClick={() => setDeletingPatient(null)} className="text-medical-400 hover:text-white">
+              <button onClick={() => setDeletingPatient(null)} className="text-slate-300 hover:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <p className="text-medical-300 mb-6">
+            <p className="text-slate-300 mb-6">
               Are you sure you want to delete <span className="text-white font-medium">{deletingPatient.first_name} {deletingPatient.last_name}</span>? 
               This action cannot be undone.
             </p>

@@ -47,14 +47,8 @@ export default function Problems() {
   useEffect(() => {
     // Load patients list (for staff) or auto-pick own patient row.
     const bootstrap = async () => {
-      try {
-        const res = await getPatients()
-        setPatients(res.data || [])
-        if ((res.data || []).length > 0 && !selectedPatient) {
-          setSelectedPatient(res.data[0].id)
-        }
-      } catch {
-        // Patients may reject for patient role — in that case, load /api/patients/me
+      // Patients: use own patient profile directly
+      if (user?.role === 'patient') {
         try {
           const { getMyPatient } = await import('../services/api')
           const me = await getMyPatient()
@@ -63,6 +57,18 @@ export default function Problems() {
             setSelectedPatient(me.data[0].id)
           }
         } catch {}
+        return
+      }
+      
+      // Staff: load all patients
+      try {
+        const res = await getPatients()
+        setPatients(res.data || [])
+        if ((res.data || []).length > 0 && !selectedPatient) {
+          setSelectedPatient(res.data[0].id)
+        }
+      } catch {
+        // ignore
       }
     }
     void bootstrap()

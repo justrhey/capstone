@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getMyPatient, getRecordsByPatient, getMyExport } from '../services/api'
+import { getMyRecords, getMyExport } from '../services/api'
 import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
 
@@ -39,18 +39,31 @@ export default function MyRecords() {
 
     try {
       setError('')
-      const res = await getMyPatient()
-      const myPatients = res.data || []
-
-      if (myPatients.length === 0) {
-        setError('No patient profile linked to your account. Please contact admin.')
-        setLoading(false)
-        return
-      }
-
-      const myPatient = myPatients[0]
-      const recordRes = await getRecordsByPatient(myPatient.id)
-      setRecords(recordRes.data)
+      // Use getMyRecords() which directly fetches patient's own records
+      // This bypasses the complex permission checks in /api/patients/{id}/records
+      const recordRes = await getMyRecords()
+      const recordsData = recordRes.data || []
+      
+      // getMyRecords returns raw MedicalRecord objects, need to wrap in expected format
+      const formatted = recordsData.map((record: any) => ({
+        record: {
+          id: record.id,
+          patient_id: record.patient_id,
+          subjective: record.subjective,
+          objective: record.objective,
+          assessment: record.assessment,
+          plan: record.plan,
+          record_hash: record.record_hash,
+          blockchain_tx_id: record.blockchain_tx_id,
+          created_at: record.created_at,
+        },
+        medications: [],
+        allergies: [],
+        blockchain_verified: !!record.blockchain_tx_id,
+        blockchain_tx_hash: record.blockchain_tx_id,
+      }))
+      
+      setRecords(formatted)
     } catch (err) {
       console.error('Failed to load records:', err)
       setError('Failed to load records')

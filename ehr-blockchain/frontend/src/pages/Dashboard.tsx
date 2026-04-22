@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getPatients, getAllRecords, getAllUsers } from '../services/api'
+import { getPatients, getAllRecords, getAllUsers, getPermissions, getMyRecords } from '../services/api'
 import Layout from '../components/Layout'
 
 interface Stats {
@@ -42,6 +42,45 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       setLoading(true)
+      
+      // For patients: show their own records
+      if (user?.role === 'patient') {
+        try {
+          // Fetch records and permissions directly - no need to wait for patient profile
+          const [myRecordsRes, myPermissionsRes] = await Promise.all([
+            getMyRecords().catch(() => ({ data: [] })),
+            getPermissions().catch(() => ({ data: [] }))
+          ])
+          
+          const records = myRecordsRes.data || []
+          const permissions = myPermissionsRes.data || []
+          
+          const grantedDoctors = permissions.filter((p: any) => 
+            p.granted_to_user_id && p.status === 'active'
+          ).length
+          
+          setStats({
+            totalPatients: 1,
+            totalRecords: records.length,
+            totalUsers: grantedDoctors,
+            blockchainTxs: records.filter((r: any) => r.blockchain_tx_id || r.record?.blockchain_tx_id).length,
+          })
+          
+          setRecentRecords(records.slice(0, 5).map((r: any) => ({
+            record: r.record || r,
+            patientName: 'Your Record',
+          })))
+        } catch (err) {
+          console.error('Patient dashboard error:', err)
+          setStats({ totalPatients: 0, totalRecords: 0, totalUsers: 0, blockchainTxs: 0 })
+          setRecentRecords([])
+        }
+        
+        setLoading(false)
+        return
+      }
+      
+      // For staff: show general stats
       const [patientsRes, recordsRes, usersRes] = await Promise.all([
         getPatients(),
         getAllRecords(),
@@ -101,6 +140,7 @@ export default function Dashboard() {
     { label: 'Audit Logs', path: '/audit', roles: ['admin', 'auditor'] },
     { label: 'My Records', path: '/my-records', roles: ['patient'] },
     { label: 'Permissions', path: '/permissions', roles: ['patient'] },
+    { label: 'Messages', path: '/messages', roles: ['patient'] },
   ].filter(a => a.roles.includes(user?.role || ''))
 
   const roleTitle = {
@@ -153,9 +193,9 @@ export default function Dashboard() {
             {/* Hero - 3 cols, spans 2 rows */}
             <div className="bento-hero glass-card p-4 col-span-12 lg:col-span-3 lg:row-span-2 fade-up" style={{ animationDelay: '60ms' }}>
               <KPI
-                label="Total Records"
+                label={user?.role === 'patient' ? 'My Records' : 'Total Records'}
                 value={stats.totalRecords}
-                hint={`${stats.totalPatients} patients`}
+                hint={user?.role === 'patient' ? `${stats.totalPatients} profile visits` : `${stats.totalPatients} patients`}
                 big
               />
               <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2 text-[10px] text-medical-500 uppercase tracking-[0.2em]">
@@ -164,56 +204,103 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* 3 cards - 3 cols each = 9 cols = perfect symmetry */}
-            <Card label="Patients" value={stats.totalPatients} style={{ animationDelay: '120ms' }} />
-            <Card label="Records" value={stats.totalRecords} style={{ animationDelay: '150ms' }} />
-            <Card label="Users" value={stats.totalUsers} style={{ animationDelay: '180ms' }} />
-            <Card label="TX" value={stats.blockchainTxs} style={{ animationDelay: '210ms' }} />
-            <Card label="Verified" value={stats.totalRecords > 0 ? Math.round((stats.blockchainTxs / stats.totalRecords) * 100) + '%' : '0%'} style={{ animationDelay: '230ms' }} />
-            <Card label="Active" value={stats.totalUsers} style={{ animationDelay: '250ms' }} />
+            {/* Staff see general stats - Patients see their own */}
+            {user?.role === 'patient' ? (
+              <>
+                <Card label="Doctors" value={stats.totalUsers} style={{ animationDelay: '120ms' }} />
+                <Card label="Verified" value={stats.totalRecords > 0 ? Math.round((stats.blockchainTxs / stats.totalRecords) * 100) + '%' : '0%'} style={{ animationDelay: '150ms' }} />
+                <Card label="On Chain" value={stats.blockchainTxs} style={{ animationDelay: '180ms' }} />
+              </>
+            ) : (
+              <>
+                <Card label="Patients" value={stats.totalPatients} style={{ animationDelay: '120ms' }} />
+                <Card label="Records" value={stats.totalRecords} style={{ animationDelay: '150ms' }} />
+                <Card label="Users" value={stats.totalUsers} style={{ animationDelay: '180ms' }} />
+                <Card label="TX" value={stats.blockchainTxs} style={{ animationDelay: '210ms' }} />
+                <Card label="Verified" value={stats.totalRecords > 0 ? Math.round((stats.blockchainTxs / stats.totalRecords) * 100) + '%' : '0%'} style={{ animationDelay: '230ms' }} />
+                <Card label="Active" value={stats.totalUsers} style={{ animationDelay: '250ms' }} />
+              </>
+            )}
           </div>
 
-{/* Chart + Recent - symmetrical */}
+{/* Chart + Recent - different for patients vs staff */}
           <div className="grid grid-cols-12 gap-3 mb-6">
-            {/* Chart - 9 cols */}
-            <div className="lg:col-span-9 glass-card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-medical-500">Records Trend</p>
-              </div>
-              <div className="h-28">
-                <TinyChart data={monthlyData.map(d => d.records)} labels={monthlyData.map(d => d.month)} color="#22d3ee" />
-              </div>
-            </div>
+            {/* Staff: show records trend - Patients: show their records */}
+            {user?.role === 'patient' ? (
+              <>
+                {/* Patient recent records - full width */}
+                <div className="col-span-12 glass-card p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-400 font-semibold">My Medical Records</p>
+                    <button onClick={() => navigate('/my-records')} className="text-cyan-400 text-[10px] hover:text-cyan-300">
+                      View all →
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {recentRecords.length === 0 ? (
+                      <p className="text-slate-400 text-sm text-center py-4">No medical records yet.</p>
+                    ) : (
+                      recentRecords.map((item) => (
+                        <div 
+                          key={item.record?.id}
+                          className="flex items-center justify-between p-3 bg-slate-700/50 rounded-xl border border-slate-600"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-white text-sm font-medium truncate">{(item.record as any)?.subjective || (item.record as any)?.objective || (item.record as any)?.assessment || 'Medical record'}</p>
+                            <p className="text-slate-400 text-xs mt-1">{(item.record as any)?.created_at ? new Date((item.record as any).created_at).toLocaleDateString() : ''}</p>
+                          </div>
+                          {item.record?.blockchain_tx_id && (
+                            <span className="px-2 py-1 bg-mint-500/20 text-mint-400 text-xs font-semibold rounded-lg">✓ Verified</span>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Staff: show records trend */}
+                <div className="lg:col-span-9 glass-card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-medical-500">Records Trend</p>
+                  </div>
+                  <div className="h-28">
+                    <TinyChart data={monthlyData.map(d => d.records)} labels={monthlyData.map(d => d.month)} color="#22d3ee" />
+                  </div>
+                </div>
 
-            {/* Recent - 3 cols */}
-            <div className="lg:col-span-3 glass-card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-medical-500">Recent</p>
-                <button onClick={() => navigate('/records')} className="text-cyan-400 text-[10px] hover:text-cyan-300">
-                  all →
-                </button>
-              </div>
-              <div className="space-y-1.5">
-                {recentRecords.length === 0 ? (
-                  <p className="text-medical-500 text-xs text-center py-2">No records</p>
-                ) : (
-                  recentRecords.map((item) => (
-                    <div 
-                      key={item.record.id}
-                      className="flex items-center justify-between p-1.5 bg-white/5 rounded-lg"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-white text-xs truncate">{item.record.diagnosis || 'No diagnosis'}</p>
-                        <p className="text-medical-500 text-[9px]">{new Date(item.record.created_at).toLocaleDateString()}</p>
-                      </div>
-                      {item.record.blockchain_tx_id && (
-                        <span className="px-1 py-0.5 bg-mint-500/20 text-mint-400 text-[9px] rounded">✓</span>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+                {/* Recent - 3 cols */}
+                <div className="lg:col-span-3 glass-card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-medical-500">Recent</p>
+                    <button onClick={() => navigate('/records')} className="text-cyan-400 text-[10px] hover:text-cyan-300">
+                      all →
+                    </button>
+                  </div>
+                  <div className="space-y-1.5">
+                    {recentRecords.length === 0 ? (
+                      <p className="text-medical-500 text-xs text-center py-2">No records</p>
+                    ) : (
+                      recentRecords.map((item) => (
+                        <div 
+                          key={item.record?.id}
+                          className="flex items-center justify-between p-1.5 bg-white/5 rounded-lg"
+                        >
+<div className="min-w-0 flex-1">
+                          <p className="text-white text-xs truncate">{(item.record as any)?.subjective || (item.record as any)?.objective || (item.record as any)?.assessment || 'Record'}</p>
+                          <p className="text-medical-500 text-[9px]">{(item.record as any)?.created_at ? new Date((item.record as any).created_at).toLocaleDateString() : ''}</p>
+                        </div>
+                          {item.record?.blockchain_tx_id && (
+                            <span className="px-1 py-0.5 bg-mint-500/20 text-mint-400 text-[9px] rounded">✓</span>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* System Status */}
