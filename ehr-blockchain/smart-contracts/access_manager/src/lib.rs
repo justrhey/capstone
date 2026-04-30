@@ -32,13 +32,15 @@ impl AccessManager {
 
     pub fn grant_access(
         env: Env,
+        provider: Address,
+        patient: Address,
         patient_id: BytesN<32>,
         granted_to: BytesN<32>,
         record_id: BytesN<32>,
         duration_seconds: u64,
     ) {
-        let owner: Address = env.storage().instance().get(&OWNER_KEY).unwrap();
-        owner.require_auth();
+        provider.require_auth();
+        patient.require_auth();
 
         let timestamp = env.ledger().timestamp();
         let expires_at = timestamp + duration_seconds;
@@ -61,8 +63,6 @@ impl AccessManager {
             .get(&DataKey::PatientPermissions(patient_id.clone()))
             .unwrap_or_else(|| Vec::new(&env));
 
-        // BI-2 fix: previously the pushed value was dropped because the Vec was never
-        // written back. get_patient_permissions therefore always returned an empty list.
         perms.push_back((patient_id.clone(), granted_to, record_id));
         env.storage()
             .persistent()
@@ -71,12 +71,14 @@ impl AccessManager {
 
     pub fn revoke_access(
         env: Env,
+        provider: Address,
+        patient: Address,
         patient_id: BytesN<32>,
         granted_to: BytesN<32>,
         record_id: BytesN<32>,
     ) {
-        let owner: Address = env.storage().instance().get(&OWNER_KEY).unwrap();
-        owner.require_auth();
+        provider.require_auth();
+        patient.require_auth();
 
         let key = DataKey::Permission(patient_id.clone(), granted_to.clone(), record_id.clone());
 
@@ -120,55 +122,142 @@ mod test {
     use super::*;
     use soroban_sdk::{testutils::Address as _, Env, BytesN};
 
-    fn setup() -> (Env, Address, BytesN<32>, BytesN<32>, BytesN<32>) {
+    struct Ctx {
+        env: Env,
+        client: AccessManagerClient<'static>,
+        owner: Address,
+        provider: Address,
+        patient: Address,
+        patient_id: BytesN<32>,
+        staff: BytesN<32>,
+        record: BytesN<32>,
+    }
+
+    fn setup() -> Ctx {
         let env = Env::default();
         env.mock_all_auths();
         let owner = Address::generate(&env);
-        let patient = BytesN::from_array(&env, &[1u8; 32]);
-        let staff = BytesN::from_array(&env, &[2u8; 32]);
-        let record = BytesN::from_array(&env, &[3u8; 32]);
-        (env, owner, patient, staff, record)
-    }
-
-    /// BI-2: grant_access must persist the PatientPermissions vector, otherwise
-    /// get_patient_permissions silently returns an empty list.
-    #[test]
-    fn grant_access_persists_patient_permissions_vector() {
-        let (env, owner, patient, staff, record) = setup();
+        let provider = Address::generate(&env);
+        let patient = Address::generate(&env);
         let id = env.register_contract(None, AccessManager);
         let client = AccessManagerClient::new(&env, &id);
-
         client.init(&owner);
-        client.grant_access(&patient, &staff, &record, &3600);
+        Ctx {
+            env: env.clone(),
+            client,
+            owner,
+            provider,
+            patient,
+            patient_id: BytesN::from_array(&env, &[1u8; 32]),
+            staff: BytesN::from_array(&env, &[2u8; 32]),
+            record: BytesN::from_array(&env, &[3u8; 32]),
+        }
+    }
 
-        let perms = client.get_patient_permissions(&patient);
-        assert_eq!(perms.len(), 1, "expected one permission after grant");
+    #[test]
+    fn grant_access_persists_patient_permissions_vector() {
+        let c = setup();
+        c.client.grant_access(&c.provider, &c.patient, &c.patient_id, &c.staff, &c.record, &3600);
+        let perms = c.client.get_patient_permissions(&c.patient_id);
+        assert_eq!(perms.len(), 1);
         let (p, g, r) = perms.get(0).unwrap();
-        assert_eq!(p, patient);
-        assert_eq!(g, staff);
-        assert_eq!(r, record);
+        assert_eq!(p, c.patient_id);
+        assert_eq!(g, c.staff);
+        assert_eq!(r, c.record);
     }
 
     #[test]
     fn grant_and_check_access_within_expiry() {
-        let (env, owner, patient, staff, record) = setup();
-        let id = env.register_contract(None, AccessManager);
-        let client = AccessManagerClient::new(&env, &id);
-
-        client.init(&owner);
-        client.grant_access(&patient, &staff, &record, &3600);
-        assert!(client.check_access(&patient, &staff, &record));
+        let c = setup();
+        c.client.grant_access(&c.provider, &c.patient, &c.patient_id, &c.staff, &c.record, &3600);
+        assert!(c.client.check_access(&c.patient_id, &c.staff, &c.record));
     }
 
     #[test]
     fn revoke_access_flips_active_flag() {
-        let (env, owner, patient, staff, record) = setup();
+        let c = setup();
+        c.client.grant_access(&c.provider, &c.patient, &c.patient_id, &c.staff, &c.record, &3600);
+        c.client.revoke_access(&c.provider, &c.patient, &c.patient_id, &c.staff, &c.record);
+        assert!(!c.client.check_access(&c.patient_id, &c.staff, &c.record));
+    }
+
+    /// With both `provider` and `patient` mocked as authorized, the call succeeds.
+    #[test]
+    fn grant_access_succeeds_with_both_signatures() {
+        let c = setup(); // mock_all_auths covers both
+        c.client.grant_access(&c.provider, &c.patient, &c.patient_id, &c.staff, &c.record, &3600);
+        assert!(c.client.check_access(&c.patient_id, &c.staff, &c.record));
+    }
+
+    /// With only the provider authorized (no patient signature), the call must panic.
+    #[test]
+    #[should_panic]
+    fn grant_access_fails_without_patient_auth() {
+        use soroban_sdk::testutils::MockAuth;
+        use soroban_sdk::testutils::MockAuthInvoke;
+        use soroban_sdk::IntoVal;
+
+        let env = Env::default();
+        let owner = Address::generate(&env);
+        let provider = Address::generate(&env);
+        let patient = Address::generate(&env);
         let id = env.register_contract(None, AccessManager);
         let client = AccessManagerClient::new(&env, &id);
-
+        // init still uses owner (mock all for init)
+        env.mock_all_auths();
         client.init(&owner);
-        client.grant_access(&patient, &staff, &record, &3600);
-        client.revoke_access(&patient, &staff, &record);
-        assert!(!client.check_access(&patient, &staff, &record));
+
+        // Now restrict mocks: only the provider has a valid auth entry.
+        let patient_id = BytesN::from_array(&env, &[1u8; 32]);
+        let staff = BytesN::from_array(&env, &[2u8; 32]);
+        let record = BytesN::from_array(&env, &[3u8; 32]);
+        let duration: u64 = 3600;
+
+        client
+            .mock_auths(&[MockAuth {
+                address: &provider,
+                invoke: &MockAuthInvoke {
+                    contract: &id,
+                    fn_name: "grant_access",
+                    args: (provider.clone(), patient.clone(), patient_id.clone(), staff.clone(), record.clone(), duration).into_val(&env),
+                    sub_invokes: &[],
+                },
+            }])
+            .grant_access(&provider, &patient, &patient_id, &staff, &record, &duration);
+    }
+
+    /// Symmetric assertion for revoke.
+    #[test]
+    #[should_panic]
+    fn revoke_access_fails_without_patient_auth() {
+        use soroban_sdk::testutils::MockAuth;
+        use soroban_sdk::testutils::MockAuthInvoke;
+        use soroban_sdk::IntoVal;
+
+        let env = Env::default();
+        let owner = Address::generate(&env);
+        let provider = Address::generate(&env);
+        let patient = Address::generate(&env);
+        let id = env.register_contract(None, AccessManager);
+        let client = AccessManagerClient::new(&env, &id);
+        env.mock_all_auths();
+        client.init(&owner);
+        let patient_id = BytesN::from_array(&env, &[1u8; 32]);
+        let staff = BytesN::from_array(&env, &[2u8; 32]);
+        let record = BytesN::from_array(&env, &[3u8; 32]);
+        client.grant_access(&provider, &patient, &patient_id, &staff, &record, &3600);
+
+        // Revoke with only provider authorized.
+        client
+            .mock_auths(&[MockAuth {
+                address: &provider,
+                invoke: &MockAuthInvoke {
+                    contract: &id,
+                    fn_name: "revoke_access",
+                    args: (provider.clone(), patient.clone(), patient_id.clone(), staff.clone(), record.clone()).into_val(&env),
+                    sub_invokes: &[],
+                },
+            }])
+            .revoke_access(&provider, &patient, &patient_id, &staff, &record);
     }
 }
