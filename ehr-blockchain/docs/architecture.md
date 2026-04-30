@@ -82,7 +82,7 @@ backend/src/
 |---|---|---|
 | Browser ↔ API | TLS (deployment concern), CORS allowlist, JWT | Dev uses `http://localhost:*`; prod must terminate TLS before the Rust server |
 | API ↔ PostgreSQL | `sqlx` parameterized queries, connection string secret | Single trust zone with backend |
-| API ↔ Soroban | Soroban CLI over RPC; admin key in `.env` | Backend is the only on-chain writer; any client with admin key can impersonate |
+| API ↔ Soroban | Soroban CLI over RPC; admin key in `.env` or `STELLAR_ADMIN_KEY_FILE` | Backend writes record hashes and audit events with the admin key alone. Access grants additionally require the patient's per-user key (decrypted from `users.stellar_secret_enc`) — leak of the admin key alone cannot forge a grant. See `docs/threat-model.md`. |
 | API ↔ Frontend session | HS256 JWT, `JWT_SECRET`, 15-minute expiry + refresh | `JWT_SECRET` rotation invalidates all sessions |
 
 ---
@@ -112,10 +112,26 @@ Encrypted columns: `patients.first_name`, `patients.last_name`, `medical_records
 Nothing plaintext goes on-chain. Only:
 
 - **Record hash** (SHA-256 of `diagnosis|treatment|notes` concatenation) → Record Registry
-- **Permission tuple** (patient_id, granted_to, record_id, duration) → Access Manager
+- **Permission tuple** (patient_id, granted_to, record_id, duration) → Access Manager (v2 multi-sig)
 - **Access event** (user_id, record_id, action) → Audit Trail
 
 UUIDs go on-chain in string form. This may enable low-entropy correlation; see `docs/security-model.md` for the risk note.
+
+### What the chain proves
+
+Every access grant on `access_manager` v2 carries **two distinct Ed25519
+signatures** — provider-admin and patient — required by `provider.require_auth()`
+and `patient.require_auth()` inside the contract
+(`smart-contracts/access_manager/src/lib.rs:32-89`). Block explorers verify
+both signatures cryptographically without trusting our backend.
+
+A leaked admin key alone cannot forge a patient consent; the attacker also
+needs the patient's secret, which lives encrypted in `users.stellar_secret_enc`
+under a different env var (`ENCRYPTION_KEY`) than the admin key. See
+`docs/threat-model.md` for the full breakdown.
+
+Record-hash anchoring (Record Registry) and audit-event mirroring (Audit
+Trail) remain admin-signed because they are not consent events.
 
 ---
 
@@ -129,8 +145,8 @@ UUIDs go on-chain in string form. This may enable low-entropy correlation; see `
 6. SQLx `INSERT` into `medical_records` (ciphertext columns + hash).
 7. SQLx `INSERT` into `medications` / `allergies` rows.
 8. `blockchain_service::store_record_hash` shells out to `soroban`. Best-effort:
-   - Success → update `medical_records.blockchain_tx_id`; insert into `blockchain_transactions`.
-   - Failure → `eprintln!`, continue.
+   - Success → update `medical_records.blockchain_tx_id`; insert into `blockchain_transactions` with `status='confirmed'`.
+   - Failure → enqueue a `blockchain_transactions` row with `status='pending'` and the original args in `pending_payload`. The schema for this lives at `migrations/033_multi_sig_and_pending_anchors.sql`; full wire-up of the pending path through every call site is tracked in `docs/superpowers/plans/2026-04-30-blockchain-integrity-fixes.md` (Tasks 9–13) and not yet wired in code as of this writing.
 9. `audit_service::log_action` writes `record_created` to `audit_logs`; mirrors to Audit Trail contract if reachable.
 10. Response: 201 Created with a `RecordResponse` containing decrypted plaintext.
 
