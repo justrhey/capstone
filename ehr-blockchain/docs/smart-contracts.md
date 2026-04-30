@@ -1,11 +1,12 @@
 # Smart Contract Design
 
-Three Soroban contracts on Stellar Testnet. All three follow the same pattern: an `init(admin)` sets the authoritative signer; every mutating call does `owner.require_auth()`. Reads are public.
+Three Soroban contracts on Stellar Testnet. Record Registry and Audit Trail are admin-signed (`owner.require_auth()`). Access Manager v2 is multi-sig — `grant_access` and `revoke_access` require both `provider.require_auth()` *and* `patient.require_auth()` in the same transaction.
 
 | Contract | ID (Testnet) | Purpose |
 |---|---|---|
-| Record Registry | `CCL5QJQHIY2WP637HMJQ5NGIHDFK7ET2FPSDZAPPNDQSUC63HO23VNDD` | Store and attest SHA-256 record hashes |
-| Access Manager | `CAQF6LCVGDOZXHXZMADFHB6EL5ELRGJAHZKFPLVEJM75PRIKQCD7XUJ2` | Time-bound access grants |
+| Record Registry | `CCL5QJQHIY2WP637HMJQ5NGIHDFK7ET2FPSDZAPPNDQSUC63HO23VNDD` | Store and attest SHA-256 record hashes (versioned) |
+| Access Manager (v2 multi-sig) | `<deploy v2 and replace>` — see runbook | Time-bound access grants requiring patient + provider signatures |
+| Access Manager (v1, legacy) | `CAQF6LCVGDOZXHXZMADFHB6EL5ELRGJAHZKFPLVEJM75PRIKQCD7XUJ2` | Owner-only — deprecated, retained for historical reads |
 | Audit Trail | `CAIXRA5QQTJOF5HFMBLZA3BXFKMTIM7JVJBKYPLKDO2HJOMSSPGLOMKN` | Immutable per-record access event log |
 
 Source: `smart-contracts/{record_registry,access_manager,audit_trail}/src/lib.rs`
@@ -65,10 +66,12 @@ This makes every edit visible on-chain as a new version with a pointer to the su
 
 ---
 
-## 2. Access Manager
+## 2. Access Manager (v2 — multi-sig)
 
 ### 2.1 Purpose
-Record time-bound access grants from patients to staff. Currently a **mirror** of DB state; not an enforcement point.
+Record time-bound access grants from patients to staff with **cryptographic
+proof of patient consent**. Both the provider and the patient must sign
+every grant and every revoke.
 
 ### 2.2 Storage
 ```rust
@@ -88,24 +91,41 @@ enum DataKey {
 }
 ```
 
-### 2.3 Methods
+### 2.3 Methods (v2 ABI)
 | Method | Auth | Behavior |
 |---|---|---|
-| `init(owner)` | once | Sets admin Address |
-| `grant_access(patient_id, granted_to, record_id, duration)` | admin | Creates Permission; expiry = now + duration |
-| `revoke_access(patient_id, granted_to, record_id)` | admin | Sets `active = false` |
+| `init(owner)` | once | Sets admin Address (used only for legacy compatibility; not consulted on grant/revoke) |
+| `grant_access(provider, patient, patient_id, granted_to, record_id, duration)` | `provider.require_auth() && patient.require_auth()` | Creates Permission; expiry = now + duration. Both signatures required at the host level. |
+| `revoke_access(provider, patient, patient_id, granted_to, record_id)` | `provider.require_auth() && patient.require_auth()` | Sets `active = false`. Both signatures required. |
 | `check_access(patient_id, granted_to, record_id) -> bool` | public | `active && now <= expires_at` |
 | `get_patient_permissions(patient_id) -> Vec<(…)>` | public | All keys the patient has granted |
 
-### 2.4 Known limitations
-1. **No backend call site for `check_access`.** The backend grants, mirrors, but never queries the chain before serving data — so this contract adds audit trail value only.
-2. **`grant_access` does not push to `PatientPermissions`.** Line 64 of the current source pushes to a local `Vec` that is never stored back. `get_patient_permissions` therefore returns empty unless we fix that line.
-3. **Single-signer design.** Only the backend admin key grants. Patient consent is implicit rather than cryptographic.
+### 2.4 What v2 changes vs. v1
 
-### 2.5 Proposed v2 design
-- Require **two signatures** on `grant_access`: the patient's Stellar account (proof of consent) and the admin's. Backend can still sponsor the transaction; patient signs off-chain.
-- Backend calls `check_access` on every record read; deny on `false`.
-- Fix the missing `.set()` after the push.
+- **v1 (legacy, deployed at `CAQF6LCVGDOZXHXZMADFHB6EL5ELRGJAHZKFPLVEJM75PRIKQCD7XUJ2`):** `grant_access` and `revoke_access` only required `owner.require_auth()`. The chain proved "the admin recorded a grant," not "the patient consented."
+- **v2 (current source at `smart-contracts/access_manager/src/lib.rs`):** both signatures required. A leaked admin key alone cannot forge a patient consent — see `docs/threat-model.md`.
+
+The v1 contract instance remains on testnet for historical reads; new
+grants and revokes go to the v2 deployment. The cutover step (capturing the
+v2 contract ID and updating env files) is documented in
+`docs/superpowers/plans/2026-04-30-blockchain-integrity-fixes.md` Tasks 3
+and 16.
+
+### 2.5 Tests
+
+Six unit tests live in `smart-contracts/access_manager/src/lib.rs` test
+module:
+
+- `grant_access_persists_patient_permissions_vector` (regression — guards
+  the `BI-2` Vec-not-persisted bug discovered during prior review and now
+  fixed)
+- `grant_and_check_access_within_expiry`
+- `revoke_access_flips_active_flag`
+- `grant_access_succeeds_with_both_signatures`
+- `grant_access_fails_without_patient_auth` (`#[should_panic]`)
+- `revoke_access_fails_without_patient_auth` (`#[should_panic]`)
+
+Run with `cargo test` from `smart-contracts/access_manager/`.
 
 ---
 
@@ -211,9 +231,16 @@ Soroban persistent storage has rent; the contract should be designed to extend T
 
 ## 6. Testing
 
-Unit tests live alongside each contract but are not yet written. For a capstone committee, the minimum viable suite:
+All three contracts ship with unit tests in their `#[cfg(test)] mod test`
+blocks. Run with `cargo test` from each contract's directory.
 
-- `store_hash` → `verify_hash` roundtrip
-- `grant_access` + `check_access` within expiry, expired, revoked
-- `log_access` sequence strictly monotonic; `get_audit_log` returns all entries
-- `init` rejects second call (owner already set) — currently not enforced; worth adding
+- `record_registry`: 6 tests — store/verify roundtrip, version chain with
+  tombstones, idempotent updates (same hash = no-op), duplicate rejection,
+  full version history, patient records aggregation.
+- `access_manager`: 6 tests — see §2.5 above.
+- `audit_trail`: 2 tests — ledger-timestamp monotonicity and
+  `get_audit_log` parity with `log_access` returns.
+
+Total: 14 contract-level tests. The suite asserts the cryptographic
+properties this project depends on: multi-sig enforcement, timestamp
+authority, append-only audit, and tombstoned versioning.

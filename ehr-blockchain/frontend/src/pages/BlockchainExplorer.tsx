@@ -1,25 +1,11 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import PageHeader from '../components/PageHeader'
+import { CONTRACTS, STELLAR } from '../config/contracts'
 
-const RPC_URL = 'https://soroban-testnet.stellar.org'
-const NETWORK = 'Stellar Testnet'
-const STELLAR_EXPERT = 'https://stellar.expert/explorer/testnet'
-
-const CONTRACTS = {
-  recordRegistry: {
-    label: 'Record Registry',
-    id: 'CCL5QJQHIY2WP637HMJQ5NGIHDFK7ET2FPSDZAPPNDQSUC63HO23VNDD',
-  },
-  accessManager: {
-    label: 'Access Manager',
-    id: 'CAQF6LCVGDOZXHXZMADFHB6EL5ELRGJAHZKFPLVEJM75PRIKQCD7XUJ2',
-  },
-  auditTrail: {
-    label: 'Audit Trail',
-    id: 'CAIXRA5QQTJOF5HFMBLZA3BXFKMTIM7JVJBKYPLKDO2HJOMSSPGLOMKN',
-  },
-} as const
+const RPC_URL = STELLAR.rpcUrl
+const NETWORK = STELLAR.network
+const STELLAR_EXPERT = STELLAR.explorer
 
 /** UUID → 32-byte hex, matching backend `uuid_to_bytes32_hex`. UUID bytes in the
  * first 16, zero-padded tail. */
