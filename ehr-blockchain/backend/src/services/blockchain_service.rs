@@ -1,8 +1,10 @@
 use sqlx::PgPool;
 use crate::config::Config;
+use crate::services::anchor_queue;
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicBool, Ordering};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use uuid::Uuid;
 
 /// Convert a UUID to a 32-byte hex string suitable for a Soroban `BytesN<32>` argument.
@@ -175,7 +177,10 @@ mod tests {
     }
 }
 
-pub async fn store_record_hash(
+/// Calls Soroban to store a record hash. Returns None on any failure
+/// (CLI unavailable, invocation failed, empty tx hash). Does NOT enqueue —
+/// callers that want retry-on-failure should use `store_record_hash`.
+pub(crate) async fn store_record_hash_raw(
     pool: &PgPool,
     record_id: &str,
     patient_id: &str,
@@ -226,9 +231,35 @@ pub async fn store_record_hash(
     })
 }
 
+pub async fn store_record_hash(
+    pool: &PgPool,
+    record_id: &str,
+    patient_id: &str,
+    record_hash: &str,
+    config: &Config,
+) -> Option<BlockchainTx> {
+    let result = store_record_hash_raw(pool, record_id, patient_id, record_hash, config).await;
+    if result.is_none() {
+        let payload: Value = serde_json::json!({
+            "record_id": record_id,
+            "patient_id": patient_id,
+            "record_hash": record_hash,
+        });
+        let _ = anchor_queue::enqueue_pending(
+            pool,
+            &config.record_registry_contract_id,
+            "store_hash",
+            payload,
+            "soroban CLI unavailable or returned empty tx hash",
+        )
+        .await;
+    }
+    result
+}
+
 /// Append a new version for an existing record. The prior version is
-/// automatically tombstoned by the contract.
-pub async fn update_record_hash(
+/// automatically tombstoned by the contract. No-enqueue variant for retry path.
+pub(crate) async fn update_record_hash_raw(
     pool: &PgPool,
     record_id: &str,
     record_hash: &str,
@@ -273,6 +304,30 @@ pub async fn update_record_hash(
     })
 }
 
+pub async fn update_record_hash(
+    pool: &PgPool,
+    record_id: &str,
+    record_hash: &str,
+    config: &Config,
+) -> Option<BlockchainTx> {
+    let result = update_record_hash_raw(pool, record_id, record_hash, config).await;
+    if result.is_none() {
+        let payload: Value = serde_json::json!({
+            "record_id": record_id,
+            "record_hash": record_hash,
+        });
+        let _ = anchor_queue::enqueue_pending(
+            pool,
+            &config.record_registry_contract_id,
+            "update_hash",
+            payload,
+            "soroban CLI unavailable or returned empty tx hash",
+        )
+        .await;
+    }
+    result
+}
+
 /// Returns `Some(true)` if hash matches the latest active version on-chain,
 /// `Some(false)` if it does not match (tampered, or record_id unknown),
 /// or `None` if the chain cannot be reached.
@@ -301,7 +356,7 @@ pub async fn verify_record_hash(
     Some(String::from_utf8_lossy(&output.stdout).trim() == "true")
 }
 
-pub async fn grant_access_onchain(
+pub(crate) async fn grant_access_onchain_raw(
     pool: &PgPool,
     patient_id: &str,
     granted_to: &str,
@@ -355,6 +410,34 @@ pub async fn grant_access_onchain(
     })
 }
 
+pub async fn grant_access_onchain(
+    pool: &PgPool,
+    patient_id: &str,
+    granted_to: &str,
+    record_id: &str,
+    duration_seconds: u64,
+    config: &Config,
+) -> Option<BlockchainTx> {
+    let result = grant_access_onchain_raw(pool, patient_id, granted_to, record_id, duration_seconds, config).await;
+    if result.is_none() {
+        let payload: Value = serde_json::json!({
+            "patient_id": patient_id,
+            "granted_to": granted_to,
+            "record_id": record_id,
+            "duration_seconds": duration_seconds,
+        });
+        let _ = anchor_queue::enqueue_pending(
+            pool,
+            &config.access_manager_contract_id,
+            "grant_access",
+            payload,
+            "soroban CLI unavailable or returned empty tx hash",
+        )
+        .await;
+    }
+    result
+}
+
 /// Mirror an audit event to the Audit Trail contract.
 /// Returns `Some(AuditAnchor)` carrying the ledger timestamp — this is the
 /// authoritative "when" for the event per the decentralized-time policy
@@ -402,7 +485,7 @@ pub async fn has_active_patient_grant(
     Some(found)
 }
 
-pub async fn log_access_onchain(
+pub(crate) async fn log_access_onchain_raw(
     pool: &PgPool,
     user_id: &str,
     record_id: &str,
@@ -465,4 +548,30 @@ pub async fn log_access_onchain(
         ledger_timestamp,
         sequence,
     })
+}
+
+pub async fn log_access_onchain(
+    pool: &PgPool,
+    user_id: &str,
+    record_id: &str,
+    action: &str,
+    config: &Config,
+) -> Option<AuditAnchor> {
+    let result = log_access_onchain_raw(pool, user_id, record_id, action, config).await;
+    if result.is_none() {
+        let payload: Value = serde_json::json!({
+            "user_id": user_id,
+            "record_id": record_id,
+            "action": action,
+        });
+        let _ = anchor_queue::enqueue_pending(
+            pool,
+            &config.audit_trail_contract_id,
+            "log_access",
+            payload,
+            "soroban CLI unavailable or returned empty tx hash",
+        )
+        .await;
+    }
+    result
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
@@ -10,8 +10,19 @@ export default function Login() {
     const [otpRequired, setOtpRequired] = useState(false)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [logoutNotice, setLogoutNotice] = useState('')
     const { login } = useAuth()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const reason = localStorage.getItem('auth_logout_reason')
+        if (reason === 'idle') {
+            setLogoutNotice('Your session ended due to inactivity. Please sign in again.')
+        } else if (reason === 'expired') {
+            setLogoutNotice('Your session expired. Please sign in again.')
+        }
+        if (reason) localStorage.removeItem('auth_logout_reason')
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -129,6 +140,24 @@ export default function Login() {
                     <p className="text-[14px] mb-8" style={{ color: 'var(--ink-muted)' }}>
                         Sign in to access your secure health records.
                     </p>
+
+                    {logoutNotice && !error && (
+                        <div
+                            className="mb-5 px-4 py-3 text-[13px] flex items-start gap-3"
+                            style={{
+                                background: 'rgba(202, 138, 4, 0.08)',
+                                border: '1px solid rgba(202, 138, 4, 0.32)',
+                                borderRadius: '6px',
+                                color: '#ca8a04',
+                            }}
+                            role="status"
+                        >
+                            <svg className="w-5 h-5 mt-[1px] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
+                            </svg>
+                            <span>{logoutNotice}</span>
+                        </div>
+                    )}
 
                     {error && (
                         <div

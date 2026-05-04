@@ -46,11 +46,11 @@
      * the input shape. --input-bg is a noticeably greyer paper that reads
      * as "here's a field, type here"; --input-border is darker than the
      * card hairlines so the outline is unambiguous. */
-    --input-bg:      #eef1f4;
-    --input-bg-hover:#e6eaee;
+    --input-bg:      #e2e8f0;
+    --input-bg-hover:#cbd5e1;
     --input-bg-focus:#ffffff;
-    --input-border:  #b8c1c9;
-    --input-border-hover: #8593a0;
+    --input-border:  #64748b;
+    --input-border-hover: #475569;
 
     --accent:      #0b6a7a;   /* clinical teal — functional accent */
     --accent-dim:  #2e7a87;
@@ -491,12 +491,58 @@ textarea:hover:not(:focus):not(:disabled) {
     border-color: var(--input-border-hover) !important;
 }
 
-/* Focus: white bg + teal border + teal focus ring. Unmistakable. */
+/* Focus: white bg + teal border + teal focus ring + 2px typing-bar at bottom.
+   The inset bar gives users a clear "you're typing here" cue beyond just the
+   border-color flip. Skips checkbox/radio/file because the bar would visually
+   conflict with their natural appearance. */
 input:focus, select:focus, textarea:focus {
     outline: none;
     background: var(--input-bg-focus) !important;
     border-color: var(--accent) !important;
     box-shadow: 0 0 0 3px rgba(11, 106, 122, 0.22) !important;
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+input[type="month"]:focus,
+input[type="week"]:focus,
+input:not([type]):focus,
+select:focus,
+textarea:focus {
+    box-shadow:
+        0 0 0 3px rgba(11, 106, 122, 0.22),
+        inset 0 -2px 0 0 var(--accent) !important;
+}
+
+/* Required-field auto-marker. Any <label> immediately before a required field
+   gets a red asterisk via ::after. Zero changes needed in form JSX — just put
+   `required` on the input/select/textarea and the asterisk appears. Uses :has()
+   (Chrome 105+, FF 121+, Safari 15.4+ — universal as of 2026). */
+label:has(+ input[required])::after,
+label:has(+ select[required])::after,
+label:has(+ textarea[required])::after {
+    content: '*';
+    color: var(--danger);
+    margin-left: 3px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Optional manual escape hatch: <span class="req-mark">*</span> for cases where
+   the label/input pairing isn't a simple sibling structure (e.g. wrapped inputs,
+   custom widgets). The CSS :has() rule above handles 99% of forms automatically. */
+.req-mark {
+    color: var(--danger);
+    margin-left: 2px;
+    font-weight: 600;
+    display: inline-block;
 }
 
 /* Disabled: greyed out, not-allowed. */

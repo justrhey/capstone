@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
+import { passwordStrength } from '../utils/password'
 
 export default function Register() {
     const [form, setForm] = useState({
@@ -10,11 +11,18 @@ export default function Register() {
         role: 'patient',
         first_name: '',
         last_name: '',
+        phone: '',
+        date_of_birth: '',
+        sex: '',
     })
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [consentChecked, setConsentChecked] = useState(false)
     const [consentVersion, setConsentVersion] = useState<string>('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const strength = useMemo(() => passwordStrength(form.password), [form.password])
+    const passwordsMatch = form.password.length > 0 && form.password === confirmPassword
+    const canSubmit = consentChecked && consentVersion && strength.isAcceptable && passwordsMatch && !loading
     const { login } = useAuth()
     const navigate = useNavigate()
 
@@ -39,6 +47,14 @@ export default function Register() {
         }
         if (!consentVersion) {
             setError('Could not load the current privacy notice. Please retry.')
+            return
+        }
+        if (!strength.isAcceptable) {
+            setError('Password is too weak. Add ' + strength.suggestions.join(', ') + '.')
+            return
+        }
+        if (!passwordsMatch) {
+            setError('Passwords do not match.')
             return
         }
         setLoading(true)
@@ -100,11 +116,11 @@ export default function Register() {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="chart-label block mb-1.5">First name</label>
-                            <input type="text" name="first_name" value={form.first_name} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" required />
+                            <input type="text" name="first_name" value={form.first_name} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" placeholder="Jane" required />
                         </div>
                         <div>
                             <label className="chart-label block mb-1.5">Last name</label>
-                            <input type="text" name="last_name" value={form.last_name} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" required />
+                            <input type="text" name="last_name" value={form.last_name} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" placeholder="Doe" required />
                         </div>
                     </div>
 
@@ -114,8 +130,86 @@ export default function Register() {
                     </div>
 
                     <div>
+                        <label className="chart-label block mb-1.5">Phone</label>
+                        <input type="tel" name="phone" value={form.phone} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" placeholder="+63 9XX XXX XXXX" required />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="chart-label block mb-1.5">Date of birth</label>
+                            <input type="date" name="date_of_birth" value={form.date_of_birth} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" required />
+                        </div>
+                        <div>
+                            <label className="chart-label block mb-1.5">Sex</label>
+                            <select name="sex" value={form.sex} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" required>
+                                <option value="" disabled>Select…</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
                         <label className="chart-label block mb-1.5">Password</label>
-                        <input type="password" name="password" value={form.password} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" placeholder="Minimum 8 characters" required />
+                        <input type="password" name="password" value={form.password} onChange={handleChange} className="w-full px-3 py-2.5 text-[14px]" placeholder="8+ chars, mixed case, number" required />
+                        {form.password.length > 0 && (
+                            <div className="mt-1.5">
+                                <div className="flex gap-1">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="h-[3px] flex-1 rounded-full transition-colors"
+                                            style={{
+                                                background:
+                                                    i <= strength.score
+                                                        ? strength.score <= 1
+                                                            ? '#e0655d'
+                                                            : strength.score === 2
+                                                            ? '#ca8a04'
+                                                            : '#10b981'
+                                                        : 'var(--hairline)',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                <p
+                                    className="text-[11px] mt-1 font-mono tracking-wide"
+                                    style={{
+                                        color:
+                                            strength.score <= 1
+                                                ? '#e0655d'
+                                                : strength.score === 2
+                                                ? '#ca8a04'
+                                                : '#10b981',
+                                    }}
+                                >
+                                    {strength.label}
+                                    {strength.suggestions.length > 0 && (
+                                        <span style={{ color: 'var(--ink-muted)' }}>
+                                            {' '}— add {strength.suggestions.join(', ')}
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="chart-label block mb-1.5">Confirm password</label>
+                        <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full px-3 py-2.5 text-[14px]"
+                            placeholder="Re-type password"
+                            required
+                        />
+                        {confirmPassword.length > 0 && !passwordsMatch && (
+                            <p className="text-[11px] mt-1" style={{ color: '#e0655d' }}>
+                                Passwords do not match.
+                            </p>
+                        )}
                     </div>
 
                     <div className="pt-1">
@@ -157,21 +251,21 @@ export default function Register() {
 
                     <button
                         type="submit"
-                        disabled={loading || !consentChecked || !consentVersion}
+                        disabled={!canSubmit}
                         className="w-full py-2.5 text-[14px] font-medium transition-colors"
                         style={{
-                            background: loading || !consentChecked || !consentVersion ? 'var(--ink-faint)' : 'var(--accent)',
+                            background: !canSubmit ? 'var(--ink-faint)' : 'var(--accent)',
                             color: '#ffffff',
                             borderRadius: '3px',
-                            cursor: loading || !consentChecked || !consentVersion ? 'not-allowed' : 'pointer',
+                            cursor: !canSubmit ? 'not-allowed' : 'pointer',
                         }}
                         onMouseEnter={(e) => {
-                            if (!loading && consentChecked && consentVersion) {
+                            if (canSubmit) {
                                 (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-dark)'
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!loading && consentChecked && consentVersion) {
+                            if (canSubmit) {
                                 (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent)'
                             }
                         }}

@@ -22,3 +22,4 @@ pub mod message_handler;
 pub mod prescription_handler;
 pub mod fhir_outbound_handler;
 pub mod population_handler;
+pub mod admin_blockchain_handler;

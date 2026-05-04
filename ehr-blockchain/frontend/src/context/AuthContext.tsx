@@ -50,14 +50,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('user')
     }, [])
 
-    // Auto-logout on 25s of idle when authenticated
+    // Auto-logout on idle when authenticated
     useEffect(() => {
         if (!token) return
 
-        let timer = window.setTimeout(logout, IDLE_TIMEOUT_MS)
+        const fireIdle = () => {
+            localStorage.setItem('auth_logout_reason', 'idle')
+            logout()
+        }
+        let timer = window.setTimeout(fireIdle, IDLE_TIMEOUT_MS)
         const reset = () => {
             window.clearTimeout(timer)
-            timer = window.setTimeout(logout, IDLE_TIMEOUT_MS)
+            timer = window.setTimeout(fireIdle, IDLE_TIMEOUT_MS)
         }
         const events: Array<keyof WindowEventMap> = [
             'mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click',
@@ -71,7 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Backend-signalled session expiry (401 from axios interceptor)
     useEffect(() => {
-        const handler = () => logout()
+        const handler = () => {
+            localStorage.setItem('auth_logout_reason', 'expired')
+            logout()
+        }
         window.addEventListener('auth:expired', handler)
         return () => window.removeEventListener('auth:expired', handler)
     }, [logout])

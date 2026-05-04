@@ -22,6 +22,7 @@ pub struct User {
     pub totp_secret: Option<String>,
     pub totp_pending_secret: Option<String>,
     pub totp_enrolled_at: Option<DateTime<Utc>>,
+    pub phone: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -42,6 +43,14 @@ pub struct RegisterRequest {
     pub role: String,
     pub first_name: String,
     pub last_name: String,
+    /// Phone number — required for all new registrations. Used for future
+    /// password-recovery flows.
+    pub phone: Option<String>,
+    /// Required for patient self-registration: ISO date string (YYYY-MM-DD).
+    pub date_of_birth: Option<String>,
+    /// Required for patient self-registration: free-form value
+    /// (frontend select limits to male/female/other).
+    pub sex: Option<String>,
     /// Privacy-notice version the user is accepting. Must match the server's
     /// `CURRENT_CONSENT_VERSION` constant at registration time.
     pub consent_version: Option<String>,

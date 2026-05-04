@@ -56,6 +56,13 @@ async fn main() -> io::Result<()> {
             // One-shot: encrypt any legacy plaintext rows. Idempotent.
             services::encryption::backfill_encrypt_on_startup(&pool, &cfg.encryption_key).await;
 
+            // One-shot: ensure every user has a Stellar keypair (idempotent).
+            match services::stellar_identity::backfill_all_users(&pool, &cfg.encryption_key).await {
+                Ok(n) if n > 0 => println!("Stellar identity backfill: {} user(s) keyed", n),
+                Ok(_) => {}
+                Err(e) => eprintln!("[startup] stellar identity backfill failed: {}", e),
+            }
+
             println!("Migrations applied successfully");
 
             let server_host = cfg.server_host.clone();
@@ -105,6 +112,7 @@ async fn main() -> io::Result<()> {
                     .configure(handlers::prescription_handler::prescription_routes)
                     .configure(handlers::fhir_outbound_handler::fhir_outbound_routes)
                     .configure(handlers::population_handler::population_routes)
+                    .configure(handlers::admin_blockchain_handler::admin_blockchain_routes)
             })
             .bind((server_host, server_port))?
             .run()

@@ -86,6 +86,9 @@ pub async fn ensure_for_user(
 }
 
 /// Load and decrypt the user's keypair. Caller must drop the result promptly.
+/// Reserved for future per-user signing of anchors (requires contract auth changes);
+/// keep available so the backfilled secrets aren't write-only.
+#[allow(dead_code)]
 pub async fn load_for_user(
     pool: &PgPool,
     user_id: Uuid,

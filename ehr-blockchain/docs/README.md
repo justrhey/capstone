@@ -1,4 +1,4 @@
-# EHR Blockchain System - Technical Documentation
+4# EHR Blockchain System - Technical Documentation
 
 ## Table of Contents
 1. [Project Overview](#project-overview)

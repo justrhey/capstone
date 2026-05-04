@@ -114,9 +114,45 @@ pub async fn register_user(
         return Err(AppError::BadRequest("last_name must be 1-100 characters".into()));
     }
 
+    // Password strength: 8+ chars + at least 2 of {upper, lower, digit, symbol}.
+    // Mirrors the client-side rule in frontend/src/utils/password.ts.
     if req.password.len() < 8 {
-        return Err(AppError::BadRequest("Password must be at least 8 characters".into()));
+        return Err(AppError::BadRequest(
+            "Password must be at least 8 characters.".into(),
+        ));
     }
+    let has_upper = req.password.chars().any(|c| c.is_ascii_uppercase());
+    let has_lower = req.password.chars().any(|c| c.is_ascii_lowercase());
+    let has_digit = req.password.chars().any(|c| c.is_ascii_digit());
+    let has_symbol = req.password.chars().any(|c| !c.is_ascii_alphanumeric());
+    let classes = [has_upper, has_lower, has_digit, has_symbol]
+        .iter()
+        .filter(|b| **b)
+        .count();
+    if classes < 2 {
+        return Err(AppError::BadRequest(
+            "Password is too weak. Use a mix of uppercase, lowercase, numbers, or symbols.".into(),
+        ));
+    }
+
+    // Phone is required for all registrations (used for future password recovery).
+    let phone = req.phone.as_deref().map(str::trim).filter(|s| !s.is_empty());
+    if phone.is_none() {
+        return Err(AppError::BadRequest("phone is required".into()));
+    }
+
+    // Date of birth + sex are required when registering as a patient.
+    let (dob_parsed, sex_value) = if req.role == "patient" {
+        let dob_str = req.date_of_birth.as_deref().map(str::trim).filter(|s| !s.is_empty())
+            .ok_or_else(|| AppError::BadRequest("date_of_birth is required for patients".into()))?;
+        let dob = dob_str.parse::<chrono::NaiveDate>()
+            .map_err(|e| AppError::BadRequest(format!("Invalid date_of_birth (expected YYYY-MM-DD): {}", e)))?;
+        let sex = req.sex.as_deref().map(str::trim).filter(|s| !s.is_empty())
+            .ok_or_else(|| AppError::BadRequest("sex is required for patients".into()))?;
+        (Some(dob), Some(sex.to_string()))
+    } else {
+        (None, None)
+    };
 
     // CMP-1: privacy-notice consent capture.
     // Patient self-registration: the user has just clicked the checkbox, so
@@ -155,18 +191,47 @@ pub async fn register_user(
     let password_hash = hash_password(&req.password)
         .map_err(|e| AppError::InternalError(format!("Failed to hash password: {}", e)))?;
 
+    let mut tx = pool.begin().await?;
+
     let user = sqlx::query_as::<_, User>(
-        "INSERT INTO users (email, password_hash, role, first_name, last_name, consent_version, consent_accepted_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING *",
+        "INSERT INTO users (email, password_hash, role, first_name, last_name, phone, consent_version, consent_accepted_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *",
     )
         .bind(&req.email)
         .bind(&password_hash)
         .bind(&req.role)
         .bind(&req.first_name)
         .bind(&req.last_name)
+        .bind(phone)
         .bind(CURRENT_CONSENT_VERSION)
-        .fetch_one(pool)
+        .fetch_one(&mut *tx)
         .await?;
+
+    // Patient self-signup: also create the clinical profile so the user has a
+    // patients row from day one (prior bug: register only created the users row).
+    if req.role == "patient" {
+        let dob = dob_parsed.expect("validated above");
+        let sex = sex_value.as_deref().expect("validated above");
+        let first_enc = crate::services::encryption::encrypt_field(&req.first_name, &config.encryption_key)
+            .map_err(|e| AppError::InternalError(format!("Encryption failed: {}", e)))?;
+        let last_enc = crate::services::encryption::encrypt_field(&req.last_name, &config.encryption_key)
+            .map_err(|e| AppError::InternalError(format!("Encryption failed: {}", e)))?;
+
+        sqlx::query(
+            "INSERT INTO patients (user_id, date_of_birth, sex, first_name, last_name, contact_number) \
+             VALUES ($1, $2, $3, $4, $5, $6)",
+        )
+            .bind(user.id)
+            .bind(dob)
+            .bind(sex)
+            .bind(&first_enc)
+            .bind(&last_enc)
+            .bind(phone)
+            .execute(&mut *tx)
+            .await?;
+    }
+
+    tx.commit().await?;
 
     let token = generate_token(&user, config)
         .map_err(|e| AppError::InternalError(format!("Failed to generate token: {}", e)))?;
