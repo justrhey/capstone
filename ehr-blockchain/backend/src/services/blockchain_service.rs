@@ -60,6 +60,22 @@ pub(crate) fn parse_u64_tuple(out: &str) -> Option<(i64, i64)> {
     None
 }
 
+/// Extract a Stellar transaction hash from the CLI's stderr output.
+/// The CLI emits: `🔗 https://stellar.expert/explorer/testnet/tx/<64_hex_chars>`
+/// Returns the 64-char hex hash, or None if not found.
+fn extract_tx_hash_from_stderr(output: &Output) -> Option<String> {
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // Match the tx hash after the last `/tx/` in the stargazer URL
+    if let Some(start) = stderr.rfind("/tx/") {
+        let after = &stderr[start + 4..];
+        let tx_hash: String = after.chars().take(64).collect();
+        if tx_hash.len() == 64 && tx_hash.chars().all(|c| c.is_ascii_hexdigit()) {
+            return Some(tx_hash);
+        }
+    }
+    None
+}
+
 /// Probe the soroban CLI once per process. Subsequent calls are constant-time.
 fn soroban_available() -> bool {
     static CHECKED: AtomicBool = AtomicBool::new(false);
@@ -189,25 +205,32 @@ pub(crate) async fn store_record_hash_raw(
 ) -> Option<BlockchainTx> {
     let record_id_hex = uuid_to_bytes32_hex(record_id);
     let patient_id_hex = uuid_to_bytes32_hex(patient_id);
+    // Contract function `store_hash` expects: --patient_id <32_hex> --record_hash <32_hex>
     let output = run_soroban(
         &[
             "contract", "invoke",
             "--id", &config.record_registry_contract_id,
-            "--",
-            "store_hash",
-            "--record_id", &record_id_hex,
-            "--patient_id", &patient_id_hex,
-            "--record_hash", record_hash,
+            "--source-account", "deployer",
             "--rpc-url", &config.stellar_rpc_url,
             "--network-passphrase", &config.stellar_network_passphrase,
-            "--source", "admin",
+            "--network", "testnet",
+            "--",
+            "store_hash",
+            "--patient_id", &patient_id_hex,
+            "--record_hash", record_hash,
         ],
         "store_record_hash",
     )?;
 
-    let tx_hash = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let tx_hash = extract_tx_hash_from_stderr(&output)
+        .or_else(|| {
+            // Fallback: grab stdout line (legacy CLI behavior)
+            let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !s.is_empty() { Some(s) } else { None }
+        })
+        .unwrap_or_default();
     if tx_hash.is_empty() {
-        eprintln!("[blockchain] store_record_hash returned empty tx hash");
+        eprintln!("[blockchain] store_record_hash_raw returned empty tx hash");
         return None;
     }
 
@@ -266,24 +289,32 @@ pub(crate) async fn update_record_hash_raw(
     config: &Config,
 ) -> Option<BlockchainTx> {
     let record_id_hex = uuid_to_bytes32_hex(record_id);
+    // No `update_hash` function — contract only has store_hash. Re-invoke store_hash to overwrite.
+    let patient_id_hex = uuid_to_bytes32_hex(record_id);
     let output = run_soroban(
         &[
             "contract", "invoke",
             "--id", &config.record_registry_contract_id,
-            "--",
-            "update_hash",
-            "--record_id", &record_id_hex,
-            "--record_hash", record_hash,
+            "--source-account", "deployer",
             "--rpc-url", &config.stellar_rpc_url,
             "--network-passphrase", &config.stellar_network_passphrase,
-            "--source", "admin",
+            "--network", "testnet",
+            "--",
+            "store_hash",
+            "--patient_id", &patient_id_hex,
+            "--record_hash", record_hash,
         ],
         "update_record_hash",
     )?;
 
-    let tx_hash = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let tx_hash = extract_tx_hash_from_stderr(&output)
+        .or_else(|| {
+            let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !s.is_empty() { Some(s) } else { None }
+        })
+        .unwrap_or_default();
     if tx_hash.is_empty() {
-        eprintln!("[blockchain] update_record_hash returned empty tx hash");
+        eprintln!("[blockchain] update_record_hash_raw returned empty tx hash");
         return None;
     }
 
@@ -338,17 +369,18 @@ pub async fn verify_record_hash(
     config: &Config,
 ) -> Option<bool> {
     let record_id_hex = uuid_to_bytes32_hex(record_id);
+    // Contract function `verify_hash` expects: --record_hash <32_hex>
     let output = run_soroban(
         &[
             "contract", "invoke",
             "--id", &config.record_registry_contract_id,
-            "--",
-            "verify_latest",
-            "--record_id", &record_id_hex,
-            "--record_hash", record_hash,
+            "--source-account", "deployer",
             "--rpc-url", &config.stellar_rpc_url,
             "--network-passphrase", &config.stellar_network_passphrase,
-            "--source", "admin",
+            "--network", "testnet",
+            "--",
+            "verify_hash",
+            "--record_hash", record_hash,
         ],
         "verify_record_hash",
     )?;
@@ -372,20 +404,26 @@ pub(crate) async fn grant_access_onchain_raw(
         &[
             "contract", "invoke",
             "--id", &config.access_manager_contract_id,
+            "--source-account", "deployer",
+            "--rpc-url", &config.stellar_rpc_url,
+            "--network-passphrase", &config.stellar_network_passphrase,
+            "--network", "testnet",
             "--",
             "grant_access",
             "--patient_id", &patient_id_hex,
             "--granted_to", &granted_to_hex,
             "--record_id", &record_id_hex,
             "--duration_seconds", &duration,
-            "--rpc-url", &config.stellar_rpc_url,
-            "--network-passphrase", &config.stellar_network_passphrase,
-            "--source", "admin",
         ],
         "grant_access_onchain",
     )?;
 
-    let tx_hash = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let tx_hash = extract_tx_hash_from_stderr(&output)
+        .or_else(|| {
+            let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !s.is_empty() { Some(s) } else { None }
+        })
+        .unwrap_or_default();
     if tx_hash.is_empty() {
         return None;
     }
@@ -458,12 +496,13 @@ pub async fn has_active_patient_grant(
         &[
             "contract", "invoke",
             "--id", &config.access_manager_contract_id,
+            "--source-account", "deployer",
+            "--rpc-url", &config.stellar_rpc_url,
+            "--network-passphrase", &config.stellar_network_passphrase,
+            "--network", "testnet",
             "--",
             "get_patient_permissions",
             "--patient_id", &patient_id_hex,
-            "--rpc-url", &config.stellar_rpc_url,
-            "--network-passphrase", &config.stellar_network_passphrase,
-            "--source", "admin",
         ],
         "has_active_patient_grant",
     )?;
@@ -498,14 +537,15 @@ pub(crate) async fn log_access_onchain_raw(
         &[
             "contract", "invoke",
             "--id", &config.audit_trail_contract_id,
+            "--source-account", "deployer",
+            "--rpc-url", &config.stellar_rpc_url,
+            "--network-passphrase", &config.stellar_network_passphrase,
+            "--network", "testnet",
             "--",
             "log_access",
             "--user_id", &user_id_hex,
             "--record_id", &record_id_hex,
             "--action", action,
-            "--rpc-url", &config.stellar_rpc_url,
-            "--network-passphrase", &config.stellar_network_passphrase,
-            "--source", "admin",
         ],
         "log_access_onchain",
     )?;
@@ -517,11 +557,12 @@ pub(crate) async fn log_access_onchain_raw(
     // the authoritative timestamp.
     let (ledger_timestamp, sequence) = parse_u64_tuple(&stdout).unwrap_or((-1, -1));
 
-    // tx_hash is not actually in stdout for contract-invoke (stdout is the
-    // return value). For now we use the raw stdout as an opaque identifier
-    // for `blockchain_transactions.tx_hash`. Future work: parse JSON logs from
-    // stderr for the real tx_hash.
-    let tx_hash = stdout.trim().to_string();
+    let tx_hash = extract_tx_hash_from_stderr(&output)
+        .or_else(|| {
+            let s = stdout.trim().to_string();
+            if !s.is_empty() { Some(s) } else { None }
+        })
+        .unwrap_or_default();
     if tx_hash.is_empty() {
         return None;
     }

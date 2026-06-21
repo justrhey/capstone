@@ -224,18 +224,18 @@ export default function Messages() {
                     return (
                       <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                         <div
-                          className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
+                          className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm ${
                             mine
-                              ? 'bg-gradient-to-br from-cyan-600 to-cyan-700 text-white border border-cyan-500'
-                              : 'bg-slate-700 text-white border border-slate-600'
+                              ? 'bg-white text-slate-900 rounded-br-md'
+                              : 'bg-white text-slate-900 rounded-bl-md'
                           }`}
                           style={{
-                            boxShadow: mine ? '0 2px 8px rgba(8, 145, 178, 0.3)' : '0 2px 6px rgba(0,0,0,0.2)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                           }}
                         >
-                          <p className="whitespace-pre-wrap break-words font-medium leading-relaxed">{m.body}</p>
-                          <p className={`text-[11px] mt-2 ${mine ? 'text-cyan-100' : 'text-slate-300'}`}>
-                            {new Date(m.created_at).toLocaleString()}
+                          <p className="whitespace-pre-wrap break-words font-medium leading-relaxed text-slate-800">{m.body}</p>
+                          <p className={`text-[10px] mt-2 ${mine ? 'text-slate-500' : 'text-slate-500'}`}>
+                            {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                           </p>
                         </div>
                       </div>

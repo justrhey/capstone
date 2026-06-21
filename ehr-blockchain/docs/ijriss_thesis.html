@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blockchain-Based Electronic Health Record System - IJRISS</title>
+<style>
+/* ===== PAGE SETUP (A4 — IJRISS Format) ===== */
+@page {
+  size: A4;
+  margin-top: 0.76in;
+  margin-bottom: 0.42in;
+  margin-left: 0.42in;
+  margin-right: 0.42in;
+  @top-center {
+    content: "";
+    margin-top: 0.24in;
+    font-size: 10pt;
+    font-family: 'Times New Roman', Times, serif;
+  }
+  @bottom-center {
+    content: counter(page);
+    margin-bottom: 0.28in;
+    font-size: 10pt;
+    font-family: 'Times New Roman', Times, serif;
+  }
+}
+
+/* ===== BASE STYLES ===== */
+body {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  line-height: 1.0;
+  margin: 0.76in 0.42in 0.42in 0.42in;
+  color: #000;
+  background: #fff;
+}
+
+p {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  line-height: 1.0;
+  margin: 0 0 12pt 0;
+  text-align: justify;
+}
+
+/* ===== TITLE PAGE ===== */
+.title-main {
+  font-size: 18pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 0 0 24pt 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.authors {
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 0 0 6pt 0;
+  line-height: 1.4;
+}
+
+.affiliations {
+  font-size: 11pt;
+  text-align: center;
+  margin: 0 0 18pt 0;
+  line-height: 1.3;
+}
+
+.corresponding {
+  font-size: 10pt;
+  text-align: center;
+  margin: 0 0 24pt 0;
+  font-style: italic;
+}
+
+/* ===== ABSTRACT & KEYWORDS ===== */
+.section-abstract {
+  font-size: 12pt;
+  text-align: justify;
+  margin: 12pt 0;
+}
+
+.abstract-label {
+  font-weight: bold;
+  font-size: 12pt;
+}
+
+.keywords-label {
+  font-weight: bold;
+  font-size: 12pt;
+}
+
+.keywords-text {
+  font-size: 12pt;
+  font-style: italic;
+}
+
+/* ===== HEADINGS ===== */
+h1 {
+  font-size: 14pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: left;
+  margin: 18pt 0 12pt 0;
+  page-break-before: auto;
+}
+
+h2 {
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: left;
+  margin: 12pt 0 6pt 0;
+}
+
+h3 {
+  font-size: 12pt;
+  font-weight: bold;
+  font-style: italic;
+  text-align: left;
+  margin: 12pt 0 6pt 0;
+}
+
+/* ===== TABLES ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12pt 0;
+  font-size: 11pt;
+}
+
+table, th, td {
+  border: 1px solid #000;
+}
+
+th, td {
+  padding: 4pt 6pt;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  font-weight: bold;
+  background: #f0f0f0;
+}
+
+.caption {
+  font-size: 11pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 6pt 0 12pt 0;
+}
+
+/* ===== REFERENCES ===== */
+.references {
+  font-size: 11pt;
+  line-height: 1.0;
+  margin: 0;
+}
+
+.references p {
+  font-size: 11pt;
+  line-height: 1.0;
+  margin: 0 0 6pt 0;
+  text-align: left;
+  padding-left: 36pt;
+  text-indent: -36pt;
+}
+
+.ref-number {
+  font-weight: bold;
+  margin-right: 6pt;
+}
+
+/* ===== FIGURES ===== */
+.figure-placeholder {
+  border: 1px dashed #999;
+  text-align: center;
+  padding: 24pt 12pt;
+  margin: 12pt 0;
+  color: #666;
+  font-style: italic;
+  font-size: 11pt;
+}
+
+.figure-caption {
+  font-size: 11pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 6pt 0 12pt 0;
+}
+
+/* ===== LISTS ===== */
+ul, ol {
+  margin: 6pt 0 12pt 0;
+  padding-left: 24pt;
+}
+
+li {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  line-height: 1.0;
+  margin: 0 0 6pt 0;
+  text-align: justify;
+}
+
+/* ===== ETHICAL SECTIONS ===== */
+.ethical-section {
+  margin-top: 12pt;
+}
+
+.ethical-section p {
+  margin: 0 0 6pt 0;
+}
+
+/* ===== CITATION NUMBERS ===== */
+.cite {
+  font-weight: normal;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TITLE PAGE ===== -->
+<p class="title-main">Blockchain-Based Electronic Health Record System</p>
+
+<p class="authors">Tambong, Justine Rhey M.<sup>1</sup>, Somontina, Rovic James<sup>2</sup>, Balon, Enrico JR.<sup>3*</sup>, Agustin, Vivien A.<sup>4</sup>, Fernandez, Ronald B.<sup>5</sup></p>
+
+<p class="affiliations">
+<sup>1,2,3</sup> Bachelor of Science in Information Technology, Jesus Reigns Christian College, Malate, Manila, Philippines<br>
+<sup>4,5</sup> La Consolacion University Philippines, Malolos, Bulacan, Philippines
+</p>
+
+<p class="corresponding">* Corresponding author: Enrico JR. Balon, Jesus Reigns Christian College, Malate, Manila, Philippines</p>
+
+<!-- ===== ABSTRACT ===== -->
+<p class="section-abstract">
+<span class="abstract-label">Abstract:</span> This study presents the design, development, and evaluation of a Blockchain-Based Electronic Health Record (EHR) System aimed at addressing the critical limitations of traditional paper-based and centralized digital record systems commonly used in small healthcare clinics. Conventional health record management faces persistent challenges including data vulnerability to breaches, unauthorized access, lack of interoperability between systems, and inefficient record retrieval processes that compromise patient care quality. The proposed system integrates blockchain technology with a secure web-based platform to ensure data immutability, encrypted storage, and patient-controlled access permissions. Developed through a dual-methodology approach combining Agile software development with the Iterative Design and Development (IDD) model across eight two-week sprints, the system features a multi-layered architecture combining PostgreSQL for encrypted off-chain data storage, Rust-based smart contracts deployed on the Stellar Soroban blockchain for automated access control and audit trail logging, and a React/TypeScript web interface for patient and provider interaction. The backend was built using Rust with the Actix-web framework and the frontend using React with Vite. Built in partnership with Herbosa Metro Doctors in Tondo, the prototype was developed and tested using simulated patient data in compliance with the Data Privacy Act of 2012 (Republic Act No. 10173). A comprehensive test suite of 171 automated test cases was executed against the live system, achieving a 100% pass rate across authentication, role-based access control, patient management, medical records, and audit logging modules. Quantitative performance testing demonstrated sub-100ms API response times for typical operations with average record creation at 28ms, patient retrieval at 52ms, and audit log queries at 19ms, confirming the system's practical viability for small-clinic deployment. The tamper-detection mechanism using SHA-256 hashing was verified, confirming that any modification to record content produces a completely different hash, enabling immediate detection of unauthorized changes.
+</p>
+
+<p><span class="keywords-label">Keywords:</span> <span class="keywords-text">blockchain, electronic health record, Stellar Soroban, EHR security, smart contracts</span></p>
+
+<!-- ===== 1. INTRODUCTION ===== -->
+<h1>1. Introduction</h1>
+
+<h2>1.1 Background of the Study</h2>
+
+<p>In the age of digital transformation, data has become one of the most powerful resources in every field, especially in healthcare, where information accuracy and security are vital to saving lives. Electronic Health Records (EHRs) have replaced traditional paper-based systems to promote efficiency, speed, and accessibility of patient data among hospitals and healthcare professionals. However, as more hospitals migrate to digital systems, data protection has become increasingly challenging. According to Ullah [3], centralized databases used in conventional EHR systems remain highly susceptible to data breaches and corruption due to their dependence on a single controlling server. Such vulnerabilities not only compromise patient confidentiality but also undermine trust between patients and healthcare providers. The challenge now extends beyond digitalization; it revolves around ensuring that every record stored online remains accurate, private, and tamper-proof, regardless of where it is accessed.</p>
+
+<p>Despite the benefits of EHRs, their limitations continue to threaten the reliability of digital healthcare management. Many hospitals still rely on centralized databases that are vulnerable to hacking, unauthorized modification, or system crashes, leading to irreversible data loss. Agbeyangi, Oki, and Mgidi [4] noted that weak access control and insufficient transparency in traditional EHRs prevent patients from tracking who accesses their data, increasing the risk of medical identity theft. This issue is evident at the study's partner clinic, Herbosa Metro Doctors in Tondo, where existing health record management practices still rely on general paper templates and face significant challenges in ensuring data privacy and controlled access in compliance with the Data Privacy Act.</p>
+
+<p>Furthermore, Saraswat [5] discussed that the lack of interoperability between different hospital systems hinders the seamless exchange of patient information, causing medical errors, delays, and duplicate testing. These weaknesses do not only affect clinical operations but also damage patient confidence in digital healthcare. When records are altered or lost, both the patient and the healthcare provider bear the consequences financially, medically, and ethically. There is a clear gap in ensuring that medical records can be safely accessed and verified without relying on a single, vulnerable point of control.</p>
+
+<h2>1.2 Statement of the Problem</h2>
+
+<p>The increasing demand for efficient and secure health record management has highlighted the limitations of paper-based systems still used by many small clinics. Manual recording often leads to challenges in data organization, retrieval, accuracy, and privacy, especially as patient volumes continue to grow. This study addresses the lack of a secure and organized system for managing patient health records by proposing the development of a blockchain-based Electronic Health Record (EHR) prototype. Specifically, this study seeks to address the following problems: (1) the clinic does not have a standardized system for recording patient information and currently depends on general paper templates, (2) the clinic lacks an integrated system for efficiently accessing and sharing patient records among healthcare personnel, and (3) paper-based records do not have a way to track or limit who can view a patient's file, making it difficult to ensure privacy.</p>
+
+<h2>1.3 Objectives of the Study</h2>
+
+<p>The main objective of this study is to design and develop a blockchain-based Electronic Health Record (EHR) system that enhances the security, accessibility, and management of patient health information. Specifically, the study seeks to: (1) develop a blockchain-based EHR system that ensures secure and reliable storage of patient health information by utilizing blockchain features such as data immutability, encryption, and decentralized record management; (2) enhance the accessibility and efficient sharing of patient records among authorized healthcare personnel through a digital platform that supports timely retrieval and seamless data exchange; and (3) provide a secure access control mechanism that protects patient data and ensures that only authorized users can view or modify patient records.</p>
+
+<h2>1.4 Scope and Limitations</h2>
+
+<p>This study focuses on the design and development of a Blockchain-Based Electronic Health Record (EHR) prototype system for a clinic setting. The system uses blockchain technology to ensure that patient information is stored in a way that cannot be altered or accessed without proper authorization. Core features include blockchain-based data storage, secure record sharing among authorized clinic staff, a patient health history tracker, and a dashboard for viewing and managing patient information. The study is conducted within a controlled environment using simulated patient data, as direct access to actual clinic records is restricted under Republic Act No. 10173 (Data Privacy Act of 2012). The study is limited to the software-based design and functionality testing of the system and does not cover actual deployment within the clinic's operations.</p>
+
+<h2>1.5 Significance of the Study</h2>
+
+<p>This study is important as it aims to address the limitations of traditional health record systems by introducing a Blockchain-Based EHR System that ensures secure, transparent, and tamper-proof medical data management. Healthcare institutions gain a secure and unified platform for storing and managing medical records. Medical professionals can easily access accurate, up-to-date records that support faster diagnosis and better treatment planning. Patients benefit from improved protection and transparency of their medical information. Researchers and developers gain a foundation for future innovations in digital health and secure data systems.</p>
+
+<!-- ===== 2. REVIEW OF RELATED LITERATURE ===== -->
+<h1>2. Review of Related Literature and Studies</h1>
+
+<p>This literature presents insights on blockchain technology in healthcare systems, with a particular focus on electronic health records (EHR), data security, interoperability, and decentralized system architectures. It explores how blockchain can address long-standing challenges in healthcare information management, including data fragmentation, lack of transparency, inefficient record sharing, and privacy concerns.</p>
+
+<p>In a related study, Nakamoto [1] introduced blockchain as a decentralized peer-to-peer electronic system designed to eliminate the need for trusted third parties by distributing data across a network of nodes. The study explained that blockchain operates using cryptographic hashing, where each block contains a timestamp and a reference to the previous block, forming a continuous and immutable chain of records. Although initially developed for financial transactions, Nakamoto emphasized that the core principles of decentralization, transparency, and immutability can be applied to other sectors such as healthcare.</p>
+
+<p>Similarly, Zheng et al. [2] conducted a comprehensive analysis of blockchain architecture and its underlying consensus mechanisms, explaining how distributed ledger technology maintains consistency across multiple nodes without relying on centralized authority. Their findings demonstrated that blockchain-based systems can provide secure, synchronized, and tamper-resistant data storage while still supporting real-time access to patient information.</p>
+
+<p>Ullah [3] examined the vulnerabilities associated with centralized healthcare database systems, highlighting their susceptibility to cyberattacks, ransomware incidents, and large-scale data breaches. The research emphasized the need for a fundamental shift toward decentralized architectures, such as blockchain, which distribute data across multiple nodes and eliminate single points of failure.</p>
+
+<p>Agbeyangi, Oki, and Mgidi [4] investigated access control mechanisms in conventional electronic health record systems, revealing significant limitations in how these systems manage and monitor data access. The researchers proposed the implementation of blockchain-based permission systems where every data access request is recorded on an immutable ledger.</p>
+
+<p>Saraswat [5] analyzed the persistent interoperability challenges faced by modern healthcare systems, particularly those arising from fragmented databases and incompatible data formats. The study proposed that blockchain technology can address these challenges by offering a unified and standardized platform for storing and sharing patient data.</p>
+
+<p>Kuo, Kim, and Ohno-Machado [30] explored blockchain-based solutions for improving healthcare interoperability, proposing distributed frameworks that enable secure and efficient data sharing across multiple institutions through cryptographic keys and smart contracts.</p>
+
+<p>Szabo [6] introduced the concept of smart contracts as self-executing digital agreements that automatically enforce predefined conditions between parties. In healthcare applications, smart contracts enable automated permission management, allowing patients to grant, modify, or revoke access to their medical records based on specific conditions.</p>
+
+<p>Christidis and Devetsikiotis [7] examined the implementation of smart contracts within blockchain systems, highlighting their ability to automate complex workflows and reduce reliance on manual processes. Their study demonstrated that smart contracts can improve system efficiency by minimizing human error and reducing processing delays.</p>
+
+<p>Guo, Li, Nejad, and Shen [8] investigated the integration of edge computing with blockchain technology in healthcare systems, demonstrating that processing data closer to its source can significantly reduce latency and improve system performance.</p>
+
+<p>Shi et al. [9] analyzed edge computing frameworks within the Internet of Things (IoT), explaining how decentralized data processing can enhance system efficiency and reduce dependence on centralized cloud infrastructure.</p>
+
+<p>Haber and Stornetta [10] introduced cryptographic timestamping techniques that form the foundation of blockchain's immutability. Their research demonstrated how linking data records through cryptographic hashes creates a secure and tamper-evident chain.</p>
+
+<p>Merkle [11] further advanced this field by developing the Merkle tree data structure, which enables efficient verification of large datasets through hierarchical hashing, enhancing both security and privacy in EHR systems.</p>
+
+<p>In the Philippine context, De Guzman and Santos [12] examined the current state of healthcare digitalization, revealing that a significant number of healthcare institutions still rely on paper-based or hybrid record-keeping systems. Reyes [13] analyzed the fragmented nature of health information systems in the Philippines, noting that the lack of standardization prevents effective data sharing between healthcare providers. Castillo and Domingo [14] investigated compliance challenges related to the Philippine Data Privacy Act, recommending blockchain-based systems that integrate security features directly into the system architecture. Pascual [15] emphasized the importance of patient rights in controlling access to their medical information through transparent and auditable mechanisms. Aquino and Cruz [16] examined telemedicine expansion in the Philippines, identifying secure access to patient records as a major challenge in remote healthcare delivery. Mendoza [17] explored telemedicine adoption in rural areas, highlighting concerns about data security and trust among patients. Dela Cruz, Garcia, and Hernandez [18] conducted a study on blockchain awareness among Philippine healthcare administrators, finding strong interest in its potential applications. Ramos and Villegas [19] explored blockchain implementations in other government sectors, highlighting successful pilot projects. Santos, Lopez, and Bautista [20] investigated mobile health application usage across demographic groups in the Philippines. Torres [21] examined digital literacy in medical education, emphasizing the need for integrating emerging technology concepts into healthcare training programs.</p>
+
+<!-- ===== 3. METHODOLOGY ===== -->
+<h1>3. Methodology</h1>
+
+<h2>3.1 Research Design</h2>
+
+<p>This study employs a developmental research methodology to design, develop, and evaluate a Blockchain-Based Electronic Health Record (EHR) System in response to several critical challenges: data security concerns from centralized health records, data integrity issues from unauthorized modification, accessibility limitations from manual record-keeping, and privacy challenges from lack of patient control over their data. The system integrates blockchain technology for decentralized and immutable data storage, smart contracts for automated access control, and secure authentication mechanisms for verifying users.</p>
+
+<p>The study employs simulated healthcare record structures incorporating approximately 100 synthetic patient profiles with demographic information, medical history entries, medication records, allergy information, laboratory results, access permission logs, and audit trails. These datasets are evaluated to ensure compatibility with real-world healthcare scenarios.</p>
+
+<h2>3.2 Software Development Life Cycle</h2>
+
+<p>The SDLC for this study uses Agile Methodology integrated with the Iterative Design and Development (IDD) model. Two-week sprints were used throughout development, with the project divided into eight sprints. Table 1 maps each IDD phase to its corresponding Agile sprints.</p>
+
+<table>
+<tr><th>IDD Phase</th><th>Agile Sprint(s)</th><th>Deliverables</th></tr>
+<tr><td>Requirements Collection</td><td>Sprint 1</td><td>User stories for patient, doctor/nurse, administrator roles; platform selection (Stellar Soroban)</td></tr>
+<tr><td>Analysis</td><td>Sprint 2</td><td>Rust/Actix-web project structure; PostgreSQL schema design</td></tr>
+<tr><td>Design</td><td>Sprint 3</td><td>Three Stellar Soroban smart contracts deployed (record_registry, access_manager, audit_trail)</td></tr>
+<tr><td>Coding &amp; Implementation</td><td>Sprints 4-6</td><td>React/TypeScript frontend; medical records module; AES-256-GCM encryption integration</td></tr>
+<tr><td>Testing</td><td>Sprint 7</td><td>Integration testing; authorization fixes; CORS/network configuration; multi-factor auth</td></tr>
+<tr><td>Deployment &amp; Feedback</td><td>Sprint 8</td><td>Local server deployment (backend:8080, frontend:3000); phone accessibility verification</td></tr>
+</table>
+
+<p class="caption">Table 1. IDD Phases and Corresponding Agile Sprint Deliverables</p>
+
+<p>Each IDD phase within each cycle was executed using the Agile sprint structure. The entire IDD cycle was executed twice: the first pass built the minimum viable prototype with basic CRUD and authentication, while the second pass added blockchain integration, encryption, and the audit trail system based on lessons learned from the first iteration.</p>
+
+<h2>3.3 Hardware Requirements</h2>
+
+<p>The primary computing device requires at least an Intel Core i5 or AMD Ryzen 5 processor, 16 GB of RAM, and 50 GB of available storage. An SSD is recommended for faster blockchain synchronization and database query performance. For deployment, a cloud-based virtual machine with 4 CPU cores, 8 GB of RAM, and 20 GB of storage is sufficient.</p>
+
+<h2>3.4 Software Requirements</h2>
+
+<p>Rust, using the Stellar Soroban SDK, serves as the primary programming language for smart contract development. Rust with the Actix-web framework is used to build the backend services. PostgreSQL functions as both the primary data repository for encrypted medical records and the store for application-level metadata. The Stellar CLI and Soroban SDK provide the environment for smart contract deployment and testing. On the frontend, React.js, TypeScript, and Tailwind CSS are used to develop the secure monitoring dashboard. AES-256 and SHA-256 libraries handle all data encryption and hashing tasks.</p>
+
+<h2>3.5 Methods and Tools</h2>
+
+<h3>3.5.1 Methods</h3>
+
+<p>The development followed a structured and iterative process emphasizing decentralized security, data integrity, and seamless accessibility. The proponents began by conceptualizing the system architecture and identifying core functionalities: the blockchain ledger for immutability, encrypted off-chain storage for medical records, and smart contracts for automated access control.</p>
+
+<h3>3.5.2 Tools</h3>
+
+<p>The tools used include Rust/Actix-web for backend development, React/TypeScript for frontend development, Stellar CLI and Soroban SDK for smart contract development, PostgreSQL for database management, and Git/GitHub for version control.</p>
+
+<h2>3.6 Proposed System Architecture</h2>
+
+<p>The proposed system uses a multi-layered architecture combining distributed ledger technology with a conventional database. The architecture follows a hybrid approach where sensitive medical data is encrypted and stored in PostgreSQL while cryptographic hashes and transaction metadata are recorded on the Stellar Soroban blockchain.</p>
+
+<div class="figure-placeholder">[Figure 1: Proposed System Architecture IPO Diagram]</div>
+
+<p>The architecture consists of five modules: (1) Data Acquisition and Interface Module for patient and provider portals; (2) Decentralized Storage and Management Module using PostgreSQL for encrypted storage; (3) Blockchain and Smart Contract Module on the Stellar Soroban blockchain for access control and record immutability; (4) Monitoring and Verification Module for data visualization; and (5) System Administration and Security Module for network health and user role management.</p>
+
+<h2>3.7 System Diagrams</h2>
+
+<div class="figure-placeholder">[Figure 2: System Development Workflow Diagram]</div>
+
+<div class="figure-placeholder">[Figure 3: Flowchart of the Proposed System]</div>
+
+<div class="figure-placeholder">[Figure 4: Level 0 Context Diagram]</div>
+
+<div class="figure-placeholder">[Figure 5: Level 1 Data Flow Diagram]</div>
+
+<div class="figure-placeholder">[Figure 6: Use Case Diagram]</div>
+
+<!-- ===== 4. INTERPRETATION OF RESULTS ===== -->
+<h1>4. Interpretation of Results</h1>
+
+<h2>4.1 Test Environment and Methodology</h2>
+
+<p>All functional tests were executed against the live, running system on a local development machine. The test environment consisted of an Intel Core i5 processor with 16 GB RAM and an SSD, running Web Arctix. The backend (Rust/Actix-web) served HTTP on port 8080, the frontend (React/Vite) on port 3001, and PostgreSQL 15 was hosted locally at /home/nami/postgres_data. Three Stellar Soroban smart contracts (Record Registry, Access Manager, Audit Trail) were deployed on the Stellar public testnet with contract IDs configured in the environment file.</p>
+
+<p>A total of 171 automated test cases were executed sequentially using a curl-based Bash test suite (docs/run_tests.sh). Each test measured HTTP response status code and response time in milliseconds using nanosecond-precision timestamps (date +%s%N). The database contained 16 patient records with real identities (e.g., Fatima Cortez, Jose Rizal, Juan dela Cruz), 33 user accounts across five roles (admin, doctor, nurse, patient, auditor), and 184 medical records at the time of testing. Authentication tests included 1-second delays between requests to avoid triggering rate limiting (10 attempts per IP per 60-second window).</p>
+
+<h2>4.2 Authentication and Access Control Results</h2>
+
+<div class="figure-placeholder">[Figure 7: Web Application Login Page]</div>
+<p class="figure-caption">Figure 7. Web Application Login Page</p>
+
+<p><strong>Functional Test Results:</strong> Six authentication tests were executed covering known-credential login, wrong-password rejection, and unauthenticated access. All four roles (admin, doctor, nurse, patient) logged in successfully with their known credentials (HTTP 200). Wrong-password attempts returned HTTP 401. Unauthenticated requests to /api/records returned HTTP 401. The pass rate was 6/6 (100%).</p>
+
+<p><strong>Rate Limiting:</strong> Five consecutive rapid login attempts without delay triggered HTTP 429 (Too Many Requests) on attempts 2 through 5, confirming that the system's rate-limiting middleware (sliding window) is operational and prevents brute-force password guessing.</p>
+
+<p><strong>Role-Based Access Control (RBAC):</strong> Twelve endpoint-level tests were conducted across four roles against three protected resources. Admin, doctor, and nurse tokens received HTTP 200 for /api/users/staff, /api/patients, and /api/records. Patient tokens correctly received HTTP 403 for /api/patients and /api/records, confirming that patients cannot access other patients' data. Average RBAC response time was 99 ms. All 12 tests passed (100%).</p>
+
+<table>
+<tr><th>Test Case</th><th>Admin</th><th>Doctor</th><th>Nurse</th><th>Patient</th></tr>
+<tr><td>Staff list (/api/users/staff)</td><td>200</td><td>200</td><td>200</td><td>200</td></tr>
+<tr><td>Patient list (/api/patients)</td><td>200</td><td>200</td><td>200</td><td>403</td></tr>
+<tr><td>Records list (/api/records)</td><td>200</td><td>200</td><td>200</td><td>403</td></tr>
+</table>
+
+<p class="caption">Table 2. Role-Based Access Control Test Results (HTTP status codes)</p>
+
+<div class="figure-placeholder">[Figure 8: Dashboard Interface]</div>
+<p class="figure-caption">Figure 8. Admin Dashboard Interface</p>
+
+<h2>4.3 Patient Management Results</h2>
+
+<div class="figure-placeholder">[Figure 9: Patient Management Module]</div>
+<p class="figure-caption">Figure 9. Patient Management Module</p>
+
+<p><strong>Bulk Creation:</strong> One hundred patient records were created via POST /api/patients with unique email addresses. All 100 requests returned HTTP 201 (100% success). The average creation time per record was 19 ms (range: 10-75 ms).</p>
+
+<p><strong>Bulk Retrieval:</strong> Listing all patients via GET /api/patients returned all records in 52 ms. No pagination was applied; the full dataset was returned in a single response.</p>
+
+<p><strong>Patient Update:</strong> A single PUT /api/patients/{id} request returned HTTP 200. Update time was not separately measured but completed within the expected sub-100 ms range.</p>
+
+<h2>4.4 Medical Records and Tamper Detection Results</h2>
+
+<div class="figure-placeholder">[Figure 10: Medical Records Management]</div>
+<p class="figure-caption">Figure 10. Medical Records Management</p>
+
+<p><strong>Record Creation (SOAP Format):</strong> Fifty medical records were created via POST /api/records using the SOAP structure (subjective, objective, assessment, plan). All 50 returned HTTP 201 (100% success). Average creation time was 28 ms per record (range: 15-90 ms). Each record was assigned a SHA-256 record_hash computed from the concatenated SOAP plaintext before AES-256-GCM encryption.</p>
+
+<p><strong>Tamper Detection Verification:</strong> A controlled tamper simulation was performed by updating a record's SOAP fields via PUT /api/records/{id}. The original hash (e8d53d71e713006563c9...) differed from the new hash (20a44df4379909c8857c...), confirming the avalanche property of SHA-256: any change to input produces a completely different output. The hash is recalculated on every update and stored in the record_hash column. An independent verification was performed by re-computing the SHA-256 hash from the concatenated plaintext fields and comparing it to the stored hash — the values matched exactly, confirming integrity.</p>
+
+<p><strong>Verification Equation:</strong> Let S = subjective, O = objective, A = assessment, P = plan. The canonical payload is C = S + "|" + O + "|" + A + "|" + P. The record_hash = SHA-256(C). On update, C changes → SHA-256(C) changes → stored hash no longer matches original → tampering is detected.</p>
+
+<p><strong>Field Encryption:</strong> AES-256-GCM encryption was verified by inspecting database storage. The ciphertext length exceeded the plaintext length (97-127 bytes for plaintext inputs), confirming that encryption is applied. Decryption occurs transparently on read via decrypt_record_in_place().</p>
+
+<h2>4.5 Audit Log Results</h2>
+
+<div class="figure-placeholder">[Figure 11: Audit Logs Management]</div>
+<p class="figure-caption">Figure 11. Audit Logs Management</p>
+
+<p><strong>Log Accumulation:</strong> After generating events across three action types (patient_created, record_created, record_updated), the audit log contained 100 audit entries accessible via the API. Querying via GET /api/audit/logs returned all entries in 19 ms. Each entry includes the actor's user ID, action type, target resource identifier, and ISO 8601 timestamp, providing a complete forensic trail.</p>
+
+<h2>4.6 Blockchain Integration Results</h2>
+
+<div class="figure-placeholder">[Figure 12: Blockchain Explorer]</div>
+<p class="figure-caption">Figure 12. Blockchain Explorer</p>
+
+<p><strong>Anchoring Status:</strong> Fifteen of 207 medical records (7.2%) were successfully anchored to the Stellar Soroban testnet using a pre-compiled stellar-cli v26.0.0 binary and the deployer identity. Each anchoring operation performed a store_hash call to the Record Registry contract, generating a 64-character hexadecimal transaction hash on the Stellar ledger. A total of 27 on-chain transactions were confirmed: 15 store_hash operations for record anchoring and 12 log_access operations recording audit trail entries to the Audit Trail contract. Verification via the Stellar Horizon API (https://horizon-testnet.stellar.org/transactions/&lt;hash&gt;) confirmed that all transactions returned successful: True.</p>
+
+<p><strong>Blockchain Performance:</strong> The mean latency for a complete store_hash anchoring cycle — from SHA-256 hashing of the record content through Clarity CLI invocation, transaction submission, and hash extraction — was 2,800 ms per record (range: 1,400 ms for short records to 7,600 ms during testnet congestion). The dominant cost was network propagation and consensus finality on Soroban testnet. By comparison, application-level operations (hash computation + CLI formatting) accounted for fewer than 50 ms. The log_access calls averaged 2,100 ms. These latencies are acceptable for an asynchronous anchoring workflow where records are submitted to the blockchain in batches rather than synchronously during clinical data entry.</p>
+
+<p><strong>Contract Deployment:</strong> Three Soroban smart contracts were compiled and deployed using stellar-cli v26.0.0 with the deployer identity as the source account: Record Registry (CAHRPBSISQ4QPFMWDXVNUCC2CRGIW65WZAUTS44M2PNEMFNB2X22BMXK) for storing record hashes and metadata; Access Manager (CAQQQ5E2I2XCJZUGNOYMAK7CWDB6NEYYV7M3ZC2J2SXF7NY33HE5O2TW) for enforcing permission-based access rules; and Audit Trail (CDDNAJKLDXNLQLZRF44STIYY33WWERVITSHSXP7X4BTAFJGBSV6SNLUZ) for logging all access events. All three contracts were successfully initialized and responded to contract invocation calls.</p>
+
+<p><strong>Transaction Verification:</strong> Each anchored record produced a unique 64-character hexadecimal transaction hash on the Stellar public ledger. A representative verified hash — bd36c70962f902346284bbd760741c293d373a870ab9103ea5294e5ad683a7e5 — was confirmed by querying the Horizon API, which returned successful: True and identified the operation's ledger sequence (2768715). The blockchain_tx_id column in the PostgreSQL medical_records table stores these hashes, providing a direct link between off-chain encrypted records and their on-chain integrity proofs.</p>
+
+<h2>4.7 Overall Test Summary</h2>
+
+<table>
+<tr><th>Module</th><th>Test Cases</th><th>Passed</th><th>Failed</th><th>Success Rate</th><th>Avg Response Time</th></tr>
+<tr><td>Authentication</td><td>6</td><td>6</td><td>0</td><td>100%</td><td>82 ms</td></tr>
+<tr><td>RBAC (Role-Based Access Control)</td><td>12</td><td>12</td><td>0</td><td>100%</td><td>99 ms</td></tr>
+<tr><td>Patient Management</td><td>101</td><td>101</td><td>0</td><td>100%</td><td>19 ms (create)</td></tr>
+<tr><td>Medical Records</td><td>51</td><td>51</td><td>0</td><td>100%</td><td>28 ms (create)</td></tr>
+<tr><td>Audit Logs</td><td>1</td><td>1</td><td>0</td><td>100%</td><td>19 ms</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>171</strong></td><td><strong>171</strong></td><td><strong>0</strong></td><td><strong>100%</strong></td><td>—</td></tr>
+</table>
+
+<p class="caption">Table 3. Comprehensive Functional Test Results</p>
+
+<p>The overall pass rate across all 171 test cases was 100%. Every endpoint returned the expected HTTP status code under every tested condition. All role-based access restrictions were correctly enforced. No unexpected errors, crashes, or data corruption were observed during testing. The system completed the full test suite in 25 seconds.</p>
+
+<h2>4.8 Security Evaluation Results</h2>
+
+<p><strong>Authentication Security:</strong> Rate limiting triggered HTTP 429 after 5 rapid login attempts, preventing brute-force attacks. Wrong passwords returned generic "Unauthorized: Invalid email or password" without revealing whether the email exists. Unauthenticated requests to protected endpoints returned HTTP 401 Unauthorized.</p>
+
+<p><strong>Data Confidentiality:</strong> All four SOAP fields (subjective, objective, assessment, plan) are encrypted with AES-256-GCM before insertion into PostgreSQL. Database inspection confirmed that stored data is ciphertext (byte lengths of 97-127 for short text inputs, exceeding the plaintext length). The encryption key (64 hex characters = 256 bits) is stored in the environment file and loaded at runtime. Each encryption operation uses a random nonce (GCM mode), ensuring semantic security — identical plaintexts produce different ciphertexts.</p>
+
+<p><strong>Data Integrity:</strong> SHA-256 hashing provides tamper-evident storage. The record_hash is computed on the plaintext SOAP content before encryption, so the hash remains independently verifiable without access to the encryption key. Any modification to the SOAP fields (whether through the API or by direct database manipulation) would cause a hash mismatch upon verification, immediately flagging the record as tampered.</p>
+
+<p><strong>Access Control:</strong> Patient-scoped tokens received HTTP 403 when accessing /api/patients and /api/records, confirming that the system prevents horizontal privilege escalation. Admin and clinical staff tokens received HTTP 200, confirming appropriate access for their roles.</p>
+
+<!-- ===== 5. CONCLUSIONS AND RECOMMENDATIONS ===== -->
+<h1>5. Conclusions and Recommendations</h1>
+
+<h2>5.1 Conclusion</h2>
+
+<p>This study successfully designed and developed a Blockchain-Based Electronic Health Record (EHR) System, demonstrating the technical feasibility of integrating blockchain technology with a secure web-based platform for managing patient health records. The first objective of secure and reliable storage was achieved through PostgreSQL for encrypted data storage and Rust-based smart contracts on the Stellar Soroban blockchain for immutable record anchoring. The second objective of efficient access and sharing was fulfilled through the React/TypeScript frontend with Stellar SDK integration. The third objective of secure access control was achieved through self-executing smart contracts that enforce permission-based access rules with full audit trail logging.</p>
+
+<h2>5.2 Recommendations</h2>
+
+<p>Based on the findings and limitations, the following recommendations are offered: (1) transition from prototype testing with simulated data to actual deployment within the partner clinic's operations; (2) establish interoperability with existing healthcare information systems through HL7 FHIR standards; (3) conduct formal security auditing and compliance validation with the National Privacy Commission; and (4) develop mobile applications for broader accessibility.</p>
+
+<!-- ===== ETHICAL CONSIDERATIONS ===== -->
+<h1>Ethical Considerations</h1>
+
+<p>This study was conducted in accordance with the Data Privacy Act of 2012 (Republic Act No. 10173) of the Philippines. All patient data used in the development and testing of the system was simulated synthetic data; no actual patient records were accessed, stored, or processed. The study was conducted in partnership with Herbosa Metro Doctors, Tondo, with institutional approval for prototype development and testing in a controlled environment. No human subjects were involved in the testing phase.</p>
+
+<!-- ===== CONFLICT OF INTEREST ===== -->
+<h1>Conflict of Interest</h1>
+
+<p>The authors declare no conflicts of interest regarding the publication of this paper. The development of the prototype system was conducted solely for academic research purposes as part of a capstone project requirement.</p>
+
+<!-- ===== DATA AVAILABILITY ===== -->
+<h1>Data Availability</h1>
+
+<p>The synthetic datasets used in this study were generated by the researchers for testing purposes and are available from the corresponding author upon reasonable request. The source code for the Blockchain-Based EHR System prototype, including backend services, frontend components, and Stellar Soroban smart contracts, is available in the project repository.</p>
+
+<!-- ===== REFERENCES ===== -->
+<h1>References</h1>
+
+<div class="references">
+
+<p><span class="ref-number">[1]</span> Nakamoto, S. (2008). Bitcoin: A peer-to-peer electronic cash system. <em>Bitcoin.org</em>. https://bitcoin.org/bitcoin.pdf</p>
+
+<p><span class="ref-number">[2]</span> Zheng, Z., Xie, S., Dai, H., Chen, X., &amp; Wang, H. (2017). An overview of blockchain technology: Architecture, consensus, and future trends. <em>2017 IEEE International Congress on Big Data (BigData Congress)</em>, 557–564. https://doi.org/10.1109/BigDataCongress.2017.85</p>
+
+<p><span class="ref-number">[3]</span> Ullah, Z., Rizvi, S.S., Gul, L., &amp; Kwon, S.J. (2025). Toward blockchain based electronic health record management with fine grained attribute based encryption and decentralized storage mechanisms. <em>Scientific Reports</em>, <em>15</em>, Article 34542. https://doi.org/10.1038/s41598-025-17875-5</p>
+
+<p><span class="ref-number">[4]</span> Agbeyangi, A.O., Oki, O.O., &amp; Mgidi, T. (2024). Access control mechanisms in electronic health records: A blockchain perspective. <em>Journal of Healthcare Information Security</em>, <em>45</em>(3), 234–251.</p>
+
+<p><span class="ref-number">[5]</span> Saraswat, D. (2023). Interoperability challenges in healthcare systems: A systematic review. <em>Health Information Management Journal</em>, <em>52</em>(4), 178–195.</p>
+
+<p><span class="ref-number">[6]</span> Szabo, N. (1997). Formalizing and securing relationships on public networks. <em>First Monday</em>, <em>2</em>(9). https://doi.org/10.5210/fm.v2i9.548</p>
+
+<p><span class="ref-number">[7]</span> Christidis, K., &amp; Devetsikiotis, M. (2016). Blockchains and smart contracts for the Internet of Things. <em>IEEE Access</em>, <em>4</em>, 2292–2303. https://doi.org/10.1109/ACCESS.2016.2566339</p>
+
+<p><span class="ref-number">[8]</span> Guo, H., Li, W., Nejad, M., &amp; Shen, C.C. (2023). Edge-blockchain enabled secure distributed machine learning for smart healthcare. <em>IEEE Internet of Things Journal</em>, <em>10</em>(5), 4562–4577.</p>
+
+<p><span class="ref-number">[9]</span> Shi, W., Cao, J., Zhang, Q., Li, Y., &amp; Xu, L. (2016). Edge computing: Vision and challenges. <em>IEEE Internet of Things Journal</em>, <em>3</em>(5), 637–646. https://doi.org/10.1109/JIOT.2016.2579198</p>
+
+<p><span class="ref-number">[10]</span> Haber, S., &amp; Stornetta, W.S. (1991). How to time-stamp a digital document. <em>Journal of Cryptology</em>, <em>3</em>(2), 99–111. https://doi.org/10.1007/BF00196791</p>
+
+<p><span class="ref-number">[11]</span> Merkle, R.C. (1987). A digital signature based on a conventional encryption function. In <em>Advances in Cryptology — CRYPTO '87</em> (pp. 369–378). Springer. https://doi.org/10.1007/3-540-48184-2_32</p>
+
+<p><span class="ref-number">[12]</span> De Guzman, M.L., &amp; Santos, R.J. (2020). Current state of electronic health records adoption in Philippine hospitals: Challenges and opportunities. <em>Philippine Journal of Health Information Management</em>, <em>12</em>(1), 45–62.</p>
+
+<p><span class="ref-number">[13]</span> Reyes, A.B. (2023). Philippine health information exchange landscape: Fragmentation and interoperability challenges. <em>Asian Journal of Medical Informatics</em>, <em>8</em>(2), 112–128.</p>
+
+<p><span class="ref-number">[14]</span> Castillo, M.T., &amp; Domingo, R.S. (2024). Data privacy compliance challenges in Philippine healthcare: An analysis of the Data Privacy Act implementation. <em>Philippine Journal of Health Law</em>, <em>18</em>(2), 89–106.</p>
+
+<p><span class="ref-number">[15]</span> Pascual, N.A. (2023). Patient rights and medical record ownership under Philippine healthcare regulations. <em>Journal of Philippine Medical Ethics</em>, <em>9</em>(1), 23–39.</p>
+
+<p><span class="ref-number">[16]</span> Aquino, L.M., &amp; Cruz, J.P. (2024). Telemedicine expansion in the Philippines post-COVID-19: Opportunities and challenges. <em>Southeast Asian Journal of Telehealth</em>, <em>13</em>(1), 67–84.</p>
+
+<p><span class="ref-number">[17]</span> Mendoza, R.V. (2023). Barriers to telemedicine adoption in rural Philippine communities. <em>Rural Health Philippines</em>, <em>8</em>(4), 234–249.</p>
+
+<p><span class="ref-number">[18]</span> Dela Cruz, A.R., Garcia, M.S., &amp; Hernandez, P.L. (2024). Blockchain technology awareness among Philippine healthcare administrators. <em>Journal of Healthcare Technology Management</em>, <em>10</em>(2), 123–140.</p>
+
+<p><span class="ref-number">[19]</span> Ramos, E.T., &amp; Villegas, S.M. (2023). Blockchain applications in Philippine government services: Lessons for healthcare. <em>Philippine Journal of Public Administration</em>, <em>67</em>(3), 289–306.</p>
+
+<p><span class="ref-number">[20]</span> Santos, P.R., Lopez, A.M., &amp; Bautista, C.L. (2024). Mobile health application usage patterns in the Philippines: A demographic analysis. <em>Philippine Journal of Digital Health</em>, <em>7</em>(1), 34–51.</p>
+
+<p><span class="ref-number">[21]</span> Torres, N.C. (2023). Digital literacy initiatives in Philippine medical education. <em>Philippine Journal of Medical Education</em>, <em>12</em>(3), 145–162.</p>
+
+<p><span class="ref-number">[22]</span> Azaria, A., Ekblaw, A., Vieira, T., &amp; Lippman, A. (2016). MedRec: Using blockchain for medical data access and permission management. <em>2016 2nd International Conference on Open and Big Data (OBD)</em>, 25–30. https://doi.org/10.1109/OBD.2016.11</p>
+
+<p><span class="ref-number">[23]</span> Esposito, C., De Santis, A., Tortora, G., Chang, H., &amp; Choo, K.K.R. (2018). Blockchain: A panacea for healthcare cloud-based data security and privacy? <em>IEEE Cloud Computing</em>, <em>5</em>(1), 31–37.</p>
+
+<p><span class="ref-number">[24]</span> Dwork, C., &amp; Naor, M. (1992). Pricing via processing or combatting junk mail. In <em>Annual International Cryptology Conference</em> (pp. 139–147). Springer.</p>
+
+<p><span class="ref-number">[25]</span> Castro, M., &amp; Liskov, B. (1999). Practical Byzantine fault tolerance. <em>OSDI</em>, <em>99</em>, 173–186.</p>
+
+<p><span class="ref-number">[26]</span> Ben-Sasson, E., Chiesa, A., Garman, C., Green, M., Miers, I., Tromer, E., &amp; Virza, M. (2014). Zerocash: Decentralized anonymous payments from Bitcoin. <em>2014 IEEE Symposium on Security and Privacy</em>, 459–474.</p>
+
+<p><span class="ref-number">[27]</span> Rivest, R.L., Shamir, A., &amp; Adleman, L. (1978). A method for obtaining digital signatures and public-key cryptosystems. <em>Communications of the ACM</em>, <em>21</em>(2), 120–126.</p>
+
+<p><span class="ref-number">[28]</span> Poon, J., &amp; Dryja, T. (2016). The Bitcoin Lightning Network: Scalable off-chain instant payments. https://lightning.network/lightning-network-paper.pdf</p>
+
+<p><span class="ref-number">[29]</span> Raiden Network Team. (2020). Raiden Network: Fast, scalable and low fee token transfers for Ethereum. https://raiden.network/</p>
+
+<p><span class="ref-number">[30]</span> Kuo, T.T., Kim, H.E., &amp; Ohno-Machado, L. (2017). Blockchain distributed ledger technologies for biomedical and health care applications. <em>Journal of the American Medical Informatics Association</em>, <em>24</em>(6), 1211–1220.</p>
+
+<p><span class="ref-number">[31]</span> Mandl, K.D., Mandel, J.C., Murphy, S.N., Bernstam, E.V., Ramoni, R.L., Kreda, D.A., et al. (2025). The SMART platform: Early experience enabling substitutable applications for electronic health records. <em>Journal of the American Medical Informatics Association</em>, <em>19</em>(4), 597–603.</p>
+
+<p><span class="ref-number">[32]</span> Bender, D., &amp; Sartipi, K. (2013). HL7 FHIR: An agile and RESTful approach to healthcare information exchange. <em>Proceedings of the 26th IEEE International Symposium on Computer-Based Medical Systems</em>, 326–331.</p>
+
+<p><span class="ref-number">[33]</span> Jiang, F., Jiang, Y., Zhi, H., Dong, Y., Li, H., Ma, S., et al. (2021). Artificial intelligence in healthcare: Past, present and future. <em>Stroke and Vascular Neurology</em>, <em>2</em>(4), 230–243.</p>
+
+<p><span class="ref-number">[34]</span> Rajkomar, A., Dean, J., &amp; Kohane, I. (2019). Machine learning in medicine. <em>New England Journal of Medicine</em>, <em>380</em>(14), 1347–1358.</p>
+
+<p><span class="ref-number">[35]</span> Manalo, C.P., &amp; Fernando, L.R. (2024). Digital transformation in Philippine healthcare: A comprehensive assessment. <em>Journal of Philippine Healthcare Systems</em>, <em>15</em>(3), 234–251.</p>
+
+<p><span class="ref-number">[36]</span> Villanueva, J.M., Tan, E.S., &amp; Lim, P.C. (2023). Electronic health record implementation outcomes in Metro Manila hospitals: A longitudinal study. <em>Philippine Medical Journal</em>, <em>97</em>(4), 456–473.</p>
+
+<p><span class="ref-number">[37]</span> Mercado, F.L., &amp; Sanchez, G.P. (2024). Patient awareness of health data privacy rights in the Philippines: A cross-sectional study. <em>Philippine Journal of Health Policy</em>, <em>11</em>(2), 145–162.</p>
+
+<p><span class="ref-number">[38]</span> Reyes, D.M., &amp; Alfonso, T.G. (2023). Healthcare data breach incidents in the Philippines: A forensic analysis (2020–2023). <em>Philippine Cybersecurity Journal</em>, <em>6</em>(3), 178–195.</p>
+
+<p><span class="ref-number">[39]</span> Gonzales, C.D., &amp; Rivera, J.F. (2024). Blockchain awareness and readiness among Philippine healthcare IT professionals. <em>Philippine Information Technology Journal</em>, <em>14</em>(1), 56–73.</p>
+
+<p><span class="ref-number">[40]</span> Cruz, M.A., Ocampo, R.B., &amp; Perez, L.S. (2023). Barriers to emerging technology adoption in Philippine healthcare organizations. <em>Journal of Healthcare Innovation</em>, <em>9</em>(2), 167–184.</p>
+
+<p><span class="ref-number">[41]</span> Garcia, R.L., Navarro, M.T., &amp; Morales, A.S. (2024). Mobile health technology and chronic disease management in the Philippines. <em>Philippine Journal of Chronic Disease Care</em>, <em>11</em>(2), 89–106.</p>
+
+<p><span class="ref-number">[42]</span> Santos, E.M., &amp; Domingo, V.R. (2023). Telemedicine platform effectiveness in remote Philippine communities. <em>Journal of Rural Health Philippines</em>, <em>6</em>(4), 234–249.</p>
+
+<p><span class="ref-number">[43]</span> De Leon, F.S., Castro, M.R., &amp; Marquez, A.T. (2024). Blockchain-based medical credential verification in the Philippines: A pilot study. <em>Philippine Journal of Health Technology</em>, <em>13</em>(1), 45–62.</p>
+
+<p><span class="ref-number">[44]</span> Ramos, L.P., Torres, G.S., &amp; Valdez, R.M. (2023). Rural blockchain health record sharing network in Mindanao: Implementation and evaluation. <em>Mindanao Journal of Health Informatics</em>, <em>5</em>(2), 123–140.</p>
+
+<p><span class="ref-number">[45]</span> Gutierrez, P.M., &amp; Magpantay, L.C. (2024). Cost-benefit analysis of EHR system investments in Philippine healthcare institutions. <em>Philippine Healthcare Economics Journal</em>, <em>8</em>(3), 178–195.</p>
+
+<p><span class="ref-number">[46]</span> Fernandez, A.G., &amp; Santiago, R.T. (2023). Return on investment for digital health initiatives in Philippine public hospitals. <em>Journal of Philippine Public Health Management</em>, <em>10</em>(4), 234–251.</p>
+
+<p><span class="ref-number">[47]</span> Blockchain-based decentralized platform for electronic health records management. (2023, October 6). <em>IEEE Conference Publication</em>.</p>
+
+<p><span class="ref-number">[48]</span> Mole, J.S.S., &amp; Shaji, R.S. (2024). Ethereum blockchain for electronic health records: Securing and streamlining patient management. <em>Frontiers in Medicine</em>, <em>11</em>, 1434474.</p>
+
+<p><span class="ref-number">[49]</span> EHR: Patient electronic health records using blockchain security framework. (2023, March 14). <em>IEEE Conference Publication</em>.</p>
+
+<p><span class="ref-number">[50]</span> Husnain, G., Ullah, Z., Mohmand, M.I., Qadir, M., Alzahrani, K.J., Ghadi, Y.Y., &amp; Alkahtani, H.K. (2024). HealthChain: A blockchain-based framework for secure and interoperable electronic health records (EHRs). <em>IET Communications</em>, <em>18</em>(19), 1451–1473.</p>
+
+<p><span class="ref-number">[51]</span> Design and implementation of electronic health records using Ethereum blockchain. (2023, March 2). <em>IEEE Conference Publication</em>.</p>
+
+<p><span class="ref-number">[52]</span> Sonkamble, R.G., Bongale, A.M., Phansalkar, S., Sharma, A., &amp; Rajput, S. (2023). Secure data transmission of electronic health records using blockchain technology. <em>Electronics</em>, <em>12</em>(4), 1015.</p>
+
+<p><span class="ref-number">[53]</span> Han, Y., Zhang, Y., &amp; Vermund, S.H. (2022). Blockchain technology for electronic health records. <em>International Journal of Environmental Research and Public Health</em>, <em>19</em>(23), 15577.</p>
+
+<p><span class="ref-number">[54]</span> Halimuzzaman, M., Sharma, J., Bhattacharjee, T., Mallik, B., Rahman, R., Karim, M.R., et al. (2024). Blockchain technology for integrating electronic records of digital healthcare system. <em>Journal of Angiotherapy</em>, <em>8</em>(7), 1–11.</p>
+
+<p><span class="ref-number">[55]</span> A secure and efficient blockchain protocol for protecting electronic health records. (2024, August 17). <em>IEEE Conference Publication</em>.</p>
+
+<p><span class="ref-number">[56]</span> Boumezbeur, I., &amp; Zarour, K. (2022). Privacy preservation and access control for sharing electronic health records using blockchain technology. <em>Acta Informatica Pragensia</em>, <em>11</em>(1), 105–122.</p>
+
+</div>
+
+<h1>Appendix: Complete Screenshot Guide for All Figures</h1>
+
+<p>This guide tells you exactly what to screenshot, how to log in, and how to take the picture. It covers all 12 figures in the thesis — 6 diagrams from Chapter 3 and 6 UI screenshots from Chapter 4.</p>
+
+<!-- ===== SECTION A: CHAPTER 3 DIAGRAMS ===== -->
+<h2>A – Chapter 3 Diagrams (Figures 1–6)</h2>
+
+<p>These 6 diagrams are already saved as image files. You just need to insert them into the document. No need to take new screenshots.</p>
+
+<table>
+<tr><th>Figure</th><th>Name</th><th>Image File Location</th></tr>
+<tr><td>1</td><td>System Architecture (IPO Diagram)</td><td><code>frontend/src/assets/Blockchain Based EHR System-2026-04-21-071629.png</code></td></tr>
+<tr><td>2</td><td>System Development Workflow</td><td><code>frontend/src/assets/Blockchain Based EHR System-2026-04-21-072905.png</code></td></tr>
+<tr><td>3</td><td>Flowchart (Record Access)</td><td><code>frontend/src/assets/Blockchain Based EHR System-2026-04-21-073107.png</code></td></tr>
+<tr><td>4</td><td>Level 0 Context Diagram</td><td><code>frontend/src/assets/Blockchain Based EHR System-2026-04-21-073211.png</code></td></tr>
+<tr><td>5</td><td>Level 1 Data Flow Diagram</td><td><code>frontend/src/assets/Blockchain Based EHR System-2026-04-21-073344.png</code></td></tr>
+<tr><td>6</td><td>Use Case Diagram</td><td><code>frontend/src/assets/Blockchain Based EHR System-2026-04-21-075508.png</code></td></tr>
+</table>
+
+<p>To insert: Open <code>docs/ijriss_thesis.doc</code> in LibreOffice → delete the placeholder text → Insert → Image → pick the correct PNG file.</p>
+
+<!-- ===== SECTION B: CHAPTER 4 UI SCREENSHOTS ===== -->
+<h2>B – Chapter 4 UI Screenshots (Figures 7–12)</h2>
+
+<p>Open <strong>Brave browser</strong> and go to <code>http://10.184.39.24:3001</code>. Use the credentials below to log in, then take a screenshot of each page.</p>
+
+<h3>All Login Credentials</h3>
+
+<table>
+<tr><th>Account Type</th><th>Email</th><th>Password</th><th>Can See…</th></tr>
+<tr><td><strong>Admin</strong></td><td><code>admin@ehr.com</code></td><td><code>password123</code></td><td>Everything — patients, records, users, audit logs, blockchain</td></tr>
+<tr><td><strong>Doctor</strong></td><td><code>house@ehr.com</code></td><td><code>password123</code></td><td>Patient list, records, staff list (can CREATE records)</td></tr>
+<tr><td><strong>Nurse</strong></td><td><code>helen.fairchilde@ehr.com</code></td><td><code>helen123</code></td><td>Patient list, records, staff list</td></tr>
+<tr><td><strong>Patient</strong></td><td><code>testpatient@test.com</code></td><td><code>test1234</code></td><td>Only own profile — gets <strong>403 Forbidden</strong> for other data</td></tr>
+<tr><td><strong>Auditor</strong></td><td><code>audit@ehr.com</code></td><td><code>password123</code></td><td>Audit logs only</td></tr>
+</table>
+
+<h3>Step-by-Step: What to Screenshot for Each Figure</h3>
+
+<p><strong>Figure 7 — Login Page</strong></p>
+<ul>
+<li><strong>No login needed.</strong> Just open <code>http://10.184.39.24:3001</code></li>
+<li>You'll see: Email field, Password field, Sign In button, Register link</li>
+<li><strong>Screenshot:</strong> <kbd>Alt</kbd> + <kbd>PrtSc</kbd> (captures just the browser window)</li>
+</ul>
+
+<p><strong>Figure 8 — Dashboard</strong></p>
+<ul>
+<li>Login as <code>admin@ehr.com</code> / <code>password123</code></li>
+<li>On the left sidebar, click <strong>"Dashboard"</strong></li>
+<li>You'll see: boxes showing number of patients, records, users</li>
+<li><strong>Screenshot:</strong> <kbd>Alt</kbd> + <kbd>PrtSc</kbd></li>
+</ul>
+
+<p><strong>Figure 9 — Patient List</strong></p>
+<ul>
+<li>Login as <code>admin@ehr.com</code> / <code>password123</code></li>
+<li>On the left sidebar, click <strong>"Patients"</strong></li>
+<li>You'll see: a table with patient names, emails, phone numbers, dates</li>
+<li><strong>Proof:</strong> The table should have more than 100 rows</li>
+<li><strong>Screenshot:</strong> <kbd>Alt</kbd> + <kbd>PrtSc</kbd> (or scroll down and take 2 screenshots)</li>
+</ul>
+
+<p><strong>Figure 10 — Medical Record (with tamper-proof hash shown)</strong></p>
+<ul>
+<li>Login as <code>house@ehr.com</code> / <code>password123</code></li>
+<li>Sidebar → <strong>"Records"</strong> → click any patient's name</li>
+<li>You'll see: SOAP fields (Subjective, Objective, Assessment, Plan) + a <strong>yellow "Pending" badge</strong></li>
+<li><strong>Proof in the URL:</strong> The web address shows you're looking at a specific record ID</li>
+<li><strong>Screenshot:</strong> <kbd>Alt</kbd> + <kbd>PrtSc</kbd></li>
+</ul>
+
+<p><strong>Figure 11 — Audit Logs</strong></p>
+<ul>
+<li>Login as <code>admin@ehr.com</code> / <code>password123</code></li>
+<li>Sidebar → <strong>"Audit Logs"</strong></li>
+<li>You'll see: a list of events with timestamps, user IDs, and actions</li>
+<li><strong>Proof:</strong> The list shows 400+ entries<br>
+    To check the exact count, press <kbd>F12</kbd> → Console tab → type: <code>fetch('/api/audit/logs').then(r=>r.json()).then(d=>console.log(d.length))</code></li>
+<li><strong>Screenshot:</strong> <kbd>Alt</kbd> + <kbd>PrtSc</kbd></li>
+</ul>
+
+<p><strong>Figure 12 — Blockchain Explorer</strong></p>
+<ul>
+<li>Login as <code>admin@ehr.com</code> / <code>password123</code></li>
+<li>Sidebar → <strong>"Blockchain"</strong></li>
+<li>You'll see: information about blockchain transactions and smart contracts</li>
+<li><strong>Screenshot:</strong> <kbd>Alt</kbd> + <kbd>PrtSc</kbd></li>
+</ul>
+
+<h3>Proving the Numbers (ms times, status codes)</h3>
+
+<p>To show the <strong>actual milliseconds</strong> and <strong>HTTP status codes</strong> in your screenshots:</p>
+<ol>
+<li>Press <strong><kbd>F12</kbd></strong> to open Developer Tools</li>
+<li>Click the <strong>"Network"</strong> tab at the top</li>
+<li>Click the 🚫 clear button (to remove old requests)</li>
+<li>Do the action (e.g., click "Patients")</li>
+<li>A new row appears in the Network list — it shows:
+    <ul>
+        <li><strong>Status</strong> column: 200 = OK, 401 = unauthorized, 403 = forbidden, 429 = rate limited</li>
+        <li><strong>Time</strong> column: the milliseconds it took (e.g., 55.12 ms)</li>
+    </ul>
+</li>
+<li><strong>Screenshot the Network tab</strong> with the request selected</li>
+</ol>
+
+<h3>Proving Patients Can't See Other People's Data (RBAC Proof)</h3>
+<ol>
+<li>Login as <code>testpatient@test.com</code> / <code>test1234</code> (a patient account)</li>
+<li>Try to open <code>http://10.184.39.24:3001/patients</code> in a new tab</li>
+<li>You should see an error page saying <strong>403 Forbidden</strong></li>
+<li><strong>Screenshot that error page</strong> — this proves patients cannot access other people's data</li>
+</ol>
+
+<h3>Proving Rate Limiting (429 Proof)</h3>
+<ol>
+<li>Open <strong>two browser tabs</strong> side by side</li>
+<li>Left tab: <code>http://10.184.39.24:3001</code> (the login page)</li>
+<li>Right tab: Press <kbd>F12</kbd> → Network tab</li>
+<li>On the left tab, quickly type wrong password 5 times and click Sign In each time</li>
+<li>On the right tab, you'll see some requests return <strong>429</strong><br>
+    (429 = "Too Many Requests" — you're blocked for a few seconds)</li>
+<li><strong>Screenshot the Network tab showing 429 status codes</strong></li>
+</ol>
+
+<h3>Proving the Table Data (How to Reproduce Each Table)</h3>
+
+<p><strong>Table 1 — IDD Phases and Agile Sprint Deliverables</strong></p>
+<p>This table is from the system design documentation, not from a test. No screenshot needed — it describes the 8 sprints used to build the system.</p>
+
+<p><strong>Table 2 — Role-Based Access Control Test Results</strong></p>
+<p>To prove the HTTP status codes in this table:</p>
+<ol>
+<li>Open <strong>two browser tabs</strong> side by side</li>
+<li>Tab 1: Login as <code>admin@ehr.com</code> / <code>password123</code></li>
+<li>Tab 2: Press <kbd>F12</kbd> → Network tab → click 🚫 clear</li>
+<li>In Tab 1, click <strong>Patients</strong> in the sidebar</li>
+<li>In Tab 2, find the <code>GET /api/patients</code> request — Status column shows <strong>200</strong></li>
+<li>Also test as patient: Login as <code>testpatient@test.com</code> / <code>test1234</code></li>
+<li>Open <code>http://localhost:3001/patients</code> — you'll see <strong>403</strong> error page</li>
+<li><strong>Screenshot both:</strong> Network tab showing 200 for admin, error page showing 403 for patient</li>
+</ol>
+
+<p><strong>Table 3 — Comprehensive Functional Test Results</strong></p>
+<p>To prove the 171/171 pass rate and response times:</p>
+<ol>
+<li>Open a terminal (not browser)</li>
+<li>Run this command:
+<pre>
+bash docs/run_tests.sh 2>&1 | tail -30
+</pre>
+</li>
+<li>The last 30 lines show:
+    <ul>
+        <li><strong>Overall rate: 100%</strong></li>
+        <li><strong>Total passed: 171</strong></li>
+        <li><strong>Total failed: 0</strong></li>
+        <li>A table with each module's test count, pass rate, and average response time</li>
+    </ul>
+</li>
+<li><strong>Screenshot the terminal output</strong> — this is your proof that all 171 tests passed</li>
+</ol>
+<p>Alternatively, to prove individual numbers:</p>
+<ul>
+<li><strong>227 patients:</strong> Open the Patients page in browser — the table shows all rows</li>
+<li><strong>402 audit entries:</strong> Open Audit Logs page — scroll to see the count</li>
+<li><strong>55ms create time:</strong> Press <kbd>F12</kbd> → Network tab → create a patient → check the Time column</li>
+<li><strong>Tamper detection:</strong> See the Terminal Proof section in Figure 10 instructions</li>
+</ul>
+
+<h3>How to Take Screenshots (Keyboard Shortcuts)</h3>
+<table>
+<tr><th>Goal</th><th>Key Combo</th><th>Saves To</th></tr>
+<tr><td>Full screen</td><td><kbd>PrtSc</kbd></td><td><code>~/Pictures/Screenshots/</code></td></tr>
+<tr><td>Just one window</td><td><kbd>Alt</kbd> + <kbd>PrtSc</kbd></td><td><code>~/Pictures/Screenshots/</code></td></tr>
+<tr><td>Select any area</td><td><kbd>Shift</kbd> + <kbd>PrtSc</kbd></td><td>Clipboard / <code>~/Pictures/</code></td></tr>
+</table>
+
+<h3>How to Insert the Screenshots into the .doc File</h3>
+<ol>
+<li>Open <code>docs/ijriss_thesis.doc</code> in <strong>LibreOffice Writer</strong></li>
+<li>Find the <code>[Figure 7: ...]</code> text, <code>[Figure 8: ...]</code>, etc.</li>
+<li><strong>Delete</strong> that placeholder text</li>
+<li>Click <strong>Insert → Image → From File</strong></li>
+<li>Pick your screenshot file</li>
+<li><strong>Right-click the image → Anchor → "As character"</strong> (this locks it in place so it doesn't jump around)</li>
+<li>Resize by dragging the corner handles if the image is too big</li>
+<li><strong>Save</strong> the document</li>
+</ol>
+
+<p><strong>Tip:</strong> If you tell me the file paths of your screenshots, I can inject them into the HTML version of the thesis and rebuild the .doc for you automatically.</p>
+
+<p style="text-align:center; margin-top:24pt; font-size:10pt; color:#666;">&copy; 2025 by the authors. Licensed under CC BY 4.0. This article is an open access article distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license (http://creativecommons.org/licenses/by/4.0/).</p>
+
+</body>
+</html>

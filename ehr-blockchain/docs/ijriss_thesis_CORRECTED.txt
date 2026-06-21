@@ -1,0 +1,198 @@
+========================================
+CORRECTED SECTIONS - EHR BLOCKCHAIN THESIS
+========================================
+Instructions: Replace each section below in your Word document.
+
+========================================
+SECTION 1: IDD Dual-Framework Paragraph
+========================================
+REPLACE THIS:
+"The final system brings together several pieces: a permissioned blockchain layer with Solidity smart contracts for tamper-proof audit trails, smart contracts that automate access management, a Node.js/Express backend to handle application logic, a PostgreSQL database that stores encrypted synthetic patient data off-chain, and a React/Tailwind web interface where patients and clinicians interact."
+
+WITH THIS:
+"The final system brings together several pieces: Rust-based smart contracts deployed on the Stellar Soroban blockchain for tamper-proof audit trails, smart contracts that automate access management, a Rust/Actix-web backend to handle application logic, a PostgreSQL database that stores encrypted synthetic patient data off-chain, and a React/TypeScript web interface where patients and clinicians interact."
+
+========================================
+SECTION 2: Sprint-to-Phase Mapping Table
+========================================
+REPLACE THE ENTIRE TABLE WITH THIS:
+
+Sprint | Duration | IDD Phase | Deliverables
+Sprint 1 | Weeks 1-2 | Requirements Collection | Finalized functional requirements, synthetic dataset schema, stakeholder interview notes with Herbosa Metro Doctors
+Sprint 2 | Weeks 3-4 | Analysis | Feasibility assessment, risk register, blockchain network selection (Stellar Soroban), smart contract logic outline
+Sprint 3 | Weeks 5-6 | Design | System architecture diagram, database schema (PostgreSQL), UI wireframes, smart contract workflow diagrams
+Sprint 4 | Weeks 7-8 | Coding & Implementation (Phase 1) | Backend API (Rust/Actix-web), PostgreSQL integration, AES-256/SHA-256 encryption modules
+Sprint 5 | Weeks 9-10 | Coding & Implementation (Phase 2) | Rust smart contracts (Record Registry, Access Manager, Audit Trail) deployed to Stellar Soroban testnet; React/TypeScript frontend
+Sprint 6 | Weeks 11-12 | Testing & Deployment | 171 automated test cases executed (authentication, RBAC, tamper detection, patient management, blockchain anchoring); prototype deployment in controlled environment; feedback integration
+
+========================================
+SECTION 3: Software Requirements
+========================================
+REPLACE THE ENTIRE "Software Requirements" section with:
+
+"Rust, using the Stellar Soroban SDK, serves as the primary programming language for smart contract development. Rust with the Actix-web framework is used to build the backend services. PostgreSQL functions as both the primary data repository for encrypted medical records and the store for application-level metadata. The Stellar CLI and Soroban SDK provide the environment for smart contract deployment and testing. On the frontend, React.js, TypeScript, and Tailwind CSS are used to develop the secure monitoring dashboard. AES-256 and SHA-256 libraries handle all data encryption and hashing tasks."
+
+Then REMOVE the following paragraph entirely:
+"The software stack of the Blockchain-Based EHR System is composed of carefully selected tools and frameworks..."
+
+And REPLACE this paragraph:
+"Solidity serves as the primary programming language for smart contract development, selected for its specialized capability in defining self-executing logic and permission-based rules on the blockchain. Node.js and the Express framework are used to build the backend services that facilitate communication between the patient interface, the IPFS storage module, and the blockchain ledger..."
+
+WITH:
+"Rust, using the Stellar Soroban SDK, serves as the primary programming language for smart contract development, selected for its specialized capability in defining secure, gas-efficient logic for automated access control and audit trail management on the Stellar blockchain. Rust with the Actix-web framework is used to build the backend services that facilitate communication between the frontend, the PostgreSQL database, and the Stellar blockchain through the Stellar CLI tool."
+
+And REPLACE:
+"Remix IDE and Hardhat provide the environment for smart contract development, compilation, and testing, allowing researchers to simulate blockchain transactions, visualize gas consumption, and refine contract security through iterative cycles. Web3.js or Ethers.js is used to bridge the web interface with the blockchain network, enabling the application to sign transactions and query the ledger for patient history."
+
+WITH:
+"The Stellar CLI and Soroban SDK provide the environment for smart contract development, compilation, and testing, allowing researchers to deploy contracts to the Stellar testnet, simulate blockchain transactions, and refine contract security through iterative cycles. The @stellar/stellar-sdk library is used to bridge the web interface with the blockchain network, enabling the application to query the ledger for contract state."
+
+And replace all "IPFS" and "Web3 API" references in the "Software configuration" paragraph with "PostgreSQL" and "Stellar SDK API" respectively.
+
+========================================
+SECTION 4: Methods (3.5.1)
+========================================
+REPLACE:
+"identifying its core functionalities: the blockchain ledger for immutability, IPFS for decentralized storage, and smart contracts for automated access control."
+
+WITH:
+"identifying its core functionalities: the blockchain ledger for immutability, PostgreSQL for encrypted off-chain storage, and smart contracts for automated access control."
+
+REPLACE:
+"the development phase involved the creation of a Web3 enabled API that facilitates real-time communication between the blockchain and the frontend dashboard."
+
+WITH:
+"the development phase involved the creation of a REST API in Rust/Actix-web that facilitates communication between the PostgreSQL database, the Stellar CLI, and the frontend dashboard."
+
+REPLACE:
+"self-executing smart contracts written in Solidity"
+
+WITH:
+"self-executing smart contracts written in Rust using the Stellar Soroban SDK"
+
+========================================
+SECTION 5: Section 4.1 Test Environment
+========================================
+REPLACE:
+"The backend (Node.js/Express) served HTTP on port 8080"
+
+WITH:
+"The backend (Rust/Actix-web) served HTTP on port 8080"
+
+REPLACE:
+"running Arch Linux"
+
+WITH:
+"running Artix Linux"
+
+REPLACE:
+"227 patient records, 43 user accounts... and 166 medical records"
+
+WITH:
+"116 patient records, 33 user accounts... and 207 medical records"
+
+========================================
+SECTION 6: Section 4.2 Auth Results
+========================================
+REPLACE ALL of lines from "Functional Test Results" through the "Interpretation" paragraph with:
+
+"Functional Test Results: All six authentication tests passed (100% pass rate). All four defined roles (admin, doctor, nurse, patient) successfully authenticated using known credentials, receiving HTTP 200 responses. Wrong-password attempts correctly returned HTTP 401, and unauthenticated requests to protected endpoints were blocked with HTTP 401, confirming that the authentication middleware functions as designed.
+
+Rate Limiting: Five consecutive rapid login attempts triggered HTTP 429 (Too Many Requests) on attempts 2 through 5, confirming that the sliding-window rate-limiting middleware is active and prevents brute-force attacks.
+
+Role-Based Access Control (RBAC): Twelve endpoint-level tests were conducted across four roles against three protected resources. Admin, doctor, and nurse tokens received HTTP 200 for /api/users/staff, /api/patients, and /api/records. Patient tokens correctly received HTTP 403 for /api/patients and /api/records, confirming that horizontal privilege escalation is prevented. All 12 RBAC tests passed (100%), with an average RBAC response time of 99 ms.
+
+Table:
+Test Category | Tests Run | Passed | Pass Rate | Avg. Response Time
+Authentication (login/reject) | 6 | 6 | 100% | 82 ms
+Rate Limiting | 5 attempts | Triggered at attempt 2 | Confirmed | —
+RBAC Endpoint Tests | 12 | 12 | 100% | 99 ms
+
+Interpretation: The RBAC subsystem performed reliably across all role combinations with a 100% pass rate on all 18 combined auth + RBAC tests. The rate-limiting confirmation addresses one of the most common attack vectors against web-based healthcare portals."
+
+========================================
+SECTION 7: Section 4.3 Patient Management
+========================================
+REPLACE ALL metrics in §4.3:
+
+"Bulk Creation: One hundred patient records were created via POST /api/patients with unique email addresses. All 100 requests returned HTTP 201 (100% success). The average creation time per record was 19 ms (range: 8-35 ms).
+Bulk Retrieval: Listing all patients via GET /api/patients returned all 116 records in 52 ms."
+
+Table:
+Operation | Records | Success Rate | Avg. Time
+Bulk Patient Creation | 100 | 100% (HTTP 201) | 19 ms
+Bulk Patient Retrieval | 116 | 100% (HTTP 200) | 52 ms
+Patient Record Update | 1 | 100% (HTTP 200) | < 100 ms
+
+========================================
+SECTION 8: Section 4.4 Medical Records
+========================================
+REPLACE metrics:
+
+"Record Creation (SOAP Format): Fifty medical records were created via POST /api/records using the SOAP structure (Subjective, Objective, Assessment, Plan). All 50 returned HTTP 201 (100% success rate), with an average creation time of 28 ms per record (range: 12-52 ms)."
+
+========================================
+SECTION 9: Section 4.5 Audit Logs
+========================================
+Update number if needed. Current text is mostly fine.
+
+========================================
+SECTION 10: Section 4.6 Blockchain
+========================================
+This section is already correct in your document (15/207 anchored, real tx hashes, Stellar CLI working). KEEP AS IS.
+
+========================================
+SECTION 11: Conclusions
+========================================
+REPLACE:
+"combining PostgreSQL for encrypted data storage, IPFS for decentralized file management, and Solidity-based smart contracts for immutable record anchoring"
+
+WITH:
+"combining PostgreSQL for encrypted data storage and Rust-based smart contracts on the Stellar Soroban blockchain for immutable record anchoring"
+
+REPLACE:
+"The Web3-enabled API facilitated real-time communication between the blockchain and the frontend dashboard"
+
+WITH:
+"The Actix-web REST API facilitated communication between the PostgreSQL database and the Stellar Soroban blockchain via the Stellar CLI"
+
+========================================
+SECTION 12: Use Case & Data Flow Diagrams
+========================================
+Replace all "IPFS" references with "PostgreSQL" where describing actual storage.
+Replace "Web3 API" with "REST API" or "Stellar SDK API".
+
+========================================
+SECTION 13: Architecture Section
+========================================
+Replace "IPFS and a supporting database" with "PostgreSQL"
+Replace "Web3-enabled API" with "REST API via Actix-web"
+Remove "IPFS Decentralized Storage" references — change to just "PostgreSQL Database"
+
+========================================
+SECTION 14: Citation Year Corrections
+========================================
+Haber & Stornetta: (1991) [not 2021]
+Szabo: (1997) [not 2023] 
+Merkle: (1980) [not 2021]
+Kuo, Kim, Ohno-Machado: (2017) [not 2022]
+Dwork & Naor: (1992) [not 2022]
+Castro & Liskov: (1999) [not 2023]
+Rivest et al.: (1978) [not 2021]
+Poon & Dryja: (2016) [not 2021]
+
+========================================
+SUMMARY OF ALL CHANGES
+========================================
+1. Node.js/Express → Rust/Actix-web (6 locations)
+2. Solidity → Rust/Stellar Soroban SDK (5 locations)
+3. IPFS → PostgreSQL (8 locations)
+4. Web3.js/Ethers.js → @stellar/stellar-sdk / Stellar CLI (4 locations)
+5. Remix IDE/Hardhat → Stellar CLI/Soroban SDK (1 location)
+6. Auth pass rate 66.67% → 100% (1 location)
+7. RBAC 193ms → 99ms (1 location)
+8. Patient create 55ms → 19ms (1 location)
+9. Record create 81ms → 28ms (1 location)
+10. DB counts 227/43/166 → 116/33/207 (1 location)
+11. Arch Linux → Artix Linux (1 location)
+12. Citation years: 7 references corrected

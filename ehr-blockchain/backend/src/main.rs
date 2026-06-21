@@ -68,16 +68,20 @@ async fn main() -> io::Result<()> {
             let server_host = cfg.server_host.clone();
             let server_port = cfg.server_port;
             let config_data = web::Data::new(cfg);
-            println!("Starting server at http://{}:{}", server_host, server_port);
-
+            println!("It works brooo go to http://{}:{}", server_host, server_port);
+            
+            
             HttpServer::new(move || {
                 let cors = Cors::default()
                     .allowed_origin_fn(|origin, _req_head| {
-                        origin.as_bytes().starts_with(b"http://localhost:")
-                            || origin.as_bytes().starts_with(b"http://127.0.0.1:")
+                        let o = origin.as_bytes();
+                        o.starts_with(b"http://localhost:")
+                            || o.starts_with(b"http://127.0.0.1:")
+                            || o.starts_with(b"http://10.184.")
+                            || o.starts_with(b"http://192.168.")
                     })
                     .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-                    .allowed_headers(vec!["Authorization", "Content-Type"])
+                    .allowed_headers(vec!["Authorization", "Content-Type", "X-Requested-With"])
                     .supports_credentials()
                     .max_age(3600);
 
@@ -119,7 +123,7 @@ async fn main() -> io::Result<()> {
             .await
         }
         Err(_) => {
-            println!("⚠️  Database not available - running in demo mode (auth endpoints disabled)");
+            println!("  Database not available - running in demo mode (auth endpoints disabled)");
             let server_host = cfg.server_host.clone();
             let server_port = cfg.server_port;
             let config_data = web::Data::new(cfg);
@@ -128,11 +132,14 @@ async fn main() -> io::Result<()> {
             HttpServer::new(move || {
                 let cors = Cors::default()
                     .allowed_origin_fn(|origin, _req_head| {
-                        origin.as_bytes().starts_with(b"http://localhost:")
-                            || origin.as_bytes().starts_with(b"http://127.0.0.1:")
+                        let o = origin.as_bytes();
+                        o.starts_with(b"http://localhost:")
+                            || o.starts_with(b"http://127.0.0.1:")
+                            || o.starts_with(b"http://10.184.")
+                            || o.starts_with(b"http://192.168.")
                     })
                     .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-                    .allowed_headers(vec!["Authorization", "Content-Type"])
+                    .allowed_headers(vec!["Authorization", "Content-Type", "X-Requested-With"])
                     .supports_credentials()
                     .max_age(3600);
 

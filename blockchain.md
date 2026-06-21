@@ -1,86 +1,87 @@
 
-**BLOCKCHAIN-BASED ELECTRONIC HEALTH**   
-**RECORD SYSTEM**
+---
 
- **\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_**
+# BLOCKCHAIN-BASED ELECTRONIC HEALTH RECORD SYSTEM
 
-#      In Partial Fulfillment of the Requirements for the Degree 
+---
 
-# Bachelor of Science in Information Technology
+**In Partial Fulfillment of the Requirements for the Degree**
 
-**\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_**
+**Bachelor of Science in Information Technology**
 
- By
+---
+
+**By**
 
 Balon, Enrico Jr.  
 Somontina, Rovic James P.  
 Tambong, Justine Rhey M.
 
-October 2025
+**October 2025**
 
-### 
+---
 
-### **TABLE OF CONTENTS** {#table-of-contents}
+# TABLE OF CONTENTS
 
-[TABLE OF CONTENTS	2](#table-of-contents)
+[TOC]
 
-[Chapter ONE	3](#chapter-one)
+## CHAPTER 1: INTRODUCTION
 
-[1.1 Background of the Study	3](#1.1-background-of-the-study)
+[1.1 Background of the Study](#1.1-background-of-the-study) ........................................... 3
 
-[1.2 Statement of the Problem	4](#heading=h.8r4wsujansn5)
+[1.2 Statement of the Problem](#1.2-statement-of-the-problem) .......................................... 4
 
-[1.3 Objective of the Study	5](#heading=h.nsjbfsvnspl2)
+[1.3 Objective of the Study](#1.3-objective-of-the-study) .............................................. 5
 
-[1.3.2 Specific Objectives	5](#heading=h.cr9t8k98opsd)
+[1.4 Scope and Limitations](#1.4-scope-and-limitations) ................................................. 6
 
-[1.4 Scope and Limitations	6](#1.4-scope-and-limitations)
+[1.5 Significance of the Study](#1.5-significance-of-the-study) ...................................... 6
 
-[1.5 Significance of the Study	6](#1.5-significance-of-the-study)
+[1.6 Definition of Terms](#1.6-definition-of-terms) ....................................................... 7
 
-[1.6 Definition of Terms	7](#1.6-definition-of-terms)
+## CHAPTER 2: REVIEW OF RELATED LITERATURE AND STUDIES
 
-[2.1 Related Literature	9](#2.1-related-literature)
+[2.1 Related Literature](#2.1-related-literature) ............................................................ 9
 
-[2.2 Related Studies	21](#2.2-related-studies)
+[2.2 Related Studies](#2.2-related-studies) ................................................................. 21
 
-[2.3 Synthesis	30](#2.3-synthesis)
+[2.3 Synthesis](#2.3-synthesis) ................................................................. 30
 
-[Chapter THREE	33](#chapter-three)
+## CHAPTER 3: DESIGN AND METHODOLOGY
 
-[3.1 Research Design	33](#3.1-research-design)
+[3.1 Research Design](#3.1-research-design) ................................................................. 33
 
-[3.1 Agile Methodology	34](#heading=h.iif0q697w2nd)
+[3.2 Proposed Architecture](#3.2-proposed-architecture) ............................................ 34
 
-[3.1.1 Requirements Collection	35](#heading=h.e6nw155l3lfe)
+[3.3 System Requirements](#3.3-system-requirements) .................................................... 35
 
-[3.1.2 Analysis	36](#heading=h.aaocxhr41wg1)  
+[3.4 Method and Tools](#3.4-method-and-tools) ........................................................... 36
+
+---
                                                             	  
   
 
-### **Chapter ONE**    {#chapter-one}
+# CHAPTER 1: INTRODUCTION
 
-**INTRODUCTION**
-
-### **1.1 Background of the Study** {#1.1-background-of-the-study}
+## 1.1 Background of the Study {#1.1-background-of-the-study}
 
           In the age of digital transformation, data has become one of the most powerful resources in every field, especially in healthcare, where information accuracy and security are vital to saving lives. Electronic Health Records (EHRs) have replaced traditional paper-based systems to promote efficiency, speed, and accessibility of patient data among hospitals and healthcare professionals. However, as more hospitals migrate to digital systems, data protection has become increasingly challenging. According to Ullah (2025), centralized databases used in conventional EHR systems remain highly susceptible to data breaches and corruption due to their dependence on a single controlling server. Such vulnerabilities not only compromise patient confidentiality but also undermine trust between patients and healthcare providers. The challenge now extends beyond digitalization; it revolves around ensuring that every record stored online remains accurate, private, and tamper-proof, regardless of where it is accessed. As healthcare information grows exponentially, the demand for a more secure, transparent, and decentralized approach to managing medical records becomes more urgent than ever before.  
-         Despite the benefits of EHRs, their limitations continue to threaten the reliability of digital healthcare management. Many hospitals still rely on centralized databases that are vulnerable to hacking, unauthorized modification, or system crashes, leading to irreversible data loss. Agbeyangi, Oki, and Mgidi (2024) noted that weak access control and insufficient transparency in traditional EHRs prevent patients from tracking who accesses their data, increasing the risk of medical identity theft. This issue is evident in institutions such as \[Hospital/Clinic Name\], located in \[Location\], where existing health record management practices face challenges in ensuring data privacy and controlled access in compliance with the Data Privacy Act. Furthermore, Saraswat   
+         Despite the benefits of EHRs, their limitations continue to threaten the reliability of digital healthcare management. Many hospitals still rely on centralized databases that are vulnerable to hacking, unauthorized modification, or system crashes, leading to irreversible data loss. Agbeyangi, Oki, and Mgidi (2024) noted that weak access control and insufficient transparency in traditional EHRs prevent patients from tracking who accesses their data, increasing the risk of medical identity theft. This issue is evident in institutions such as Herbosa Metro Doctors, located in Quezon City, where existing health record management practices face challenges in ensuring data privacy and controlled access in compliance with the Data Privacy Act. Furthermore, Saraswat   
 (2023) discussed that the lack of interoperability between different hospital systems hinders the seamless exchange of patient information, causing medical errors, delays, and duplicate testing. These weaknesses do not only affect clinical operations but also damage patient confidence in digital healthcare. When records are altered or lost, both the patient and the healthcare provider bear the consequences financially, medically, and ethically. The problem lies not in the concept of EHR itself but in the outdated technological frameworks that fail to secure and synchronize sensitive information across institutions. There is a clear gap in ensuring that medical records can be safely accessed and verified without relying on a single, vulnerable point of control
 
 .
 
-**1.2 Statement of the Problem**
+## 1.2 Statement of the Problem
 
 The increasing demand for efficient and secure health record management has highlighted the limitations of paper-based systems still used by many small clinics. Manual recording often leads to challenges in data organization, retrieval, accuracy, and privacy, especially as patient volumes continue to grow. This study addresses the lack of a secure and organized system for managing patient health records by proposing the development of a blockchain-based Electronic Health Record (EHR) prototype. The system aims to improve reliability, enhance data security, and ensure authorized access to patient information. Due to restrictions under Republic Act No. 10173, or the Data Privacy Act of 2012, simulated patient records will be utilized to develop and evaluate the proposed solution while maintaining compliance with privacy regulations.
 
 Specifically, this study seeks to address the following problems:
 
-1. The clinic does not have a standardized system for recording patient inflation and currently depends on general paper templates available on the market. This makes it harder to maintain consistent, organized, and retrievable patient records as the number of patients grows over time.  
+1. The clinic does not have a standardized system for recording patient information and currently depends on general paper templates available on the market. This makes it harder to maintain consistent, organized, and retrievable patient records as the number of patients grows over time.  
 2. Since patient records are manually written and stored in separate paper forms, sharing health information among clinic staff and other healthcare providers becomes time-consuming and less efficient compared to using a digital system.  
 3. Paper-based records do not have a way to track or limit who can view a patient's file, making it difficult to ensure that personal health information remains private and only accessible to authorized personnel.
 
-**1.3 Objective of the Study**
+## 1.3 Objective of the Study
 
      The primary objective of this study is to design, implement, and evaluate a prototype blockchain-based Electronic Health Record (EHR) system that demonstrates:
 
@@ -94,13 +95,17 @@ Specifically, this study seeks to address the following problems:
 
 4\. Alignment with core HIPAA Security Rule principles as a proof of concept.
 
-### **1.4 Scope and Limitations**  {#1.4-scope-and-limitations}
+## 1.4 Scope and Limitations {#1.4-scope-and-limitations}
 
-        This study focuses on the design and development of a Blockchain-Based Electronic Health Record (EHR) prototype system intended to provide a more organized, secure, and reliable way of managing patient records in a clinic setting. The system uses blockchain technology to ensure that patient information is stored in a way that cannot be altered or accessed without proper authorization. Core features include blockchain-based data storage, secure record sharing among authorized clinic staff, a patient health history tracker, and a dashboard for viewing and managing patient information. The study is conducted within a controlled environment using simulated patient data, as direct access to actual clinic records is restricted under Republic Act No. 10173, or the Data Privacy Act of 2012\. The proposed system is developed as a working prototype in partnership with Herbosa Metro Doctors, which currently manages patient information through general paper templates available on the market, with no standardized recording system in place.
+        This study focuses on the design and development of a Blockchain-Based Electronic Health Record (EHR) prototype system intended to provide a more organized, secure, and reliable way of managing patient records in a clinic setting. The system uses blockchain technology to ensure that patient information is stored in a way that cannot be altered or accessed without proper authorization. Core features include blockchain-based data storage, secure record sharing among authorized clinic staff, a patient health history tracker, and a dashboard for viewing and managing patient information. The study is conducted within a controlled environment using simulated patient data, as direct access to actual clinic records is restricted under Republic Act No. 10173, or the Data Privacy Act of 2012\. 
+
+The datasets utilized in this study consist of **synthetic patient data** generated to simulate realistic EHR records while maintaining compliance with privacy regulations. The datasets include: (1) Patient profiles - demographic information including name, age, gender, address, and contact details for approximately 100 synthetic patients; (2) Medical history entries - diagnoses, treatment plans, surgical procedures, and clinical notes; (3) Medication records - prescribed medications, dosages, and administration schedules; (4) Allergy information - drug allergies and adverse reactions; (5) Laboratory results - diagnostic test findings and imaging reports; (6) Access permission logs - records of data access events and permission grants; and (7) Audit trails - timestamps and actor identification for all blockchain transactions. These synthetic datasets mirror the structure and complexity of actual EHR data, enabling comprehensive functional testing of the prototype while ensuring Data Privacy Act compliance.
+
+The proposed system is developed as a working prototype in partnership with Herbosa Metro Doctors, which currently manages patient information through general paper templates available on the market, with no standardized recording system in place.
 
 The study is limited to the software-based design and functionality testing of the system and does not cover actual deployment within the clinic's operations. The prototype will not be integrated with any external healthcare platforms, government health databases, or third-party systems. The artificial intelligence component, if included, will only perform basic record classification and will not carry out any form of medical diagnosis or health prediction. System performance may also vary depending on network conditions and hardware availability during testing. Future developments may explore actual clinic deployment, broader system integration, and enhanced features once the necessary technical and legal requirements are met.
 
-### **1.5 Significance of the Study** {#1.5-significance-of-the-study}
+## 1.5 Significance of the Study {#1.5-significance-of-the-study}
 
 This study is important as it aims to address the limitations of traditional health record systems by introducing a Blockchain-Based Electronic Health Record (EHR) System that ensures secure, transparent, and tamper-proof medical data management. By utilizing blockchain technology, the study seeks to enhance the reliability, accessibility, and privacy of patient information while minimizing risks of unauthorized access and data loss. This innovation not only improves record-keeping efficiency but also builds greater trust between healthcare providers and patients through verifiable and decentralized data handling. The relevance of this study can be observed through the advantages it brings to various groups:
 
@@ -114,7 +119,7 @@ This study is important as it aims to address the limitations of traditional hea
 
 blockchain-based healthcare solutions that combine technology, security, and efficiency.
 
-### **1.6 Definition of Terms** {#1.6-definition-of-terms}
+## 1.6 Definition of Terms {#1.6-definition-of-terms}
 
 	The terminologies used in the study were defined from the proponents’ operational point of view to help the readers understand the study more efficiently.
 
@@ -151,9 +156,11 @@ blockchain-based healthcare solutions that combine technology, security, and eff
 **Chapter TWO**  
 **REVIEW OF RELATED LITERATURE AND STUDIES**
 
-### **2.1 Related Literature**  {#2.1-related-literature}
+# CHAPTER 2: REVIEW OF RELATED LITERATURE AND STUDIES
 
-### **International Literature**
+## 2.1 Related Literature {#2.1-related-literature}
+
+### International Literature
 
 **Blockchain Technology Foundations in Healthcare**
 
@@ -191,7 +198,7 @@ Haber and Stornetta (2023) pioneered cryptographic timestamping techniques that 
 
 Merkle (2021) developed the hash tree data structure, now known as Merkle trees, which enables efficient verification of large datasets through hierarchical hashing. This cryptographic technique allows blockchain systems to prove that specific transactions or records exist within a block without revealing the entire block contents, supporting both data integrity and privacy. In EHR applications, Merkle trees enable healthcare providers to verify record authenticity instantly while maintaining patient confidentiality through selective disclosure mechanisms.
 
-### **Local Literature (Philippines)**
+### Local Literature (Philippines)
 
 **Philippine Healthcare Digitalization Context**
 
@@ -223,9 +230,9 @@ Santos, Lopez, and Bautista (2024) investigated mobile health application usage 
 
 Torres (2023) examined digital literacy initiatives within Philippine medical education, noting that nursing and medical curricula provide limited exposure to emerging health information technologies. Torres argued that preparing future healthcare professionals to work effectively with blockchain-based systems requires curriculum reforms that integrate distributed ledger concepts, smart contract functionality, and data security principles into clinical training programs. Without this educational foundation, widespread adoption of advanced EHR technologies will face resistance from healthcare workers uncomfortable with unfamiliar systems.
 
-### **2.2 Related Studies** {#2.2-related-studies}
+## 2.2 Related Studies {#2.2-related-studies}
 
-### **International Studies**
+### International Studies
 
 **Blockchain-Based EHR Implementations**
 
@@ -263,7 +270,7 @@ Jiang et al. (2021) explored artificial intelligence applications in analyzing b
 
 Rajkomar et al. (2019) examined deep learning applications for predicting clinical outcomes using electronic health records, noting that data quality and accessibility significantly impact model performance. Their research identified that fragmented, incomplete records limit AI effectiveness, suggesting that comprehensive blockchain-based EHR systems providing unified patient histories could substantially enhance predictive accuracy. The study emphasized that combining blockchain's data integrity guarantees with AI's analytical capabilities could transform preventive medicine and personalized treatment planning.
 
-### **Local Studies (Philippines)**
+### Local Studies (Philippines)
 
 **Philippine Healthcare System Digitalization**
 
@@ -301,7 +308,7 @@ Gutierrez and Magpantay (2024) conducted economic analysis of EHR system investm
 
 Fernandez and Santiago (2023) analyzed return on investment for digital health initiatives in Philippine public hospitals, finding that successful technology implementations consistently shared characteristics including strong leadership support, comprehensive staff training, and phased rollout strategies. Their research demonstrated that hospitals implementing EHR systems experienced average cost savings of 2.8 million pesos annually through reduced paper handling, storage costs, and administrative time. The findings suggested that similar or greater benefits could be achieved with blockchain systems offering additional advantages in security and interoperability.
 
-### **2.3 Synthesis** {#2.3-synthesis}
+## 2.3 Synthesis {#2.3-synthesis}
 
 The reviewed literature demonstrates that blockchain technology effectively addresses critical challenges in electronic health record management, particularly data security, interoperability, and patient control. International research by Nakamoto (2008), Zheng et al. (2017), and Castro and Liskov (2020) establishes that blockchain's decentralized architecture prevents the single-point failures that enable massive data breaches in traditional centralized EHR systems. Studies show that integrating blockchain with complementary technologies like edge computing improves transaction speeds while AI integration enhances data analytics, with smart contracts enabling automated permission management and patient consent enforcement. Research consistently identifies healthcare interoperability as a major challenge, with blockchain-based solutions like MedRec successfully enabling secure data sharing across institutions without centralized intermediaries.
 
@@ -309,23 +316,53 @@ Philippine studies reveal unique opportunities for blockchain EHR adoption. Rese
 
 The synthesis reveals critical research gaps this study addresses: few studies examine blockchain EHR implementation within Philippine healthcare contexts considering local regulations and infrastructure; most research focuses on large hospitals rather than small clinics and rural facilities prevalent in the Philippines; limited research explores AI integration with blockchain security; and few studies cover complete system lifecycles including long-term maintenance and scaling. The convergence of proven technical maturity, demonstrated local need, successful pilot implementations, and favorable long-term economics positions blockchain-based EHR systems as particularly appropriate for Philippine healthcare. This study contributes by developing a blockchain EHR specifically designed for Philippine environments, incorporating international best practices while addressing unique local requirements, ultimately advancing health information management in developing countries.
 
-### 
+---
 
-### **Chapter Three** {#chapter-three}
+# CHAPTER 3: DESIGN AND METHODOLOGY
 
-**Design and Methodology**	
+This chapter covers the data design, procedures, tools and methodologies gathering and interpretation. It gives a thorough description of the study's methodology, demonstrating methods used in the study and the reliability and validity of the findings.	
 
 This chapter covers the data design, procedures, tools and methodologies gathering and interpretation. It gives a thorough description of the study’s methodology, demonstrating methods used in the study and the reliability and validity of the findings. 
 
-### **3.1 Research Design** {#3.1-research-design}
+## 3.1 Research Design {#3.1-research-design}
 
-	This study uses a design science research approach, or DSR, to build and evaluate a blockchain based Electronic Health Record prototype. The goal is to tackle common problems with centralized systems, such as data breaches, information silos, and the lack of patient controlled access. DSR fits well here because the main outcome is a new kind of artifact, one that combines blockchain, smart contracts, and off chain storage, rather than just reporting a purely empirical finding. To guide the actual software development, we follow Agile Scrum within this research framework. Work is split into two week sprints, and each sprint delivers something tangible, like smart contract logic written in Rust, encryption methods, permission controls, or parts of the patient dashboard.
+This study adopts a developmental research methodology to design, develop, and evaluate a Blockchain-Based Electronic Health Record (EHR) System in response to several critical challenges. First, data security concerns arise from the increasing vulnerability of centralized health records to breaches and unauthorized access. Second, data integrity issues emerge due to the risk of unauthorized modification or tampering of patient records. Third, accessibility limitations are evident in small clinics that rely on inefficient manual record-keeping systems, which hinder timely data retrieval. Finally, privacy challenges persist because patients often lack control over access to their records and the availability of transparent audit trails. Developmental research is appropriate for this study because the primary objective is to create and evaluate a new artifact - a functional blockchain-based EHR prototype - rather than merely observing or describing existing phenomena. This methodology allows for iterative development and continuous refinement, enabling the researchers to produce a system that demonstrates secure storage, controlled access, and efficient sharing of patient health records among authorized healthcare personnel.
 
- The final system brings together several pieces: a permissioned blockchain layer with Rust based smart contracts for tamper proof audit trails, smart contracts that automate access management, a Rust backend (using Actix Web or Axum) to handle application logic, a SQLite or PostgreSQL database that stores encrypted synthetic patient data off chain, and a web interface (built with Rust using Yew or Leptos, or alternatively with TypeScript and React) where patients and clinicians interact. Because access to real clinical records is restricted under the Data Privacy Act of 2012 (Republic Act No. 10173), all development and testing use simulated patient data in a controlled environment. The study covers the complete process of designing, building, and functionally testing the prototype.
+The system integrates blockchain technology for decentralized and immutable data storage, smart contracts for automated access control, and a secure authentication mechanism for verifying users. A digital interface enables healthcare professionals to access and manage patient records efficiently while ensuring that all transactions are recorded transparently and securely.
+
+The study employs simulated and publicly available healthcare record structures, incorporating standardized electronic health data formats inspired by interoperability frameworks such as FHIR and HL7, to evaluate system functionality and performance. The datasets utilized encompass several categories: patient profiles containing demographic information for approximately 100 synthetic individuals, including name, age, gender, address, and contact details; medical history entries documenting diagnoses, treatment plans, surgical procedures, and clinical notes; medication records specifying prescribed drugs, dosages, and administration schedules; allergy information detailing drug sensitivities and adverse reactions; laboratory results comprising diagnostic test findings and imaging reports; access permission logs recording data access events and authorization grants; and audit trails providing timestamps and actor identification for all blockchain transactions. These datasets are evaluated to ensure compatibility with real-world healthcare scenarios, particularly in terms of patient record structure, access permissions, and data security requirements. Through iterative testing, the system is refined to ensure that blockchain transactions remain efficient, secure, and scalable under different usage conditions typical in healthcare environments.
+
+The Software Development Life Cycle (SDLC) for this study uses Agile Methodology, which is well-suited for the development of complex systems that require continuous refinement and evaluation. Agile emphasizes flexibility, collaboration, and iterative improvement, making it appropriate for integrating blockchain components such as smart contracts, decentralized databases, and secure authentication systems.
+
+Its iterative stages, including requirement analysis, sprint planning, incremental development, testing, and feedback integration, allow continuous enhancement of system security, performance, and usability. For example, smart contract logic, user authentication protocols, and data retrieval processes are refined after each development cycle to ensure system reliability and efficiency.
+
+This study also adopts the Iterative Design and Development (IDD) model, which emphasizes continuous refinement through repeated cycles of development and evaluation. This approach ensures that system improvements are based on actual testing results and identified limitations during each iteration, allowing gradual enhancement of both system performance and security features.
+
+The phases of the IDD model used in this study are as follows:
+
+Requirements Collection. In this initial phase, we identify the functional and technical requirements of the system by conducting an extensive literature review and analyzing existing Electronic Health Record (EHR) systems. We evaluate various blockchain applications in healthcare to determine the necessary features for our prototype, specifically focusing on secure data storage, robust user authentication, and the mechanisms required for cross-platform interoperability.
+
+Analysis. After gathering the requirements, we examine them to assess the overall feasibility of the system and define our final technical specifications. During this phase, we identify potential risks and evaluate the most effective blockchain network structure. We carefully analyze smart contract design requirements and data storage models, while prioritizing security considerations such as advanced encryption standards and strict access control policies.
+
+Design. Moving into the structural phase, we develop the architectural framework of the system, which includes configuring the blockchain network and the supporting database structure. We design the user interface and map out the smart contract workflows that govern the system logic. Our focus here is defining exactly how patient records will be stored, accessed, and shared to ensure a seamless and secure experience within the decentralized environment.
+
+Coding and Implementation. In this active phase, we implement the smart contracts that automate access control and we construct the decentralized ledger system. We also integrate the cryptographic authentication mechanisms and develop the web-based interface, ensuring that the backend blockchain logic connects seamlessly with the frontend used by healthcare providers. This is the stage where we translate our theoretical models into a functional software prototype, allowing us to identify and resolve technical challenges as they arise during development.
+
+Testing. Evaluating the system's functionality, security, and performance through unit testing, integration testing, and simulation of healthcare scenarios. This phase ensures that data transactions are secure, access control mechanisms function correctly, and blockchain records remain immutable and consistent.
+
+Deployment and Feedback. Implementing the prototype in a controlled environment and gathering feedback from simulated healthcare users. Performance results and user feedback are analyzed to identify areas for improvement, which are then incorporated into the next iteration of development.
+
+Each phase is repeated multiple times throughout the study to ensure continuous improvement of the system. This cyclical development process ensures that the Blockchain-Based Electronic Health Record System is secure, efficient, and adaptable to real-world healthcare requirements.
+
+Through developmental research supported by the IDD framework and Agile methodology, this study aims to produce a secure, scalable, and interoperable Electronic Health Record system that enhances data integrity, improves accessibility, and strengthens patient data privacy. The resulting system directly supports the study's objectives of secure data storage, efficient record sharing, and robust access control for healthcare environments.
+
+The reason for using both IDD and Agile together is as follows: IDD provides the overall research and development framework with clear phases from requirements collection through deployment, while Agile provides the execution methodology within each IDD phase through iterative sprints. This dual approach addresses the challenge of conducting academic research with bounded timelines while building a functional technical prototype - IDD ensures systematic progression through development stages required for research documentation, while Agile enables flexibility and continuous improvement during each stage.
+
+ The final system brings together several pieces: a permissioned blockchain layer with Rust based smart contracts for tamper proof audit trails, smart contracts that automate access management, a Rust backend (using Actix Web or Axum) to handle application logic, a SQLite or PostgreSQL database that stores encrypted synthetic patient data off chain, and a web interface (built with Rust using Yew or Leptos, or alternatively with TypeScript and React) where patients and clinicians interact. Because access to real clinical records is restricted under the Data Privacy Act of 2012 (Republic Act No. 10173), all development and testing use the synthetic datasets described in Section 1.4 in a controlled environment. The study covers the complete process of designing, building, and functionally testing the prototype.
 
  However, it does not include live deployment in a real clinic, integration with outside healthcare platforms, or formal security auditing. Even with these limits, the iterative prototyping and controlled testing allow us to show that a decentralized, patient centered approach to managing health data is feasible within the scope of a capstone project.
 
-###  **3.2 Proposed Architecture**      
+## 3.2 Proposed Architecture      
 
 	The proposed Blockchain Based Electronic Health Record System uses a multi layered architecture that combines distributed ledger technology with a conventional database to achieve both security and performance. The architecture follows a hybrid approach where sensitive medical data is encrypted and stored in PostgreSQL while cryptographic hashes and transaction metadata are recorded on the blockchain. This ensures data integrity without compromising system performance.
 
@@ -339,23 +376,23 @@ Security follows a defense in depth strategy. Authentication uses JSON Web Token
 
 This architecture addresses the fundamental requirements of healthcare information systems: confidentiality through encryption, integrity through blockchain immutability, availability through redundant node deployment, and accountability through comprehensive audit trails. The permissioned nature of the blockchain ensures that only authorized organizations participate in the network while maintaining the decentralization benefits that prevent the single points of failure characteristic of traditional centralized systems.
 
-### **3.3.  System Requirements** 
+## 3.3 System Requirements 
 
-#### **3.3.1 Hardware Requirements**
+### 3.3.1 Hardware Requirements
 
 The hardware requirements are divided into development and deployment environments. For development, a machine with at least an Intel Core i5 or AMD Ryzen 5 processor, 16 GB of RAM, and 50 GB of available storage is recommended to run multiple Docker containers for the blockchain network, PostgreSQL database, and backend services. An SSD is strongly recommended for faster build times and database performance. For deployment, a basic cloud virtual machine with 4 CPU cores, 8 GB of RAM, and 20 GB of storage can support the prototype for demonstration purposes. End users accessing the web interface require only a standard desktop, laptop, or mobile device with a modern web browser.
 
-#### **3.3.2 Software Requirements**
+### 3.3.2 Software Requirements
 
 The software environment includes the operating systems, frameworks, and tools needed to build, host, and interact with the application. For development, Arch Linux is recommended for its rolling release model, access to the latest Rust toolchain and blockchain dependencies through the Arch User Repository (AUR), and fine grained control over the development environment. Other distributions like Ubuntu or Fedora, as well as Windows with WSL2 or macOS, are also acceptable. For the user environment, any modern operating system with a standard web browser works, including Windows, macOS, Linux, Android, and iOS.
 
 		
 
-#### **3.4 Method and Tools**
+## 3.4 Method and Tools
 
 The development follows an Agile Scrum methodology with two week sprints, as described in Section 3.1.1. The design science research approach guides the overall study, while Agile structures the software development process. Each sprint delivers a testable increment of the prototype, starting with the blockchain network and smart contracts, then progressing to the backend API, database integration, frontend interface, and finally testing and refinement.
 
-#### **3.4.2 Tools**
+### 3.4.2 Tools
 
 The following tools are used to implement the system.
 
@@ -383,49 +420,25 @@ Build Tool: Cargo, Rust's built in package manager and build system, handles dep
 
 **API Documentation**: Utoipa generates OpenAPI documentation from Actix Web route annotations.
 
-#### 
+### 3.4.2.1 Flowchart of the Proposed System
 
-#### 
+*(Insert flowchart here)*
 
-#### 
+### 3.4.2.2 Data Flow Diagram of the Proposed System
 
-#### 
+*(Insert data flow diagram here. The diagram should show how data moves between the user, backend, database, and blockchain network.)*
 
-#### 
+### 3.4.2.3 Entity Relationship Diagram of the Proposed System
 
-#### 
+*(Insert ER diagram here. The diagram should show the tables: users, patients, medical records, medications, allergies, access permissions, audit logs, and blockchain transactions with their relationships.)*
 
-#### 
+### 3.4.2.4 Use Case Diagram of the Proposed System
 
-#### 
+*(Insert use case diagram here)*
 
-#### **3.4.2.1 Flowchart of the Proposed System**
+---
 
-#### 
-
-#### 
-
-#### 
-
-#### 
-
-#### 
-
-#### 
-
-#### **3.4.2.2 Data Flow Diagram of the Proposed System**
-
-(Insert your data flow diagram here. The diagram should show how data moves between the user, backend, database, and blockchain network.)
-
-#### 
-
-#### **3.4.2.3 Entity Relationship Diagram of the Proposed System**
-
-(Insert your ER diagram here. The diagram should show the tables: users, patients, medical\_records, medications, allergies, access\_permissions, audit\_logs, and blockchain\_transactions with their relationships.)
-
-**3.4.2.4 Use Case Diagram of the Proposed System**
-
-***List of References:*** 
+# LIST OF REFERENCES 
 
 	*International Literature*
 

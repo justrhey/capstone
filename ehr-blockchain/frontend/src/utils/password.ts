@@ -40,7 +40,7 @@ export function passwordStrength(pw: string): PasswordStrength {
     }
 
     const label: PasswordStrength['label'] =
-        score === 0 ? 'Empty' : score === 1 ? 'Weak' : score === 2 ? 'Fair' : score === 3 ? 'Good' : 'Strong'
+        score === 1 ? 'Weak' : score === 2 ? 'Fair' : score === 3 ? 'Good' : 'Strong'
 
     return {
         score,

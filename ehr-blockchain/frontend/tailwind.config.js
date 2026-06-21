@@ -46,11 +46,11 @@ export default {
                 // Use white/slate for main text - much more readable!
                 medical: {
                     50:  '#fafaf7',
-                    100: '#f1f5f9',  // very light text (almost white)
-                    200: '#e2e8f0',  // white-ish (main body text)
-                    300: '#cbd5e1',  // light grey
-                    400: '#94a3b8',  // muted grey (labels)
-                    500: '#64748b',   // dimmed (hints)
+                    100: '#f1f5f9',
+                    200: '#1e293b',  // dark slate — main readable body
+                    300: '#334155',  // readable grey
+                    400: '#475569',  // muted but clear
+                    500: '#64748b',  // dimmed hint
                     600: '#475569',
                     700: '#334155',
                     800: '#1e293b',

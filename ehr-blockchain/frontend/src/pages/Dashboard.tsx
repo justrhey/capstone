@@ -262,19 +262,16 @@ export default function Dashboard() {
               <>
                 {/* Staff: show records trend */}
                 <div className="lg:col-span-9 glass-card p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-medical-500">Records Trend</p>
-                  </div>
-                  <div className="aspect-[10/3] min-h-[200px]">
+                  <div className="aspect-[5/1] min-h-[90px]">
                     <TinyChart data={monthlyData.map(d => d.records)} labels={monthlyData.map(d => d.month)} color="#22d3ee" />
                   </div>
                 </div>
 
                 {/* Recent - 3 cols */}
                 <div className="lg:col-span-3 glass-card p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-medical-500">Recent</p>
-                    <button onClick={() => navigate('/records')} className="text-cyan-400 text-[10px] hover:text-cyan-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-lg uppercase tracking-wider font-bold">Recent</p>
+                    <button onClick={() => navigate('/records')} className="text-cyan-400 text-xs hover:text-cyan-300">
                       all →
                     </button>
                   </div>
@@ -282,15 +279,18 @@ export default function Dashboard() {
                     {recentRecords.length === 0 ? (
                       <p className="text-medical-500 text-xs text-center py-2">No records</p>
                     ) : (
-                      recentRecords.map((item) => (
+recentRecords.map((item) => (
                         <div 
                           key={item.record?.id}
                           className="flex items-center justify-between p-1.5 bg-white/5 rounded-lg"
                         >
-<div className="min-w-0 flex-1">
-                          <p className="text-white text-xs truncate">{(item.record as any)?.subjective || (item.record as any)?.objective || (item.record as any)?.assessment || 'Record'}</p>
-                          <p className="text-medical-500 text-[9px]">{(item.record as any)?.created_at ? new Date((item.record as any).created_at).toLocaleDateString() : ''}</p>
-                        </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-cyan-400 text-xs font-medium truncate">
+                              {(item as any)?.patient_name || (item as any)?.patientName || 'Unknown Patient'}
+                            </p>
+                            <p className="text-white text-xs truncate">{(item.record as any)?.subjective || (item.record as any)?.objective || (item.record as any)?.assessment || 'Record'}</p>
+                            <p className="text-medical-500 text-[9px]">{(item.record as any)?.created_at ? new Date((item.record as any).created_at).toLocaleDateString() : ''}</p>
+                          </div>
                           {item.record?.blockchain_tx_id && (
                             <span className="px-1 py-0.5 bg-mint-500/20 text-mint-400 text-[9px] rounded">✓</span>
                           )}
@@ -361,321 +361,117 @@ function TinyChart({ data, labels, color }: { data: number[]; labels: string[]; 
 
   const max = Math.max(...data, 1)
   const allZero = data.every((v) => v === 0)
-  const total = data.reduce((a, b) => a + b, 0)
-  const peakIdx = data.indexOf(Math.max(...data))
 
-  const W = 400
-  const H = 120
-  const PAD_L = 6
-  const PAD_R = 26
-  const PAD_T = 10
-  const PAD_B = 16
-  const innerW = W - PAD_L - PAD_R
-  const innerH = H - PAD_T - PAD_B
+  const W = 400, H = 100
+  const PAD = { l: 8, r: 8, t: 12, b: 22 }
+  const iW = W - PAD.l - PAD.r
+  const iH = H - PAD.t - PAD.b
 
-  const points = data.map((v, i) => ({
-    x: PAD_L + (i / Math.max(data.length - 1, 1)) * innerW,
-    y: PAD_T + (1 - v / max) * innerH,
+  const pts = data.map((v, i) => ({
+    x: PAD.l + (i / Math.max(data.length - 1, 1)) * iW,
+    y: PAD.t + (1 - v / max) * iH,
     v,
   }))
 
   if (allZero || data.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center">
-        <div className="w-7 h-7 rounded-full mb-1.5 flex items-center justify-center"
-          style={{ background: 'rgba(148, 163, 184, 0.06)', border: '1px dashed rgba(148, 163, 184, 0.18)' }}>
-          <span className="text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.55)' }}>—</span>
-        </div>
-        <div className="text-[9px] tracking-[0.24em] uppercase font-semibold" style={{ color: 'rgba(148, 163, 184, 0.5)' }}>
-          No activity
-        </div>
-        <div className="text-[9px] mt-0.5" style={{ color: 'rgba(148, 163, 184, 0.35)' }}>
-          Records will appear here as they accrue
-        </div>
+      <div className="h-full flex flex-col items-center justify-center gap-1.5">
+        <div className="text-[11px]" style={{ color: 'rgba(148,163,184,0.4)' }}>——</div>
+        <div className="text-[10px]" style={{ color: 'rgba(148,163,184,0.35)' }}>No data yet</div>
       </div>
     )
   }
 
-  const linePath = points.map((p, i) => (i === 0 ? `M${p.x} ${p.y}` : `L${p.x} ${p.y}`)).join(' ')
-  const areaPath = `${linePath} L${points[points.length - 1].x} ${PAD_T + innerH} L${points[0].x} ${PAD_T + innerH} Z`
-  const pathLen = points.reduce((acc, p, i) => {
-    if (i === 0) return 0
-    return acc + Math.hypot(p.x - points[i - 1].x, p.y - points[i - 1].y)
-  }, 0) || 1
+  // Catmull-Rom → smooth cubic bezier through every point
+  function smoothPath(pts: {x:number; y:number}[]) {
+    if (pts.length < 2) return ''
+    let d = `M${pts[0].x} ${pts[0].y}`
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i === 0 ? 0 : i - 1]
+      const p1 = pts[i]
+      const p2 = pts[i + 1]
+      const p3 = pts[i + 2 >= pts.length ? pts.length - 1 : i + 2]
+      const cp1x = p1.x + (p2.x - p0.x) / 6
+      const cp1y = p1.y + (p2.y - p0.y) / 6
+      const cp2x = p2.x - (p3.x - p1.x) / 6
+      const cp2y = p2.y - (p3.y - p1.y) / 6
+      d += ` C${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`
+    }
+    return d
+  }
 
-  const uid = `chart-${color.replace('#', '')}`
-  const gridLines = [0, 0.25, 0.5, 0.75, 1]
+  const line = smoothPath(pts)
+  const area = `${line} L${pts[pts.length - 1].x} ${PAD.t + iH} L${pts[0].x} ${PAD.t + iH} Z`
+  const uid = color.replace('#', '')
 
   return (
     <div className="relative h-full" onMouseLeave={() => setHover(null)}>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full overflow-visible">
         <defs>
-          <linearGradient id={`${uid}-area`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.34" />
-            <stop offset="55%" stopColor={color} stopOpacity="0.07" />
+          <pattern id={`grid-${uid}`} width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(148,163,184,0.06)" strokeWidth="0.5" />
+          </pattern>
+          <pattern id={`dot-${uid}`} width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="10" cy="10" r="0.6" fill="rgba(148,163,184,0.08)" />
+          </pattern>
+          <linearGradient id={`g-${uid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.12" />
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
-          <linearGradient id={`${uid}-line`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={color} stopOpacity="0.65" />
-            <stop offset="50%" stopColor={color} stopOpacity="1" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.65" />
-          </linearGradient>
-          <filter id={`${uid}-glow`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" />
-          </filter>
         </defs>
 
-        {/* Hairline grid */}
-        {gridLines.map((t, i) => {
-          const y = PAD_T + t * innerH
-          const isMid = t === 0.5
-          return (
-            <line
-              key={i}
-              x1={PAD_L}
-              y1={y}
-              x2={PAD_L + innerW}
-              y2={y}
-              stroke="rgba(148, 163, 184, 0.09)"
-              strokeWidth="1"
-              strokeDasharray={isMid ? '0' : '1 5'}
-            />
-          )
-        })}
+        {/* Square grid background */}
+        <rect width={W} height={H} fill={`url(#grid-${uid})`} />
+        <rect width={W} height={H} fill={`url(#dot-${uid})`} />
 
-        {/* Area fill */}
-        <path d={areaPath} fill={`url(#${uid}-area)`} opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.9s" begin="0.2s" fill="freeze" />
-        </path>
+        {/* Smooth area fill */}
+        <path d={area} fill={`url(#g-${uid})`} />
 
-        {/* Soft glow underline */}
-        <path
-          d={linePath}
-          fill="none"
-          stroke={color}
-          strokeWidth="2.2"
-          strokeOpacity="0.32"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter={`url(#${uid}-glow)`}
-          strokeDasharray={pathLen}
-          strokeDashoffset={pathLen}
-        >
-          <animate attributeName="stroke-dashoffset" from={pathLen} to="0" dur="1.2s" begin="0s" fill="freeze" />
-        </path>
+        {/* Smooth curve line — no sharp edges */}
+        <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
 
-        {/* Crisp line */}
-        <path
-          d={linePath}
-          fill="none"
-          stroke={`url(#${uid}-line)`}
-          strokeWidth="1.25"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray={pathLen}
-          strokeDashoffset={pathLen}
-        >
-          <animate attributeName="stroke-dashoffset" from={pathLen} to="0" dur="1.2s" begin="0s" fill="freeze" />
-        </path>
-
-        {/* Hover guideline */}
-        {hover !== null && points[hover] && (
-          <>
-            <line
-              x1={points[hover].x}
-              y1={PAD_T}
-              x2={points[hover].x}
-              y2={PAD_T + innerH}
-              stroke={color}
-              strokeOpacity="0.45"
-              strokeWidth="1"
-              strokeDasharray="2 3"
-            />
-            <line
-              x1={PAD_L}
-              y1={points[hover].y}
-              x2={PAD_L + innerW}
-              y2={points[hover].y}
-              stroke={color}
-              strokeOpacity="0.18"
-              strokeWidth="1"
-              strokeDasharray="1 4"
-            />
-          </>
-        )}
-
-        {/* Y-axis ticks (right side) */}
-        <text
-          x={W - 4}
-          y={PAD_T + 2.5}
-          fontSize="6"
-          fill="rgba(148, 163, 184, 0.72)"
-          textAnchor="end"
-          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-          letterSpacing="0.06em"
-        >
-          {max}
-        </text>
-        <text
-          x={W - 4}
-          y={PAD_T + innerH * 0.5 + 2}
-          fontSize="5.5"
-          fill="rgba(148, 163, 184, 0.42)"
-          textAnchor="end"
-          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-          letterSpacing="0.06em"
-        >
-          {Math.round(max / 2)}
-        </text>
-        <text
-          x={W - 4}
-          y={PAD_T + innerH + 2}
-          fontSize="5.5"
-          fill="rgba(148, 163, 184, 0.42)"
-          textAnchor="end"
-          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-          letterSpacing="0.06em"
-        >
-          0
-        </text>
-
-        {/* Dots */}
-        {points.map((p, i) => {
-          const isPeak = i === peakIdx && p.v > 0
-          const isActive = hover === i
-          return (
-            <g key={i} opacity="0">
-              <animate attributeName="opacity" from="0" to="1" dur="0.32s" begin={`${0.85 + i * 0.06}s`} fill="freeze" />
-              {isPeak && (
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={6.5}
-                  fill={color}
-                  fillOpacity="0.12"
-                  style={{
-                    transformOrigin: `${p.x}px ${p.y}px`,
-                    animation: 'none',
-                  }}
-                />
-              )}
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={isActive ? 5.5 : 3.5}
-                fill={color}
-                fillOpacity={isActive ? 0.28 : 0.16}
-                style={{ transition: 'r 180ms ease, fill-opacity 180ms ease' }}
-              />
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={isActive ? 2.4 : 1.8}
-                fill="#0f172a"
-                stroke={color}
-                strokeWidth={isActive ? 1.25 : 1}
-                style={{ transition: 'r 180ms ease, stroke-width 180ms ease' }}
-              />
-            </g>
-          )
-        })}
-
-        {/* X-axis labels */}
-        {labels.map((l, i) => (
-          <text
-            key={i}
-            x={points[i]?.x ?? 0}
-            y={H - 5}
-            fontSize="6.5"
-            fill={hover === i ? color : 'rgba(148, 163, 184, 0.55)'}
-            textAnchor="middle"
-            fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-            letterSpacing="0.16em"
-            style={{ transition: 'fill 160ms ease', textTransform: 'uppercase', fontWeight: hover === i ? 600 : 500 }}
-          >
-            {l}
-          </text>
+        {/* Subtle dots on hover only */}
+        {pts.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={hover === i ? 4 : 0} fill={color}
+            style={{ transition: 'r 150ms ease', opacity: hover === i ? 1 : 0 }} />
         ))}
 
-        {/* Invisible hit-targets — last so they sit on top */}
-        {points.map((p, i) => {
-          const prevMid = i === 0 ? 0 : (points[i - 1].x + p.x) / 2
-          const nextMid = i === points.length - 1 ? W : (p.x + points[i + 1].x) / 2
-          return (
-            <rect
-              key={i}
-              x={prevMid}
-              y={0}
-              width={nextMid - prevMid}
-              height={H}
-              fill="transparent"
-              onMouseEnter={() => setHover(i)}
-              style={{ cursor: 'crosshair' }}
-            />
-          )
+        {/* X labels */}
+        {labels.map((l, i) => (
+          <text key={i} x={pts[i]?.x ?? 0} y={H - 4} fontSize="7"
+            fill="rgba(148,163,184,0.45)" textAnchor="middle"
+            fontFamily="ui-monospace, monospace">{l}</text>
+        ))}
+
+        {/* Hit targets */}
+        {pts.map((p, i) => {
+          const a = i === 0 ? 0 : (pts[i - 1].x + p.x) / 2
+          const b = i === pts.length - 1 ? W : (p.x + (pts[i + 1]?.x ?? W)) / 2
+          return <rect key={i} x={a} y={0} width={b - a} height={H} fill="transparent"
+            onMouseEnter={() => setHover(i)} style={{ cursor: 'crosshair' }} />
         })}
       </svg>
 
-      {/* Header overlay: total */}
-      <div className="absolute top-0 left-0 flex items-baseline gap-1.5 pointer-events-none">
-        <span className="text-[8px] tracking-[0.24em] uppercase font-semibold"
-          style={{ color: 'rgba(148, 163, 184, 0.55)' }}>
-          6mo Σ
-        </span>
-        <span className="text-[11px] font-semibold tabular-nums leading-none" style={{ color }}>
-          {total.toLocaleString()}
-        </span>
-        {peakIdx >= 0 && data[peakIdx] > 0 && (
-          <span className="text-[7.5px] tracking-[0.2em] uppercase font-medium ml-1.5"
-            style={{ color: 'rgba(148, 163, 184, 0.4)' }}>
-            peak · {labels[peakIdx]}
-          </span>
-        )}
-      </div>
-
       {/* Tooltip */}
-      {hover !== null && points[hover] && (
-        <div
-          className="absolute pointer-events-none"
+      {hover !== null && pts[hover] && (
+        <div className="absolute pointer-events-none"
           style={{
-            left: `${(points[hover].x / W) * 100}%`,
-            top: `${(points[hover].y / H) * 100}%`,
-            transform: 'translate(-50%, calc(-100% - 14px))',
-            transition: 'left 140ms ease, top 140ms ease',
-          }}
-        >
-          <div
-            className="px-2 py-1 rounded-[5px] whitespace-nowrap relative"
+            left: `${(pts[hover].x / W) * 100}%`,
+            top: `${(pts[hover].y / H) * 100}%`,
+            transform: 'translate(-50%, calc(-100% - 10px))',
+            transition: 'left 120ms ease, top 120ms ease',
+          }}>
+          <div className="px-3 py-2 rounded-lg whitespace-nowrap"
             style={{
-              background: 'rgba(15, 23, 42, 0.94)',
-              border: `1px solid ${color}55`,
-              backdropFilter: 'blur(6px)',
-              boxShadow: `0 6px 18px rgba(0, 0, 0, 0.45), 0 0 0 1px ${color}1a, inset 0 1px 0 rgba(255,255,255,0.04)`,
-            }}
-          >
-            <div className="text-[7px] tracking-[0.22em] uppercase font-semibold leading-none"
-              style={{ color: 'rgba(148, 163, 184, 0.65)' }}>
-              {labels[hover]}
+              background: '#0f172a',
+              border: '1px solid rgba(148,163,184,0.1)',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
+            }}>
+            <div className="text-[10px] font-medium leading-none" style={{ color }}>{labels[hover]}</div>
+            <div className="flex items-baseline gap-1 mt-1.5">
+              <span className="text-[15px] font-semibold tabular-nums leading-none text-white">{pts[hover].v}</span>
+              <span className="text-[7px] uppercase tracking-widest" style={{ color: 'rgba(148,163,184,0.45)' }}>records</span>
             </div>
-            <div className="flex items-baseline gap-1 mt-1">
-              <div className="text-[11px] font-semibold leading-none tabular-nums" style={{ color: '#fff' }}>
-                {points[hover].v.toLocaleString()}
-              </div>
-              <div className="text-[7px] tracking-[0.16em] uppercase leading-none"
-                style={{ color: 'rgba(148, 163, 184, 0.5)' }}>
-                rec
-              </div>
-            </div>
-            {/* Tooltip arrow */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 w-1 h-1 rotate-45"
-              style={{
-                bottom: '-2px',
-                background: 'rgba(15, 23, 42, 0.94)',
-                borderRight: `1px solid ${color}55`,
-                borderBottom: `1px solid ${color}55`,
-              }}
-            />
           </div>
         </div>
       )}
